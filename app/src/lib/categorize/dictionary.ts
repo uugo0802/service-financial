@@ -66,6 +66,14 @@ export const EXPENSE_RULES: CategoryRule[] = [
   { pattern: /諸会費|年会費|組合費|同業者団体/, account: "諸会費", taxCategory: "要確認", note: "対価性の有無により課税仕入/不課税の判定が分かれるため要確認" },
   { pattern: /修繕|リペア|メンテナンス/, account: "修繕費", taxCategory: "課税仕入10%" },
   { pattern: /福利厚生|健康診断|忘年会|懇親旅行/, account: "福利厚生費", taxCategory: "課税仕入10%" },
+  { pattern: /WeWork|コワーキング|レンタルオフィス|シェアオフィス/i, account: "地代家賃", taxCategory: "課税仕入10%", note: "コワーキングスペース等の利用料" },
+  { pattern: /Xserver|エックスサーバー|さくらインターネット|ロリポップ|お名前\.com|ムームードメイン|ConoHa/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "ドメイン・レンタルサーバー利用料" },
+  { pattern: /弥生会計|勘定奉行|マネーフォワード|freee/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "会計・業務ソフトの利用料" },
+  { pattern: /ガソリン|ENEOS|出光|コスモ石油/i, account: "車両費", taxCategory: "課税仕入10%" },
+  { pattern: /香典|祝儀|御祝|弔電|供花/, account: "接待交際費", taxCategory: "対象外", note: "香典等は不課税（対価性なし）。祝儀・供花は取引先向けか要確認" },
+  { pattern: /リース料|リース契約/, account: "リース料", taxCategory: "課税仕入10%" },
+  { pattern: /商工会議所|商工会|同業者組合/, account: "諸会費", taxCategory: "要確認", note: "対価性の有無により課税仕入/不課税の判定が分かれるため要確認" },
+  { pattern: /求人広告|Indeed|エン転職|リクナビ/i, account: "広告宣伝費", taxCategory: "課税仕入10%", note: "求人広告費" },
 ];
 
 export const INCOME_RULES: CategoryRule[] = [
