@@ -48,10 +48,28 @@ export function parseCsvText(text: string): string[][] {
   return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
 }
 
-const DATE_HEADERS = ["日付", "取引日", "利用日", "ご利用日", "date"];
-const DESC_HEADERS = ["摘要", "内容", "お取引内容", "ご利用店名", "取引内容", "description", "摘要・お取引内容"];
-const AMOUNT_HEADERS = ["金額", "amount"];
-const WITHDRAW_HEADERS = ["出金金額", "お引出し", "出金", "ご利用金額"];
+// 主要ネット銀行（住信SBI・楽天銀行・ゆうちょ・三井住友・みずほ・三菱UFJ等）・
+// クレジットカード（楽天カード・三井住友カード・JCB等）のCSVエクスポートで
+// 実際に使われるヘッダー名のバリエーションを収集したもの。完全網羅ではなく、
+// 未対応フォーマットは detectedColumns が「未検出」になるので画面上で判別できる。
+const DATE_HEADERS = ["日付", "取引日", "利用日", "ご利用日", "年月日", "取扱日", "ご利用年月日", "date"];
+const DESC_HEADERS = [
+  "摘要",
+  "内容",
+  "お取引内容",
+  "ご利用店名",
+  "取引内容",
+  "description",
+  "摘要・お取引内容",
+  "お取り扱い内容",
+  "入出金先内容",
+  "ご利用店名及び商品名",
+  "ご利用先",
+  "利用店名・商品名",
+  "摘要内容",
+];
+const AMOUNT_HEADERS = ["金額", "amount", "入出金", "取引金額"];
+const WITHDRAW_HEADERS = ["出金金額", "お引出し", "出金", "ご利用金額", "お支払金額"];
 const DEPOSIT_HEADERS = ["入金金額", "お預入れ", "入金"];
 
 function findColumn(header: string[], candidates: string[]): number {
