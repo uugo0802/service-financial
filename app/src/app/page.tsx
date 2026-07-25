@@ -38,7 +38,14 @@ export default function Home() {
   const individualEstimate = useMemo(() => (rows ? estimateForIndividual(rows) : null), [rows]);
   const corpEstimate = useMemo(() => (rows ? estimateForMicroCorp(rows) : null), [rows]);
 
+  const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // サーバー側(app/api/categorize/route.ts)の上限と揃える
+
   async function handleFile(file: File) {
+    if (loading) return; // 解析中は二重送信を防ぐ（ファイル入力は無効化しているが念のため）
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setError(`ファイルサイズが大きすぎます（上限 ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB）。期間を分けてアップロードしてください。`);
+      return;
+    }
     setLoading(true);
     setError(null);
     setFileName(file.name);
@@ -92,6 +99,7 @@ export default function Home() {
               <div className="flex items-center gap-3 flex-wrap">
                 <button
                   type="button"
+                  aria-pressed={mode === "individual"}
                   onClick={() => setMode("individual")}
                   className={`min-w-[13rem] text-sm px-5 py-3 border transition-colors ${
                     mode === "individual"
@@ -103,6 +111,7 @@ export default function Home() {
                 </button>
                 <button
                   type="button"
+                  aria-pressed={mode === "corp"}
                   onClick={() => setMode("corp")}
                   className={`min-w-[13rem] text-sm px-5 py-3 border transition-colors ${
                     mode === "corp"
@@ -168,15 +177,24 @@ export default function Home() {
 
             <div>
               <div className="text-xs text-stone-500 mb-2">明細データ</div>
-              <label className="inline-flex min-w-[13rem] items-center justify-center gap-3 border border-stone-400 bg-white px-5 py-3 text-sm cursor-pointer hover:border-red-700 transition-colors">
-                <span>CSVファイルを選択</span>
+              <label
+                className={`inline-flex min-w-[13rem] items-center justify-center gap-3 border px-5 py-3 text-sm transition-colors ${
+                  loading
+                    ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
+                    : "border-stone-400 bg-white cursor-pointer hover:border-red-700"
+                }`}
+              >
+                <span>{loading ? "解析中…" : "CSVファイルを選択"}</span>
                 <input
                   type="file"
                   accept=".csv,text/csv"
                   className="hidden"
+                  disabled={loading}
+                  aria-busy={loading}
                   onChange={(e) => {
                     const f = e.target.files?.[0];
                     if (f) handleFile(f);
+                    e.target.value = ""; // 同じファイルを選び直しても再度onChangeが発火するようにする
                   }}
                 />
               </label>
