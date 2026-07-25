@@ -9,6 +9,7 @@ import { buildConsumptionTaxForm } from "@/lib/tax/consumptionTaxForm";
 import { buildCorporateTaxForm, buildFinancialStatements } from "@/lib/tax/corporateForms";
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
+import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
 import { buildIndividualReturnForm, buildBlueReturnStatement } from "@/lib/tax/individualForms";
 import { OfficialFormFrame, OfficialSection, OfficialRow } from "@/components/OfficialForm";
 
@@ -61,7 +62,7 @@ function DocHeader({ title, entityName, periodStart, periodEnd }: { title: strin
 }
 
 type IndividualDocType = "blueReturn" | "incomeTaxReturn" | "consumptionTax";
-type CorpDocType = "financialStatements" | "corporateTaxReturn" | "localTaxReturn" | "consumptionTax";
+type CorpDocType = "financialStatements" | "accountBreakdown" | "corporateTaxReturn" | "localTaxReturn" | "consumptionTax";
 
 const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
   { key: "blueReturn", label: "青色申告決算書" },
@@ -71,6 +72,7 @@ const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
 
 const CORP_DOC_TABS: { key: CorpDocType; label: string }[] = [
   { key: "financialStatements", label: "決算報告書" },
+  { key: "accountBreakdown", label: "勘定科目内訳明細書" },
   { key: "corporateTaxReturn", label: "法人税・地方法人税申告書" },
   { key: "localTaxReturn", label: "法人住民税・事業税申告書" },
   { key: "consumptionTax", label: "消費税申告書" },
@@ -135,6 +137,7 @@ export function DocumentPreview({
         ) : (
           <CorpDocuments
             doc={corpDoc}
+            rows={rows}
             pl={pl}
             estimate={corpEstimate}
             consumptionForm={consumptionForm}
@@ -243,6 +246,7 @@ function IndividualDocuments({
 
 function CorpDocuments({
   doc,
+  rows,
   pl,
   estimate,
   consumptionForm,
@@ -252,6 +256,7 @@ function CorpDocuments({
   shareCount,
 }: {
   doc: CorpDocType;
+  rows: CategorizedTransaction[];
   pl: ReturnType<typeof buildProfitLossStatement>;
   estimate: CorporateEstimate;
   consumptionForm: ReturnType<typeof buildConsumptionTaxForm>;
@@ -387,6 +392,35 @@ function CorpDocuments({
             ]}
           />
         )}
+      </>
+    );
+  }
+
+  if (doc === "accountBreakdown") {
+    const breakdowns = buildAccountBreakdownForms(rows);
+    return (
+      <>
+        <DocHeader title="勘定科目内訳明細書（簡易版）" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
+        <p className="text-xs text-amber-700 mb-6">
+          このアプリは取引明細（フロー情報）のみを保持しているため、正式様式にある現金預金・売掛金・買掛金・借入金等（期末残高が前提の科目）は作成できません。
+          明細から機械的に内訳を算出できる主要な損益科目のみを、摘要文字列ベースの取引先別に表示しています。取引先名の表記ゆれは統合していません。
+        </p>
+        {breakdowns.length === 0 && (
+          <p className="text-sm text-stone-500">内訳の対象となる科目（地代家賃・外注費・広告宣伝費等）の取引がありませんでした。</p>
+        )}
+        {breakdowns.map((b) => (
+          <FormTable
+            key={b.account}
+            title={`${b.account}の内訳書`}
+            rows={[
+              ...b.lines.map((l) => ({
+                label: `${l.counterparty}${l.transactionCount > 1 ? `（${l.transactionCount}件）` : ""}`,
+                amount: l.amount,
+              })),
+              { label: "計", amount: b.total, strong: true },
+            ]}
+          />
+        ))}
       </>
     );
   }
