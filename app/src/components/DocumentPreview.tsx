@@ -62,11 +62,12 @@ function DocHeader({ title, entityName, periodStart, periodEnd }: { title: strin
   );
 }
 
-type IndividualDocType = "blueReturn" | "incomeTaxReturn" | "consumptionTax";
+type IndividualDocType = "blueReturn" | "accountBreakdown" | "incomeTaxReturn" | "consumptionTax";
 type CorpDocType = "financialStatements" | "accountBreakdown" | "businessOverview" | "corporateTaxReturn" | "localTaxReturn" | "consumptionTax";
 
 const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
   { key: "blueReturn", label: "青色申告決算書" },
+  { key: "accountBreakdown", label: "地代家賃・外注費等の内訳" },
   { key: "incomeTaxReturn", label: "確定申告書（所得税）" },
   { key: "consumptionTax", label: "消費税申告書" },
 ];
@@ -195,6 +196,34 @@ function IndividualDocuments({
             { label: "所得金額", amount: blueReturn.incomeAfterBlueDeduction, strong: true },
           ]}
         />
+      </>
+    );
+  }
+
+  if (doc === "accountBreakdown") {
+    const breakdowns = buildAccountBreakdownForms(rows);
+    return (
+      <>
+        <DocHeader title="地代家賃・外注費等の内訳（簡易版）" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
+        <p className="text-xs text-amber-700 mb-6">
+          青色申告決算書の「地代家賃の内訳」「利子割引料の内訳」等に相当する内訳を、摘要文字列ベースの取引先別に表示しています。取引先名の表記ゆれは統合していません。
+        </p>
+        {breakdowns.length === 0 && (
+          <p className="text-sm text-stone-500">内訳の対象となる科目（地代家賃・外注費・広告宣伝費等）の取引がありませんでした。</p>
+        )}
+        {breakdowns.map((b) => (
+          <FormTable
+            key={b.account}
+            title={`${b.account}の内訳書`}
+            rows={[
+              ...b.lines.map((l) => ({
+                label: `${l.counterparty}${l.transactionCount > 1 ? `（${l.transactionCount}件）` : ""}`,
+                amount: l.amount,
+              })),
+              { label: "計", amount: b.total, strong: true },
+            ]}
+          />
+        ))}
       </>
     );
   }
