@@ -296,6 +296,7 @@ function CorpDocuments({
   openingCash: number;
   shareCount?: number;
 }) {
+  const [subsequentEvents, setSubsequentEvents] = useState("");
   const taxForm = buildCorporateTaxForm(estimate);
   const localTaxForm = buildLocalCorporateTaxForm(estimate, taxForm);
 
@@ -312,6 +313,9 @@ function CorpDocuments({
       consumptionForm.totalDue,
       bsNetIncome
     );
+    const officerCompTotal = rows
+      .filter((r) => r.account === "役員報酬")
+      .reduce((s, r) => s + Math.abs(r.amount), 0);
 
     return (
       <>
@@ -423,6 +427,23 @@ function CorpDocuments({
             ]}
           />
         )}
+
+        <div className="text-xs font-semibold text-stone-500 mb-1 mt-4">関連当事者との取引に関する注記</div>
+        {officerCompTotal > 0 ? (
+          <FormTable title="役員に対する報酬の支払い" rows={[{ label: "役員報酬（取引明細から集計）", amount: officerCompTotal, strong: true }]} />
+        ) : (
+          <p className="text-sm text-stone-600 mb-6">取引明細から役員報酬の支払いは検出されませんでした。役員貸付金・借入金等、取引明細に現れない関連当事者取引がある場合は別途記載してください。</p>
+        )}
+
+        <div className="text-xs font-semibold text-stone-500 mb-1 mt-4">重要な後発事象に関する注記</div>
+        <textarea
+          className="print:hidden w-full border border-stone-300 rounded px-2 py-1.5 text-sm mb-2"
+          rows={2}
+          value={subsequentEvents}
+          onChange={(e) => setSubsequentEvents(e.target.value)}
+          placeholder="決算日後に生じた重要な事象があれば記載してください（例：増資、大口契約の獲得等）。なければ空欄のままで構いません。"
+        />
+        <p className="text-sm text-stone-600 mb-6">{subsequentEvents || "特記事項なし"}</p>
       </>
     );
   }
