@@ -10,6 +10,7 @@ import { buildCorporateTaxForm, buildFinancialStatements } from "@/lib/tax/corpo
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
 import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
+import { buildMonthlySalesTrend } from "@/lib/tax/businessOverviewForm";
 import { buildIndividualReturnForm, buildBlueReturnStatement } from "@/lib/tax/individualForms";
 import { OfficialFormFrame, OfficialSection, OfficialRow } from "@/components/OfficialForm";
 
@@ -62,7 +63,7 @@ function DocHeader({ title, entityName, periodStart, periodEnd }: { title: strin
 }
 
 type IndividualDocType = "blueReturn" | "incomeTaxReturn" | "consumptionTax";
-type CorpDocType = "financialStatements" | "accountBreakdown" | "corporateTaxReturn" | "localTaxReturn" | "consumptionTax";
+type CorpDocType = "financialStatements" | "accountBreakdown" | "businessOverview" | "corporateTaxReturn" | "localTaxReturn" | "consumptionTax";
 
 const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
   { key: "blueReturn", label: "青色申告決算書" },
@@ -73,6 +74,7 @@ const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
 const CORP_DOC_TABS: { key: CorpDocType; label: string }[] = [
   { key: "financialStatements", label: "決算報告書" },
   { key: "accountBreakdown", label: "勘定科目内訳明細書" },
+  { key: "businessOverview", label: "事業概況説明書" },
   { key: "corporateTaxReturn", label: "法人税・地方法人税申告書" },
   { key: "localTaxReturn", label: "法人住民税・事業税申告書" },
   { key: "consumptionTax", label: "消費税申告書" },
@@ -425,6 +427,10 @@ function CorpDocuments({
     );
   }
 
+  if (doc === "businessOverview") {
+    return <BusinessOverviewSection entityName={entityName} pl={pl} rows={rows} />;
+  }
+
   if (doc === "corporateTaxReturn") {
     return (
       <>
@@ -489,6 +495,72 @@ function CorpDocuments({
     <>
       <DocHeader title="消費税及び地方消費税の申告書（第一表・概算）" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
       <ConsumptionTaxOfficialBody form={consumptionForm} />
+    </>
+  );
+}
+
+function BusinessOverviewSection({
+  entityName,
+  pl,
+  rows,
+}: {
+  entityName: string;
+  pl: ReturnType<typeof buildProfitLossStatement>;
+  rows: CategorizedTransaction[];
+}) {
+  const [industry, setIndustry] = useState("");
+  const [businessDescription, setBusinessDescription] = useState("");
+  const [employeeCount, setEmployeeCount] = useState("");
+  const [mainClients, setMainClients] = useState("");
+  const monthlySales = buildMonthlySalesTrend(rows);
+
+  const inputClass = "w-full border border-stone-300 rounded px-2 py-1.5 text-sm";
+
+  return (
+    <>
+      <DocHeader title="事業概況説明書（簡易版）" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
+      <p className="text-xs text-amber-700 mb-6">
+        正式様式にある「経理の方法」「海外取引状況」等の項目は本アプリでは対応していません。以下は基本項目のみの簡易版です。
+      </p>
+
+      <div className="print:hidden grid gap-4 mb-8 bg-stone-50 border border-stone-200 rounded p-4">
+        <div>
+          <label className="block text-xs font-semibold text-stone-500 mb-1">業種</label>
+          <input className={inputClass} value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="例：ソフトウェア受託開発業" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-500 mb-1">事業内容の概要</label>
+          <textarea className={inputClass} rows={3} value={businessDescription} onChange={(e) => setBusinessDescription(e.target.value)} placeholder="例：法人向け業務システムの受託開発・保守" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-500 mb-1">従業者数（役員含む）</label>
+          <input className={inputClass} value={employeeCount} onChange={(e) => setEmployeeCount(e.target.value)} placeholder="例：1名" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-stone-500 mb-1">主要な取引先</label>
+          <textarea className={inputClass} rows={2} value={mainClients} onChange={(e) => setMainClients(e.target.value)} placeholder="例：株式会社〇〇（売上構成比の高い順に）" />
+        </div>
+      </div>
+
+      <div className="mb-8 text-sm space-y-2">
+        <div><span className="text-stone-500 text-xs mr-2">業種</span>{industry || "（未入力）"}</div>
+        <div><span className="text-stone-500 text-xs mr-2">事業内容</span>{businessDescription || "（未入力）"}</div>
+        <div><span className="text-stone-500 text-xs mr-2">従業者数</span>{employeeCount || "（未入力）"}</div>
+        <div><span className="text-stone-500 text-xs mr-2">主要な取引先</span>{mainClients || "（未入力）"}</div>
+      </div>
+
+      <h3 className="text-base font-semibold mb-3">売上高の月別推移</h3>
+      {monthlySales.length === 0 ? (
+        <p className="text-sm text-stone-500">売上（収入）データがありませんでした。</p>
+      ) : (
+        <FormTable
+          title="月別売上高"
+          rows={[
+            ...monthlySales.map((m) => ({ label: `${m.month}（${m.transactionCount}件）`, amount: m.amount })),
+            { label: "合計", amount: monthlySales.reduce((s, m) => s + m.amount, 0), strong: true },
+          ]}
+        />
+      )}
     </>
   );
 }
