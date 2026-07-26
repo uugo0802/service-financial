@@ -19,6 +19,28 @@
   }
 }
 
+/* ダッシュボードのグラフ配色（カテゴリカルパレットの先頭3色: 青/オレンジ/アクア）。
+   全ペアで色覚多様性に配慮した順序を検証済みのため、順序を変えないこと。 */
+.viz-dashboard {
+  --viz-surface: #ffffff;
+  --viz-grid: #e1e0d9;
+  --viz-axis: #c3c2b7;
+  --viz-series-income: #2a78d6;
+  --viz-series-expense: #eb6834;
+  --viz-series-profit: #1baf7a;
+}
+
+@media (prefers-color-scheme: dark) {
+  .viz-dashboard {
+    --viz-surface: #1c1917;
+    --viz-grid: #2c2c2a;
+    --viz-axis: #57534e;
+    --viz-series-income: #3987e5;
+    --viz-series-expense: #d95926;
+    --viz-series-profit: #199e70;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
