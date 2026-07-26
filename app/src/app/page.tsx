@@ -5,6 +5,8 @@ import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { estimateForIndividual } from "@/lib/tax/estimate";
 import { estimateForMicroCorp } from "@/lib/tax/corporateEstimate";
 import { DocumentPreview } from "@/components/DocumentPreview";
+import { ReceiptUpload } from "@/components/ReceiptUpload";
+import { ReceiptJournalCandidate } from "@/lib/ocr/receiptCandidate";
 
 type EntityMode = "individual" | "corp";
 
@@ -34,6 +36,7 @@ export default function Home() {
   const [capitalStock, setCapitalStock] = useState("1000000");
   const [openingCash, setOpeningCash] = useState("1000000");
   const [shareCount, setShareCount] = useState("");
+  const [receiptCandidates, setReceiptCandidates] = useState<ReceiptJournalCandidate[]>([]);
 
   const individualEstimate = useMemo(() => (rows ? estimateForIndividual(rows) : null), [rows]);
   const corpEstimate = useMemo(() => (rows ? estimateForMicroCorp(rows) : null), [rows]);
@@ -218,6 +221,38 @@ export default function Home() {
               <span>
                 AI補完: {meta.aiConfigured ? `${meta.escalatedCount}件実行${meta.cappedAt ? `（上限${meta.cappedAt}件で打ち切り）` : ""}` : "未設定（ANTHROPIC_API_KEY未設定のためルールベースのみ）"}
               </span>
+            </div>
+          )}
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-3">レシート・請求書画像から仕訳を作成</h2>
+          <ReceiptUpload onConfirm={(c) => setReceiptCandidates((prev) => [...prev, c])} />
+
+          {receiptCandidates.length > 0 && (
+            <div className="mt-6 overflow-x-auto border border-stone-300 bg-white">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                    <th className="px-3 py-2 font-normal">日付</th>
+                    <th className="px-3 py-2 font-normal">取引先</th>
+                    <th className="px-3 py-2 font-normal text-right">金額</th>
+                    <th className="px-3 py-2 font-normal">勘定科目</th>
+                    <th className="px-3 py-2 font-normal">消費税区分</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {receiptCandidates.map((c) => (
+                    <tr key={c.id} className="border-b border-stone-100 last:border-0">
+                      <td className="px-3 py-2 whitespace-nowrap tabular-nums">{c.date ?? "（未入力）"}</td>
+                      <td className="px-3 py-2">{c.counterparty ?? "（未入力）"}</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{c.amount != null ? yen.format(c.amount) : "（未入力）"}</td>
+                      <td className="px-3 py-2">{c.account}</td>
+                      <td className="px-3 py-2 text-xs whitespace-nowrap">{c.taxCategory}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </section>
