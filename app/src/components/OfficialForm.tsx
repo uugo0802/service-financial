@@ -21,13 +21,13 @@ export function DigitAmount({ value }: { value: number }) {
   const digits = Math.max(0, Math.round(value)).toString().padStart(TOTAL_DIGITS, " ").slice(-TOTAL_DIGITS).split("");
   const groups = splitIntoGroups(digits);
   return (
-    <div className="inline-flex border border-stone-800">
+    <div className="inline-flex border border-stone-800 shrink-0">
       {groups.map((group, gi) => (
         <div key={gi} className={`flex ${gi > 0 ? "border-l-2 border-stone-800" : ""}`}>
           {group.map((d, i) => (
             <span
               key={i}
-              className="w-[1.15em] h-[1.5em] flex items-center justify-center border-l border-stone-300 first:border-l-0 text-[0.82rem] tabular-nums"
+              className="w-[0.95em] sm:w-[1.15em] h-[1.3em] sm:h-[1.5em] flex items-center justify-center border-l border-stone-300 first:border-l-0 text-[0.68rem] sm:text-[0.82rem] tabular-nums"
             >
               {d.trim()}
             </span>
@@ -48,20 +48,22 @@ export function OfficialFormFrame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-2 border-stone-800 flex">
-      <div className="flex-1 p-4">
-        <div className="text-center text-sm font-semibold tracking-widest border-b-2 border-stone-800 pb-2 mb-3">
-          {formTitle}
+    <div className="overflow-x-auto print:overflow-visible">
+      <div className="border-2 border-stone-800 flex min-w-[20rem]">
+        <div className="flex-1 p-3 sm:p-4 min-w-0">
+          <div className="text-center text-sm font-semibold tracking-widest border-b-2 border-stone-800 pb-2 mb-3">
+            {formTitle}
+          </div>
+          {children}
         </div>
-        {children}
-      </div>
-      <div className="w-8 border-l-2 border-stone-800 flex items-start justify-center py-3 shrink-0">
-        <span
-          className="text-xs font-semibold tracking-[0.3em]"
-          style={{ writingMode: "vertical-rl" }}
-        >
-          {scheduleLabel}
-        </span>
+        <div className="w-8 border-l-2 border-stone-800 flex items-start justify-center py-3 shrink-0">
+          <span
+            className="text-xs font-semibold tracking-[0.3em]"
+            style={{ writingMode: "vertical-rl" }}
+          >
+            {scheduleLabel}
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -83,7 +85,7 @@ export function OfficialRow({
   return (
     <div className={`flex items-center gap-3 py-1 border-b border-dotted border-stone-300 ${indent ? "pl-4" : ""}`}>
       <span className="w-7 text-[0.68rem] text-stone-500 shrink-0">{symbol}</span>
-      <span className={`flex-1 text-[0.82rem] ${strong ? "font-semibold" : ""}`}>{label}</span>
+      <span className={`flex-1 min-w-0 text-[0.82rem] ${strong ? "font-semibold" : ""}`}>{label}</span>
       <DigitAmount value={amount} />
     </div>
   );

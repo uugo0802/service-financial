@@ -30,20 +30,22 @@ function FormTable({
   return (
     <div className="mb-6">
       <div className="text-xs font-semibold text-stone-500 mb-1">{title}</div>
-      <table className="w-full text-sm border-collapse">
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={i} className={`border-t border-stone-200 ${r.strong ? "font-semibold" : ""}`}>
-              <td className="py-1.5 pr-2 w-10 text-stone-400 text-xs align-top">{r.symbol ?? ""}</td>
-              <td className={`py-1.5 pr-4 ${r.muted ? "text-stone-400" : ""}`}>{r.label}</td>
-              <td className="py-1.5 text-right w-32">
-                <Yen v={r.amount} />
-                <span className="text-xs text-stone-400"> 円</span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="overflow-x-auto print:overflow-visible">
+        <table className="w-full min-w-[22rem] text-sm border-collapse">
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} className={`border-t border-stone-200 ${r.strong ? "font-semibold" : ""}`}>
+                <td className="py-1.5 pr-2 w-10 text-stone-400 text-xs align-top">{r.symbol ?? ""}</td>
+                <td className={`py-1.5 pr-4 ${r.muted ? "text-stone-400" : ""}`}>{r.label}</td>
+                <td className="py-1.5 text-right w-32 whitespace-nowrap">
+                  <Yen v={r.amount} />
+                  <span className="text-xs text-stone-400"> 円</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -127,7 +129,7 @@ export function DocumentPreview({
         ))}
       </div>
 
-      <div id="print-area" className="bg-white border border-stone-300 p-8 print:border-0 print:p-0">
+      <div id="print-area" className="bg-white border border-stone-300 p-4 sm:p-8 print:border-0 print:p-0">
         {mode === "individual" ? (
           <IndividualDocuments
             doc={individualDoc}
