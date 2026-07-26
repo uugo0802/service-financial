@@ -5,6 +5,7 @@ import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { estimateForIndividual } from "@/lib/tax/estimate";
 import { estimateForMicroCorp } from "@/lib/tax/corporateEstimate";
 import { DocumentPreview } from "@/components/DocumentPreview";
+import { AdvisorReferralBanner } from "@/components/AdvisorReferralBanner";
 
 type EntityMode = "individual" | "corp";
 
@@ -347,6 +348,12 @@ export default function Home() {
                 <li key={a}>{a}</li>
               ))}
             </ul>
+          </section>
+        )}
+
+        {rows && (individualEstimate || corpEstimate) && (
+          <section>
+            <AdvisorReferralBanner />
           </section>
         )}
 
