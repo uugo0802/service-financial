@@ -5,7 +5,14 @@ import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { IndividualEstimate } from "@/lib/tax/estimate";
 import { CorporateEstimate } from "@/lib/tax/corporateEstimate";
 import { buildProfitLossStatement } from "@/lib/tax/plStatement";
-import { buildConsumptionTaxForm } from "@/lib/tax/consumptionTaxForm";
+import {
+  buildConsumptionTaxForm,
+  buildConsumptionTaxReturnForm,
+  ConsumptionTaxMethod,
+  SimplifiedBusinessCategory,
+  DEEMED_PURCHASE_RATES,
+  SIMPLIFIED_BUSINESS_CATEGORY_LABELS,
+} from "@/lib/tax/consumptionTaxForm";
 import { buildCorporateTaxForm, buildFinancialStatements } from "@/lib/tax/corporateForms";
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
@@ -135,7 +142,6 @@ export function DocumentPreview({
             estimate={individualEstimate}
             entityName={entityName}
             pl={pl}
-            consumptionForm={consumptionForm}
           />
         ) : (
           <CorpDocuments
@@ -161,14 +167,12 @@ function IndividualDocuments({
   estimate,
   entityName,
   pl,
-  consumptionForm,
 }: {
   doc: IndividualDocType;
   rows: CategorizedTransaction[];
   estimate: IndividualEstimate;
   entityName: string;
   pl: ReturnType<typeof buildProfitLossStatement>;
-  consumptionForm: ReturnType<typeof buildConsumptionTaxForm>;
 }) {
   if (doc === "blueReturn") {
     const blueReturn = buildBlueReturnStatement(rows);
@@ -269,8 +273,8 @@ function IndividualDocuments({
 
   return (
     <>
-      <DocHeader title="消費税及び地方消費税の申告書（第一表・概算）" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
-      <ConsumptionTaxOfficialBody form={consumptionForm} />
+      <DocHeader title="消費税及び地方消費税の申告書" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
+      <ConsumptionTaxOfficialBody rows={rows} />
     </>
   );
 }
@@ -543,8 +547,8 @@ function CorpDocuments({
 
   return (
     <>
-      <DocHeader title="消費税及び地方消費税の申告書（第一表・概算）" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
-      <ConsumptionTaxOfficialBody form={consumptionForm} />
+      <DocHeader title="消費税及び地方消費税の申告書" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
+      <ConsumptionTaxOfficialBody rows={rows} />
     </>
   );
 }
@@ -615,14 +619,73 @@ function BusinessOverviewSection({
   );
 }
 
-function ConsumptionTaxOfficialBody({ form }: { form: ReturnType<typeof buildConsumptionTaxForm> }) {
+const CONSUMPTION_TAX_METHOD_OPTIONS: { key: ConsumptionTaxMethod; label: string }[] = [
+  { key: "general", label: "原則課税" },
+  { key: "simplified", label: "簡易課税" },
+  { key: "twentyPercentSpecial", label: "2割特例（インボイス経過措置）" },
+];
+
+const SIMPLIFIED_BUSINESS_CATEGORIES: SimplifiedBusinessCategory[] = [1, 2, 3, 4, 5, 6];
+
+function ConsumptionTaxOfficialBody({ rows }: { rows: CategorizedTransaction[] }) {
+  const [method, setMethod] = useState<ConsumptionTaxMethod>("general");
+  const [businessCategory, setBusinessCategory] = useState<SimplifiedBusinessCategory>(5);
+  const form = buildConsumptionTaxReturnForm(rows, {
+    method,
+    simplifiedBusinessCategory: businessCategory,
+  });
+
   return (
     <>
+      <div className="print:hidden mb-4 flex flex-wrap items-end gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+        <div>
+          <label className="block text-xs font-semibold text-stone-500 mb-1">課税方式</label>
+          <select
+            className="border border-stone-300 rounded px-2 py-1.5 text-sm"
+            value={method}
+            onChange={(e) => setMethod(e.target.value as ConsumptionTaxMethod)}
+          >
+            {CONSUMPTION_TAX_METHOD_OPTIONS.map((o) => (
+              <option key={o.key} value={o.key}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        {method === "simplified" && (
+          <div>
+            <label className="block text-xs font-semibold text-stone-500 mb-1">事業区分</label>
+            <select
+              className="border border-stone-300 rounded px-2 py-1.5 text-sm"
+              value={businessCategory}
+              onChange={(e) => setBusinessCategory(Number(e.target.value) as SimplifiedBusinessCategory)}
+            >
+              {SIMPLIFIED_BUSINESS_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {SIMPLIFIED_BUSINESS_CATEGORY_LABELS[c]}（みなし仕入率{DEEMED_PURCHASE_RATES[c] * 100}%）
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
       {form.isLikelyExempt && (
         <p className="text-xs text-amber-700 mb-3">
           課税売上高が1,000万円以下です。基準期間の実績次第で免税事業者となる可能性があります（要確認）。
         </p>
       )}
+      {method === "simplified" && (
+        <p className="text-xs text-amber-700 mb-3">
+          簡易課税は、基準期間の課税売上高が5,000万円以下で、事前に「消費税簡易課税制度選択届出書」を提出している事業者のみ選択できます。複数の事業区分にまたがる場合の按分計算には対応していません。
+        </p>
+      )}
+      {method === "twentyPercentSpecial" && (
+        <p className="text-xs text-amber-700 mb-3">
+          2割特例は、インボイス発行事業者登録によって免税事業者から課税事業者になった方向けの経過措置（令和8年9月30日を含む課税期間まで）です。基準期間の課税売上高が1,000万円超の場合等は対象外です。
+        </p>
+      )}
+
       <OfficialFormFrame scheduleLabel="第一表" formTitle="消費税及び地方消費税の申告書">
         <OfficialSection title="消費税の税額計算">
           <OfficialRow label="課税標準額" symbol="①" amount={form.taxStandardBase} />
@@ -639,6 +702,45 @@ function ConsumptionTaxOfficialBody({ form }: { form: ReturnType<typeof buildCon
           <OfficialRow label="消費税及び地方消費税の合計（納付）税額" symbol="㉖" amount={form.totalDue} strong />
         </OfficialSection>
       </OfficialFormFrame>
+
+      <OfficialFormFrame scheduleLabel="第二表" formTitle="消費税及び地方消費税の課税標準額等の内訳書">
+        <OfficialSection title="課税資産の譲渡等の対価の額">
+          <OfficialRow label="税率10%分" amount={form.secondTable.standardRate.taxableBase} />
+          <OfficialRow label="税率8%（軽減）分" amount={form.secondTable.reducedRate.taxableBase} indent />
+          <OfficialRow label="合計" symbol="⑤" amount={form.secondTable.taxStandardBaseTotal} strong />
+        </OfficialSection>
+        <OfficialSection title="消費税額">
+          <OfficialRow label="税率10%分" amount={form.secondTable.standardRate.tax} />
+          <OfficialRow label="税率8%（軽減）分" amount={form.secondTable.reducedRate.tax} indent />
+          <OfficialRow label="合計" symbol="⑪" amount={form.secondTable.taxOnSalesTotal} strong />
+        </OfficialSection>
+      </OfficialFormFrame>
+
+      {form.simplifiedAppendix && (
+        <OfficialFormFrame scheduleLabel="付表(簡易課税)" formTitle="控除対象仕入税額等の計算表（簡易課税制度用）">
+          <OfficialSection title={form.simplifiedAppendix.businessCategoryLabel}>
+            <OfficialRow label="課税売上げに係る消費税額" amount={form.taxOnSales} />
+            <OfficialRow
+              label={`控除対象仕入税額（みなし仕入率${form.simplifiedAppendix.deemedPurchaseRate * 100}%）`}
+              amount={form.simplifiedAppendix.deductibleInputTax}
+              strong
+            />
+          </OfficialSection>
+        </OfficialFormFrame>
+      )}
+
+      {form.twentyPercentSpecialAppendix && (
+        <OfficialFormFrame scheduleLabel="2割特例" formTitle="控除対象仕入税額の計算（2割特例）">
+          <OfficialSection title="みなし仕入率80%による計算">
+            <OfficialRow label="課税売上げに係る消費税額" amount={form.taxOnSales} />
+            <OfficialRow
+              label="控除対象仕入税額（みなし仕入率80%）"
+              amount={form.twentyPercentSpecialAppendix.deductibleInputTax}
+              strong
+            />
+          </OfficialSection>
+        </OfficialFormFrame>
+      )}
     </>
   );
 }
