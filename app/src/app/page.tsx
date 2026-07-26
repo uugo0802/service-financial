@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { estimateForIndividual } from "@/lib/tax/estimate";
 import { estimateForMicroCorp } from "@/lib/tax/corporateEstimate";
+import { buildIndividualTaxSavingChecklist, buildCorporateTaxSavingChecklist } from "@/lib/tax/taxSavingChecklist";
 import { DocumentPreview } from "@/components/DocumentPreview";
+import { TaxSavingChecklistSection } from "@/components/TaxSavingChecklistSection";
 
 type EntityMode = "individual" | "corp";
 
@@ -37,6 +39,14 @@ export default function Home() {
 
   const individualEstimate = useMemo(() => (rows ? estimateForIndividual(rows) : null), [rows]);
   const corpEstimate = useMemo(() => (rows ? estimateForMicroCorp(rows) : null), [rows]);
+  const individualChecklist = useMemo(
+    () => (rows && individualEstimate ? buildIndividualTaxSavingChecklist(individualEstimate, rows) : null),
+    [rows, individualEstimate]
+  );
+  const corpChecklist = useMemo(
+    () => (rows && corpEstimate ? buildCorporateTaxSavingChecklist(corpEstimate, rows) : null),
+    [rows, corpEstimate]
+  );
 
   const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // サーバー側(app/api/categorize/route.ts)の上限と揃える
 
@@ -309,6 +319,10 @@ export default function Home() {
           </section>
         )}
 
+        {mode === "individual" && individualChecklist && (
+          <TaxSavingChecklistSection title="一般的な節税制度セルフチェック（フリーランス・個人事業主向け）" checklist={individualChecklist} />
+        )}
+
         {mode === "corp" && corpEstimate && (
           <section>
             <h2 className="text-lg font-semibold mb-3">申告 概算サマリー（マイクロ法人向け）</h2>
@@ -348,6 +362,10 @@ export default function Home() {
               ))}
             </ul>
           </section>
+        )}
+
+        {mode === "corp" && corpChecklist && (
+          <TaxSavingChecklistSection title="一般的な節税制度セルフチェック（マイクロ法人向け）" checklist={corpChecklist} />
         )}
 
         {rows && rows.length > 0 && individualEstimate && corpEstimate && (
