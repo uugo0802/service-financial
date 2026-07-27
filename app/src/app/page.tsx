@@ -10,6 +10,7 @@ import { ReceiptUpload } from "@/components/ReceiptUpload";
 import { ReceiptJournalCandidate } from "@/lib/ocr/receiptCandidate";
 import { TaxSavingChecklistSection } from "@/components/TaxSavingChecklistSection";
 import { SubmissionGuide } from "@/components/SubmissionGuide";
+import { AdvisorReferralBanner } from "@/components/AdvisorReferralBanner";
 
 type EntityMode = "individual" | "corp";
 
@@ -402,6 +403,12 @@ export default function Home() {
 
         {mode === "corp" && corpChecklist && (
           <TaxSavingChecklistSection title="一般的な節税制度セルフチェック（マイクロ法人向け）" checklist={corpChecklist} />
+        )}
+
+        {rows && (individualEstimate || corpEstimate) && (
+          <section>
+            <AdvisorReferralBanner />
+          </section>
         )}
 
         {rows && rows.length > 0 && individualEstimate && corpEstimate && (
