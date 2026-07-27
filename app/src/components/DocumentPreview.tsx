@@ -13,7 +13,7 @@ import {
   DEEMED_PURCHASE_RATES,
   SIMPLIFIED_BUSINESS_CATEGORY_LABELS,
 } from "@/lib/tax/consumptionTaxForm";
-import { buildCorporateTaxForm, buildFinancialStatements } from "@/lib/tax/corporateForms";
+import { buildCorporateTaxForm, buildFinancialStatements, buildIncomeAdjustmentForm } from "@/lib/tax/corporateForms";
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
 import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
@@ -70,7 +70,14 @@ function DocHeader({ title, entityName, periodStart, periodEnd }: { title: strin
 }
 
 type IndividualDocType = "blueReturn" | "accountBreakdown" | "incomeTaxReturn" | "consumptionTax";
-type CorpDocType = "financialStatements" | "accountBreakdown" | "businessOverview" | "corporateTaxReturn" | "localTaxReturn" | "consumptionTax";
+type CorpDocType =
+  | "financialStatements"
+  | "accountBreakdown"
+  | "businessOverview"
+  | "corporateTaxReturn"
+  | "incomeAdjustment"
+  | "localTaxReturn"
+  | "consumptionTax";
 
 const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
   { key: "blueReturn", label: "青色申告決算書" },
@@ -84,6 +91,7 @@ const CORP_DOC_TABS: { key: CorpDocType; label: string }[] = [
   { key: "accountBreakdown", label: "勘定科目内訳明細書" },
   { key: "businessOverview", label: "事業概況説明書" },
   { key: "corporateTaxReturn", label: "法人税・地方法人税申告書" },
+  { key: "incomeAdjustment", label: "所得金額の計算（別表四）" },
   { key: "localTaxReturn", label: "法人住民税・事業税申告書" },
   { key: "consumptionTax", label: "消費税申告書" },
 ];
@@ -303,9 +311,9 @@ function CorpDocuments({
   const [subsequentEvents, setSubsequentEvents] = useState("");
   const taxForm = buildCorporateTaxForm(estimate);
   const localTaxForm = buildLocalCorporateTaxForm(estimate, taxForm);
+  const fs = buildFinancialStatements(pl, taxForm, entityName || "（法人名未入力）", localTaxForm.grandTotal);
 
   if (doc === "financialStatements") {
-    const fs = buildFinancialStatements(pl, taxForm, entityName || "（法人名未入力）", localTaxForm.grandTotal);
     // 貸借対照表・株主資本等変動計算書は、税込経理の慣行に合わせ
     // 未払消費税等も反映した「調整後・当期純利益」で繰越利益剰余金を計算する。
     const bsNetIncome = fs.incomeBeforeTax - fs.taxes - consumptionForm.totalDue;
@@ -509,8 +517,47 @@ function CorpDocuments({
           </OfficialSection>
         </OfficialFormFrame>
         <p className="text-xs text-amber-700 mt-3">
-          別表二（同族会社判定）・別表四（所得の金額の計算）・別表五（利益積立金）・別表十四（寄付金）・別表十五（交際費）・別表十六（減価償却）等の詳細な調整項目は含まれていません。
+          別表二（同族会社判定）・別表五（一）（利益積立金）・別表十四（寄付金）・別表十五（交際費）・別表十六（減価償却）等の詳細な調整項目は含まれていません。所得金額の計算過程は「所得金額の計算（別表四）」タブをご覧ください。
         </p>
+      </>
+    );
+  }
+
+  if (doc === "incomeAdjustment") {
+    const adjustmentForm = buildIncomeAdjustmentForm(fs, taxForm);
+    return (
+      <>
+        <DocHeader title="所得の金額の計算に関する明細書 別表四（簡易版）" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />
+        <p className="text-xs text-amber-700 mb-4">
+          減価償却超過額・交際費等の損金不算入額・受取配当等の益金不算入額・繰越欠損金の当期控除額など、詳細な加算・減算項目は考慮していません。
+          反映しているのは「損金経理をした納税充当金」（当期に費用計上した未払法人税等は税務上その事業年度の損金にならないため所得に加算する処理）のみです。
+        </p>
+        <OfficialFormFrame scheduleLabel="別表四" formTitle="所得の金額の計算に関する明細書">
+          <OfficialSection title="当期利益・加算・減算">
+            <OfficialRow label="当期利益又は当期欠損の額" symbol="(1)" amount={adjustmentForm.line1_currentNetIncome} strong />
+            {adjustmentForm.additionLines.map((l, i) => (
+              <OfficialRow key={`add-${i}`} label={l.label} amount={l.amount} indent />
+            ))}
+            <OfficialRow label="加算 小計" symbol="(10)" amount={adjustmentForm.line10_additionSubtotal} />
+            {adjustmentForm.subtractionLines.length === 0 ? (
+              <OfficialRow label="減算（該当なし）" symbol="(16)" amount={0} indent />
+            ) : (
+              adjustmentForm.subtractionLines.map((l, i) => (
+                <OfficialRow key={`sub-${i}`} label={l.label} amount={l.amount} indent />
+              ))
+            )}
+          </OfficialSection>
+          <OfficialSection title="所得金額の計算">
+            <OfficialRow label="仮計" symbol="(17)" amount={adjustmentForm.line17_interimTotal} />
+            <OfficialRow label="所得金額又は欠損金額" symbol="(34)" amount={adjustmentForm.line34_totalIncome} strong />
+          </OfficialSection>
+        </OfficialFormFrame>
+        {!adjustmentForm.reconcilesWithFormOne && (
+          <p className="text-xs text-amber-700 mt-3">
+            この所得金額（{yen.format(adjustmentForm.line34_totalIncome)}円）は別表一の所得金額（{yen.format(taxForm.line1_income)}円）と一致していません。
+            当期が赤字の場合、このアプリは繰越欠損金の管理に対応していないため別表一側は0円として扱っています。黒字の場合は千円未満の端数処理による差です。
+          </p>
+        )}
       </>
     );
   }

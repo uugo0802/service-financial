@@ -3,7 +3,9 @@ import { ProfitLossStatement } from "./plStatement";
 
 // ------------------------------------------------------------------
 // 「法人税及び地方法人税の申告書 別表一」の欄番号（国税庁様式）に沿った概算表示。
-// 別表二〜十六等の付表・別表四の詳細な加減算調整は行っていない簡易版です。
+// 別表二（同族会社等の判定）・別表五（一）（利益積立金額の計算）・
+// 別表十四〜十六（寄附金・交際費・減価償却）等の付表・調整は行っていない簡易版です。
+// 別表四（所得の金額の計算）の簡易版は buildIncomeAdjustmentForm() を参照。
 // ------------------------------------------------------------------
 
 export interface CorporateTaxForm {
@@ -124,5 +126,75 @@ export function buildFinancialStatements(
     incomeBeforeTax,
     taxes,
     netIncome,
+  };
+}
+
+// ------------------------------------------------------------------
+// 「所得の金額の計算に関する明細書 別表四」の簡易版。
+//
+// このアプリは減価償却超過額・交際費等の損金不算入額・受取配当等の益金不算入額・
+// 繰越欠損金の当期控除額など、別表四本来の加算・減算項目を一切考慮していない。
+// 唯一反映しているのは「損金経理をした納税充当金」（会計上、当期に費用計上した
+// 未払法人税等の引当額は税務上その事業年度の損金にならないため加算する処理）で、
+// これは buildFinancialStatements() が算出した taxes（法人税等の概算合計）を
+// そのまま流用しており、二重計算はしていない。
+// ------------------------------------------------------------------
+
+export interface IncomeAdjustmentLine {
+  label: string;
+  amount: number;
+}
+
+export interface IncomeAdjustmentForm {
+  // (1) 当期利益又は当期欠損の額（会計上の当期純利益＝税引後）
+  line1_currentNetIncome: number;
+  // (4)ほか 加算項目（このアプリでは「損金経理をした納税充当金」のみ）
+  additionLines: IncomeAdjustmentLine[];
+  // (10) 加算 小計
+  line10_additionSubtotal: number;
+  // (12)ほか 減算項目（前期分納税充当金の当期取崩額。期首情報を持たないため常に空）
+  subtractionLines: IncomeAdjustmentLine[];
+  // (16) 減算 小計
+  line16_subtractionSubtotal: number;
+  // (17) 仮計 =(1)+(10)-(16)
+  line17_interimTotal: number;
+  // (34)(52) 所得金額又は欠損金額。このアプリでは(17)以降の別表調整を行わないため仮計と同額。
+  line34_totalIncome: number;
+  // 別表一(1)の所得金額（千円未満切捨て・欠損金は0円扱い）と一致するか。
+  // 一致しない場合は、千円未満の端数処理か、当期が赤字で別表一側は0円に丸められている可能性がある。
+  reconcilesWithFormOne: boolean;
+}
+
+export function buildIncomeAdjustmentForm(
+  fs: FinancialStatements,
+  taxForm: CorporateTaxForm
+): IncomeAdjustmentForm {
+  const line1_currentNetIncome = fs.netIncome;
+
+  const additionLines: IncomeAdjustmentLine[] = [
+    {
+      label: "損金経理をした納税充当金（未払法人税・地方法人税・住民税・事業税等の引当額）",
+      amount: fs.taxes,
+    },
+  ];
+  const line10_additionSubtotal = additionLines.reduce((s, l) => s + l.amount, 0);
+
+  // 前期の納税充当金残高（期首情報）をこのアプリは保持していないため、
+  // 当期中に取り崩した前期分事業税等は常に0として扱う。
+  const subtractionLines: IncomeAdjustmentLine[] = [];
+  const line16_subtractionSubtotal = subtractionLines.reduce((s, l) => s + l.amount, 0);
+
+  const line17_interimTotal = line1_currentNetIncome + line10_additionSubtotal - line16_subtractionSubtotal;
+  const line34_totalIncome = line17_interimTotal;
+
+  return {
+    line1_currentNetIncome,
+    additionLines,
+    line10_additionSubtotal,
+    subtractionLines,
+    line16_subtractionSubtotal,
+    line17_interimTotal,
+    line34_totalIncome,
+    reconcilesWithFormOne: Math.abs(line34_totalIncome - taxForm.line1_income) < 1000,
   };
 }
