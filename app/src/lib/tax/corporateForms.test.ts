@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCorporateTaxForm, buildFinancialStatements } from "./corporateForms";
+import { buildCorporateTaxForm, buildFinancialStatements, buildIncomeAdjustmentForm } from "./corporateForms";
 import { CorporateEstimate } from "./corporateEstimate";
 import { ProfitLossStatement } from "./plStatement";
 
@@ -152,5 +152,90 @@ describe("buildFinancialStatements", () => {
     expect(result.operatingIncome).toBe(190_000);
     expect(result.ordinaryIncome).toBe(190_000);
     expect(result.incomeBeforeTax).toBe(190_000);
+  });
+});
+
+describe("buildIncomeAdjustmentForm", () => {
+  it("adds back the full tax provision so the interim total reconciles with the accounting profit before tax", () => {
+    const statement = pl({
+      incomeLines: [{ account: "売上高", amount: 5_000_000 }],
+      incomeTotal: 5_000_000,
+      expenseLines: [],
+      expenseTotal: 0,
+      profit: 5_000_000,
+    });
+    const taxForm = buildCorporateTaxForm(estimate({ taxableIncome: 5_000_000 }));
+    const fs = buildFinancialStatements(statement, taxForm, "テスト株式会社");
+
+    const form = buildIncomeAdjustmentForm(fs, taxForm);
+
+    expect(form.line1_currentNetIncome).toBe(fs.netIncome); // 4,172,750
+    expect(form.additionLines).toHaveLength(1);
+    expect(form.additionLines[0].amount).toBe(fs.taxes); // 827,250
+    expect(form.line10_additionSubtotal).toBe(fs.taxes);
+    expect(form.subtractionLines).toEqual([]);
+    expect(form.line16_subtractionSubtotal).toBe(0);
+    // 当期利益(税引後) + 税額の加算戻し = 税引前の会計上利益と一致する
+    expect(form.line17_interimTotal).toBe(fs.incomeBeforeTax); // 5,000,000
+    expect(form.line34_totalIncome).toBe(5_000_000);
+    // 5,000,000 はもともと千円単位なので別表一の所得金額とぴったり一致する
+    expect(form.reconcilesWithFormOne).toBe(true);
+  });
+
+  it("returns all zeros and reconciles when there is no income or expense activity", () => {
+    const statement = pl({});
+    const taxForm = buildCorporateTaxForm(estimate({ taxableIncome: 0 }));
+    const fs = buildFinancialStatements(statement, taxForm, "テスト株式会社");
+
+    const form = buildIncomeAdjustmentForm(fs, taxForm);
+
+    expect(form.line1_currentNetIncome).toBe(0);
+    expect(form.line10_additionSubtotal).toBe(0);
+    expect(form.line17_interimTotal).toBe(0);
+    expect(form.line34_totalIncome).toBe(0);
+    expect(form.reconcilesWithFormOne).toBe(true);
+  });
+
+  it("splits the addition across the reduced and standard rate portions without double-counting when income straddles ¥8,000,000", () => {
+    const statement = pl({
+      incomeLines: [{ account: "売上高", amount: 10_000_000 }],
+      incomeTotal: 10_000_000,
+      expenseLines: [],
+      expenseTotal: 0,
+      profit: 10_000_000,
+    });
+    const taxForm = buildCorporateTaxForm(estimate({ taxableIncome: 10_000_000 }));
+    const localTaxTotal = 100_000;
+    const fs = buildFinancialStatements(statement, taxForm, "テスト株式会社", localTaxTotal);
+
+    const form = buildIncomeAdjustmentForm(fs, taxForm);
+
+    expect(form.line10_additionSubtotal).toBe(taxForm.totalNationalTax + localTaxTotal);
+    expect(form.line34_totalIncome).toBe(10_000_000);
+    expect(form.reconcilesWithFormOne).toBe(true);
+  });
+
+  it("does not reconcile with the corporate tax return when the period is an accounting loss (taxable income floors to zero)", () => {
+    // 支出のみで収入がないケース。会計上は赤字だが、このアプリの試算は
+    // taxableIncome を0円に丸めるため（繰越欠損金は非対応）、別表四の所得金額
+    // （マイナス＝欠損）と別表一の所得金額（0円）は一致しない。
+    const statement = pl({
+      incomeLines: [],
+      incomeTotal: 0,
+      expenseLines: [{ account: "地代家賃", amount: 1_000_000 }],
+      expenseTotal: 1_000_000,
+      profit: -1_000_000,
+    });
+    const taxForm = buildCorporateTaxForm(estimate({ taxableIncome: 0 }));
+    const fs = buildFinancialStatements(statement, taxForm, "テスト株式会社");
+
+    const form = buildIncomeAdjustmentForm(fs, taxForm);
+
+    expect(fs.netIncome).toBe(-1_000_000);
+    expect(form.line1_currentNetIncome).toBe(-1_000_000);
+    expect(form.line10_additionSubtotal).toBe(0); // 税額が0円のため加算戻しもゼロ
+    expect(form.line34_totalIncome).toBe(-1_000_000);
+    expect(taxForm.line1_income).toBe(0);
+    expect(form.reconcilesWithFormOne).toBe(false);
   });
 });
