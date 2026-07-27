@@ -91,7 +91,7 @@ export default function Home() {
   return (
     <div className="bg-stone-50 text-stone-900">
       <header className="border-b border-stone-300 bg-white">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
           <div className="font-serif text-lg tracking-wide">
             税務申告AI <span className="text-red-700">／</span> ジャービス
           </div>
@@ -99,7 +99,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-10">
+      <main className="mx-auto max-w-5xl px-4 sm:px-6 py-10 flex flex-col gap-10">
         <section>
           <h1 className="text-2xl font-semibold mb-2">明細CSVを読み込む</h1>
           <p className="text-sm text-stone-600 mb-4 max-w-2xl leading-relaxed">
@@ -273,7 +273,7 @@ export default function Home() {
           <section>
             <h2 className="text-lg font-semibold mb-3">仕訳結果（要確認の行は必ず見直してください）</h2>
             <div className="overflow-x-auto border border-stone-300 bg-white">
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[42rem] text-sm">
                 <thead>
                   <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
                     <th className="px-3 py-2 font-normal">日付</th>
@@ -290,13 +290,13 @@ export default function Home() {
                     return (
                       <tr key={r.id} className={`border-b border-stone-100 last:border-0 ${needsReview ? "bg-red-50" : ""}`}>
                         <td className="px-3 py-2 whitespace-nowrap tabular-nums">{r.date}</td>
-                        <td className="px-3 py-2 max-w-xs truncate" title={r.description}>{r.description}</td>
-                        <td className={`px-3 py-2 text-right tabular-nums ${r.amount < 0 ? "text-stone-700" : "text-emerald-700"}`}>
+                        <td className="px-3 py-2 max-w-[10rem] sm:max-w-xs truncate" title={r.description}>{r.description}</td>
+                        <td className={`px-3 py-2 text-right whitespace-nowrap tabular-nums ${r.amount < 0 ? "text-stone-700" : "text-emerald-700"}`}>
                           {yen.format(r.amount)}
                         </td>
                         <td className="px-3 py-2">
                           <input
-                            className="w-full bg-transparent border-b border-transparent focus:border-stone-400 outline-none"
+                            className="w-full min-w-[7rem] bg-transparent border-b border-transparent focus:border-stone-400 outline-none"
                             value={r.account}
                             onChange={(e) => updateRow(r.id, { account: e.target.value })}
                           />
