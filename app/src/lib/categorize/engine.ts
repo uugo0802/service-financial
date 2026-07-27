@@ -7,7 +7,7 @@ import {
   TaxCategory,
 } from "./dictionary";
 
-export type CategorySource = "rule" | "ai" | "uncategorized";
+export type CategorySource = "rule" | "ai" | "uncategorized" | "manual";
 
 export interface Transaction {
   id: string;
