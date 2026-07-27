@@ -12,6 +12,17 @@ export type TaxCategory =
   | "対象外"
   | "要確認";
 
+/** 手入力フォームの選択肢等、TaxCategoryの実行時一覧が必要な箇所で使用する */
+export const TAX_CATEGORIES: TaxCategory[] = [
+  "課税売上10%",
+  "課税仕入10%",
+  "課税仕入8%(軽減)",
+  "非課税",
+  "不課税",
+  "対象外",
+  "要確認",
+];
+
 export interface CategoryRule {
   /** 摘要文字列に対するマッチパターン */
   pattern: RegExp;
