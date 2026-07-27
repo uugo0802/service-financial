@@ -9,6 +9,7 @@ import { DocumentPreview } from "@/components/DocumentPreview";
 import { ReceiptUpload } from "@/components/ReceiptUpload";
 import { ReceiptJournalCandidate } from "@/lib/ocr/receiptCandidate";
 import { TaxSavingChecklistSection } from "@/components/TaxSavingChecklistSection";
+import { SubmissionGuide } from "@/components/SubmissionGuide";
 
 type EntityMode = "individual" | "corp";
 
@@ -443,11 +444,8 @@ export default function Home() {
 
         {rows && (
           <section className="border-t border-stone-300 pt-6 print:hidden">
-            <h2 className="text-lg font-semibold mb-2">送信について</h2>
-            <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
-              e-Tax・eLtaxへの最終送信は、常にご本人の認証・操作で行っていただきます（当社が代理送信することはありません）。
-              下書きデータのe-Tax形式（.xtx）エクスポートは開発中です。
-            </p>
+            <h2 className="text-lg font-semibold mb-3">送信について</h2>
+            <SubmissionGuide mode={mode} />
           </section>
         )}
       </main>
