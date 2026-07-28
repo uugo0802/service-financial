@@ -96,6 +96,38 @@ describe("buildScanMetadata", () => {
     });
     expect(meta.uploadedAt).toBe("2026-07-25T00:00:00.000Z");
   });
+
+  it("defaults uploadedAt to an ISO timestamp near the current time when not given", () => {
+    const before = Date.now();
+    const buffer = buildPngBuffer(1500, 2000, 2);
+    const meta = buildScanMetadata({
+      originalFileName: "receipt.png",
+      mimeType: "image/png",
+      sizeBytes: buffer.byteLength,
+      imageBuffer: buffer,
+    });
+    const after = Date.now();
+
+    const uploadedAtMs = new Date(meta.uploadedAt).getTime();
+    expect(uploadedAtMs).toBeGreaterThanOrEqual(before);
+    expect(uploadedAtMs).toBeLessThanOrEqual(after);
+  });
+
+  it("also handles JPEG buffers, not just PNG", () => {
+    // SOI + SOF0 with 3 components (YCbCr), 200x300
+    const bytes = [0xff, 0xd8, 0xff, 0xc0, 0x00, 0x11, 0x08, 0x01, 0x2c, 0x00, 0xc8, 0x03, 1, 0x11, 0, 2, 0x11, 0, 3, 0x11, 0];
+    const buffer = new Uint8Array(bytes).buffer;
+    const meta = buildScanMetadata({
+      originalFileName: "receipt.jpg",
+      mimeType: "image/jpeg",
+      sizeBytes: buffer.byteLength,
+      imageBuffer: buffer,
+    });
+
+    expect(meta.width).toBe(200);
+    expect(meta.height).toBe(300);
+    expect(meta.isColor).toBe(true);
+  });
 });
 
 describe("buildReceiptCandidate", () => {

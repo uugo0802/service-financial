@@ -61,10 +61,30 @@ describe("parseImageDimensions", () => {
       expect(result?.isColor).toBe(true);
     });
 
+    it("detects a palette PNG (colorType 3) as color", () => {
+      const buffer = buildPngBuffer(640, 480, 3);
+      const result = parseImageDimensions(buffer, "image/png");
+      expect(result?.isColor).toBe(true);
+    });
+
+    it("detects a grayscale+alpha PNG (colorType 4) as not color", () => {
+      const buffer = buildPngBuffer(640, 480, 4);
+      const result = parseImageDimensions(buffer, "image/png");
+      expect(result?.isColor).toBe(false);
+    });
+
     it("recognizes the PNG signature even without the image/png mime type", () => {
       const buffer = buildPngBuffer(100, 100, 2);
       const result = parseImageDimensions(buffer, "application/octet-stream");
       expect(result).not.toBeNull();
+    });
+
+    it("returns null when width or height is 0", () => {
+      const zeroWidth = buildPngBuffer(0, 600, 2);
+      expect(parseImageDimensions(zeroWidth, "image/png")).toBeNull();
+
+      const zeroHeight = buildPngBuffer(800, 0, 2);
+      expect(parseImageDimensions(zeroHeight, "image/png")).toBeNull();
     });
   });
 
@@ -79,6 +99,59 @@ describe("parseImageDimensions", () => {
       const buffer = buildJpegBuffer(640, 480, 1);
       const result = parseImageDimensions(buffer, "image/jpeg");
       expect(result?.isColor).toBe(false);
+    });
+
+    it("recognizes the JPEG signature even without the image/jpeg mime type", () => {
+      const buffer = buildJpegBuffer(320, 240, 3);
+      const result = parseImageDimensions(buffer, "application/octet-stream");
+      expect(result).toEqual({ width: 320, height: 240, isColor: true });
+    });
+
+    it("returns null when width or height is 0", () => {
+      const zeroWidth = buildJpegBuffer(0, 480, 3);
+      expect(parseImageDimensions(zeroWidth, "image/jpeg")).toBeNull();
+
+      const zeroHeight = buildJpegBuffer(640, 0, 3);
+      expect(parseImageDimensions(zeroHeight, "image/jpeg")).toBeNull();
+    });
+
+    it("skips non-SOF marker segments (e.g. APP0/JFIF) before finding SOF0", () => {
+      const app0Payload = [0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00]; // "JFIF..." (14 bytes)
+      const app0Length = 2 + app0Payload.length;
+      const bytes: number[] = [0xff, 0xd8]; // SOI
+      bytes.push(0xff, 0xe0, (app0Length >> 8) & 0xff, app0Length & 0xff, ...app0Payload); // APP0
+      const sofBuffer = new Uint8Array(buildJpegBuffer(1024, 768, 3)).slice(2); // SOF0 segment (minus SOI)
+      const withApp0 = new Uint8Array([...bytes, ...sofBuffer]);
+
+      const result = parseImageDimensions(withApp0.buffer, "image/jpeg");
+      expect(result).toEqual({ width: 1024, height: 768, isColor: true });
+    });
+
+    it("skips restart markers (RST0-RST7) while scanning for SOF0", () => {
+      const sofBuffer = new Uint8Array(buildJpegBuffer(200, 100, 3)).slice(2);
+      const withRst = new Uint8Array([0xff, 0xd8, 0xff, 0xd0, ...sofBuffer]); // SOI + RST0 + SOF0 segment
+      const result = parseImageDimensions(withRst.buffer, "image/jpeg");
+      expect(result).toEqual({ width: 200, height: 100, isColor: true });
+    });
+
+    it("skips payload-less markers (e.g. TEM 0xFF01) while scanning for SOF0", () => {
+      const sofBuffer = new Uint8Array(buildJpegBuffer(200, 100, 3)).slice(2);
+      const withTem = new Uint8Array([0xff, 0xd8, 0xff, 0x01, ...sofBuffer]); // SOI + TEM + SOF0 segment
+      const result = parseImageDimensions(withTem.buffer, "image/jpeg");
+      expect(result).toEqual({ width: 200, height: 100, isColor: true });
+    });
+
+    it("returns null without hanging when a segment reports an invalid (< 2) length", () => {
+      // 0xFFFE (COM marker) with a corrupt length of 1, and no SOF segment after it.
+      const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xfe, 0x00, 0x01]);
+      const result = parseImageDimensions(bytes.buffer, "image/jpeg");
+      expect(result).toBeNull();
+    });
+
+    it("returns null when the SOF segment is truncated before width/height/component bytes", () => {
+      const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xc0, 0x00, 0x08, 0x08]); // SOF0 header cut short
+      const result = parseImageDimensions(bytes.buffer, "image/jpeg");
+      expect(result).toBeNull();
     });
   });
 

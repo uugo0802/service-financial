@@ -45,6 +45,19 @@ describe("completeStep", () => {
     expect(isStepCompleted(attempt, 3)).toBe(false);
   });
 
+  it("ignores out-of-range step numbers (0 or negative) instead of corrupting progress", () => {
+    // Regression test: step 0/negative used to satisfy `step <= maxUnlockedStep` and get
+    // recorded into completedSteps, which could make isWizardComplete() report true early.
+    const state = createWizardState(1);
+
+    const attemptZero = completeStep(state, 1, 0);
+    expect(attemptZero).toEqual(state);
+    expect(isWizardComplete(attemptZero, 1)).toBe(false);
+
+    const attemptNegative = completeStep(state, 1, -3);
+    expect(attemptNegative).toEqual(state);
+  });
+
   it("does not advance past the last step when completing the final step", () => {
     let state = createWizardState(3);
     state = completeStep(state, 3, 1);
@@ -84,6 +97,24 @@ describe("goToStep", () => {
     const attempt = goToStep(state, 4);
 
     expect(attempt).toEqual(state);
+  });
+
+  it("refuses to navigate to step 0 or a negative step number", () => {
+    // Regression test: goToStep(state, 0) used to set displayedStep to 0, which is invalid
+    // since steps are 1-indexed and UI code indexes into the steps array by displayedStep.
+    const state = createWizardState(5);
+
+    expect(goToStep(state, 0)).toEqual(state);
+    expect(goToStep(state, -1)).toEqual(state);
+  });
+});
+
+describe("isStepUnlocked", () => {
+  it("treats step 0 and negative step numbers as locked", () => {
+    const state = createWizardState(3);
+    expect(isStepUnlocked(state, 0)).toBe(false);
+    expect(isStepUnlocked(state, -1)).toBe(false);
+    expect(isStepUnlocked(state, 1)).toBe(true);
   });
 });
 

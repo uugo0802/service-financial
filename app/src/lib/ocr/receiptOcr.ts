@@ -125,24 +125,31 @@ export async function classifyReceiptImage(image: { base64: string; mimeType: st
     tool_choice: { type: "tool", name: "extract_receipt" },
   };
 
-  const res = await fetch(ANTHROPIC_API_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify(body),
-  });
+  try {
+    const res = await fetch(ANTHROPIC_API_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify(body),
+    });
 
-  if (!res.ok) {
-    console.error("Anthropic API error (ocr)", res.status, await res.text());
+    if (!res.ok) {
+      console.error("Anthropic API error (ocr)", res.status, await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    const toolUse = data.content?.find((c: { type: string }) => c.type === "tool_use");
+    if (!toolUse) return null;
+
+    return validateOcrToolInput(toolUse.input);
+  } catch (err) {
+    // ネットワークエラーやレスポンスのパース失敗を含め、API呼び出しが失敗した場合は
+    // (このモジュールのドキュメントコメントの契約どおり) 例外を投げずに null を返す。
+    console.error("Anthropic API call failed (ocr)", err);
     return null;
   }
-
-  const data = await res.json();
-  const toolUse = data.content?.find((c: { type: string }) => c.type === "tool_use");
-  if (!toolUse) return null;
-
-  return validateOcrToolInput(toolUse.input);
 }

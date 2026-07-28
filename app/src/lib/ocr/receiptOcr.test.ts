@@ -199,5 +199,35 @@ describe("classifyReceiptImage", () => {
       const result = await classifyReceiptImage({ base64: "ZmFrZQ==", mimeType: "image/jpeg" });
       expect(result).toBeNull();
     });
+
+    it("returns null when the response has no content field at all", async () => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) });
+      vi.stubGlobal("fetch", fetchMock);
+
+      const result = await classifyReceiptImage({ base64: "ZmFrZQ==", mimeType: "image/jpeg" });
+      expect(result).toBeNull();
+    });
+
+    it("returns null instead of throwing when fetch itself rejects (network error)", async () => {
+      // Regression test: classifyReceiptImage is documented to return null when the API call
+      // fails, but previously only guarded against a non-ok HTTP status, not a rejected fetch
+      // promise (e.g. DNS failure, connection reset, timeout).
+      const fetchMock = vi.fn().mockRejectedValue(new TypeError("fetch failed"));
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(classifyReceiptImage({ base64: "ZmFrZQ==", mimeType: "image/jpeg" })).resolves.toBeNull();
+    });
+
+    it("returns null instead of throwing when the response body is not valid JSON", async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => {
+          throw new SyntaxError("Unexpected token in JSON");
+        },
+      });
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(classifyReceiptImage({ base64: "ZmFrZQ==", mimeType: "image/jpeg" })).resolves.toBeNull();
+    });
   });
 });
