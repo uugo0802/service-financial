@@ -11,6 +11,7 @@ import {
   updateJournalEntry,
 } from "@/lib/journal/entries";
 import { JournalEntryForm } from "@/components/JournalEntryForm";
+import { CategorizationRationale } from "@/components/CategorizationRationale";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
@@ -96,6 +97,7 @@ export default function JournalPage() {
                     <th className="px-3 py-2 font-normal text-right">金額</th>
                     <th className="px-3 py-2 font-normal">勘定科目</th>
                     <th className="px-3 py-2 font-normal">消費税区分</th>
+                    <th className="px-3 py-2 font-normal">なぜこの仕訳？</th>
                     <th className="px-3 py-2 font-normal">操作</th>
                   </tr>
                 </thead>
@@ -112,6 +114,9 @@ export default function JournalPage() {
                         </td>
                         <td className="px-3 py-2">{entry.account}</td>
                         <td className="px-3 py-2 text-xs whitespace-nowrap">{entry.taxCategory}</td>
+                        <td className="px-3 py-2">
+                          <CategorizationRationale transaction={entry} />
+                        </td>
                         <td className="px-3 py-2 whitespace-nowrap">
                           <button
                             type="button"
@@ -137,7 +142,7 @@ export default function JournalPage() {
                       </tr>
                       {formState.mode === "edit" && formState.id === entry.id && editingEntry && (
                         <tr>
-                          <td colSpan={6} className="px-3 py-4 bg-stone-50">
+                          <td colSpan={7} className="px-3 py-4 bg-stone-50">
                             <JournalEntryForm
                               mode="edit"
                               initialDraft={transactionToDraft(editingEntry)}
