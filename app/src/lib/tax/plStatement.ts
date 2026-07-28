@@ -31,7 +31,8 @@ function groupByAccount(rows: CategorizedTransaction[]): PlLine[] {
  * （日付の正規化・並び替えは行っていないため、CSVの並び順に依存する）。
  */
 export function buildProfitLossStatement(rows: CategorizedTransaction[]): ProfitLossStatement {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資の払込等（nonRevenue）は入金でも損益計算書上の収入ではないため除外する
+  const income = rows.filter((r) => r.amount > 0 && !r.nonRevenue);
   const expense = rows.filter((r) => r.amount < 0);
 
   const incomeLines = groupByAccount(income);

@@ -42,4 +42,13 @@ describe("buildMonthlySalesTrend", () => {
     const rows = [tx({ id: "1", amount: -5000 })];
     expect(buildMonthlySalesTrend(rows)).toEqual([]);
   });
+
+  it("excludes nonRevenue rows (loan disbursements) from the sales trend", () => {
+    const rows = [
+      tx({ id: "1", date: "2026-01-05", amount: 100000 }),
+      tx({ id: "2", date: "2026-01-10", amount: 5000000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+    ];
+    const result = buildMonthlySalesTrend(rows);
+    expect(result).toEqual([{ month: "2026-01", amount: 100000, transactionCount: 1 }]);
+  });
 });

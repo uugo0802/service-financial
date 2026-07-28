@@ -30,8 +30,10 @@ function aggregate(
     const key = keyOf(r);
     if (key === null) continue; // 日付が解釈できない行はグラフの時間軸を汚すため除外する
     const cur = buckets.get(key) ?? { income: 0, expense: 0 };
-    if (r.amount > 0) cur.income += r.amount;
-    else cur.expense += Math.abs(r.amount);
+    // 借入金の実行・出資の払込等（nonRevenue）は入金でも売上ではないため、
+    // 収入・支出どちらの集計にも含めない（資金移動であって損益ではないため）。
+    if (r.amount > 0 && !r.nonRevenue) cur.income += r.amount;
+    else if (r.amount < 0) cur.expense += Math.abs(r.amount);
     buckets.set(key, cur);
   }
   return Array.from(buckets.entries())

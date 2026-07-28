@@ -42,6 +42,17 @@ describe("buildProfitLossStatement", () => {
     expect(pl.expenseLines[0]).toEqual({ account: "通信費", amount: 30000 });
   });
 
+  it("excludes nonRevenue rows (loan disbursements, capital contributions) from income totals", () => {
+    const rows = [
+      tx({ id: "1", amount: 500000, account: "売上高" }),
+      tx({ id: "2", amount: 2000000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+    ];
+    const pl = buildProfitLossStatement(rows);
+
+    expect(pl.incomeTotal).toBe(500000);
+    expect(pl.incomeLines).toEqual([{ account: "売上高", amount: 500000 }]);
+  });
+
   it("returns zeroed totals for an empty input", () => {
     const pl = buildProfitLossStatement([]);
     expect(pl.incomeTotal).toBe(0);

@@ -96,6 +96,20 @@ describe("estimateForMicroCorp", () => {
     expect(result.taxableIncome).toBe(500_000);
   });
 
+  it("excludes loan disbursements and capital contributions (nonRevenue) from revenue and taxable income", () => {
+    const rows = [
+      tx({ id: "1", amount: 4_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 10_000_000, account: "元入金", taxCategory: "対象外", nonRevenue: true }),
+      tx({ id: "3", amount: -1_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+
+    const result = estimateForMicroCorp(rows);
+
+    // 出資払込10,000,000円は益金ではないため、revenueに含まれない
+    expect(result.revenue).toBe(4_000_000);
+    expect(result.taxableIncome).toBe(3_000_000);
+  });
+
   it("marks consumption tax as not exempt once revenue exceeds 10,000,000", () => {
     const rows = [tx({ id: "1", amount: 11_000_000, taxCategory: "課税売上10%" })];
 

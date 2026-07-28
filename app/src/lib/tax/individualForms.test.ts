@@ -227,6 +227,17 @@ describe("buildBlueReturnStatement", () => {
     expect(statement.incomeAfterBlueDeduction).toBe(-200_000);
   });
 
+  it("excludes nonRevenue rows (loan disbursements, capital contributions) from sales", () => {
+    const rows = [
+      tx({ id: "1", amount: 1_000_000, account: "売上高" }),
+      tx({ id: "2", amount: 5_000_000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+    ];
+
+    const statement = buildBlueReturnStatement(rows);
+
+    expect(statement.salesTotal).toBe(1_000_000);
+  });
+
   it("returns zeroed totals for an empty input", () => {
     const statement = buildBlueReturnStatement([]);
 

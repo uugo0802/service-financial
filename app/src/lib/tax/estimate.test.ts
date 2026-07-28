@@ -112,6 +112,20 @@ describe("estimateForIndividual", () => {
     expect(justAbove.incomeTax).toEqual({ tax: 97_600, marginalRate: 10 });
   });
 
+  it("excludes loan disbursements and capital contributions (nonRevenue) from income, profit, and taxable income", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 5_000_000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+      tx({ id: "3", amount: -500_000, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+
+    const result = estimateForIndividual(rows);
+
+    // 借入金の入金5,000,000円は事業収入ではないため、totalIncomeに含まれない
+    expect(result.totalIncome).toBe(3_000_000);
+    expect(result.businessProfit).toBe(2_500_000);
+  });
+
   it("treats total income at or below ¥10,000,000 as likely exempt from consumption tax", () => {
     const atLimit = estimateForIndividual([
       tx({ id: "1", amount: 10_000_000, account: "売上高", taxCategory: "課税売上10%" }),

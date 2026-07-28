@@ -36,6 +36,13 @@ export interface CategoryRule {
    * マイクロ法人モードでは通常の経費として扱う（会社が負担する場合の福利厚生費等と区別しない簡易対応）。
    */
   personalDeductionOnly?: boolean;
+  /**
+   * true の場合、入金（プラス金額）であっても損益計算書上の収入・売上には一切含めない。
+   * 借入金の実行や出資・資本金の払込など、貸借対照表側（負債・純資産）の増減であって
+   * 所得税・法人税上の益金でも消費税の課税売上でもない資金移動が対象。
+   * これを立てないと、融資や増資の入金が売上高・事業所得・課税所得に混入してしまう。
+   */
+  nonRevenue?: boolean;
 }
 
 export const EXPENSE_RULES: CategoryRule[] = [
@@ -69,7 +76,13 @@ export const EXPENSE_RULES: CategoryRule[] = [
   { pattern: /損害保険|火災保険|賠償責任保険/, account: "損害保険料", taxCategory: "非課税", note: "事業用の損害保険料（青色申告決算書の経費科目）" },
   { pattern: /社会保険料/, account: "社会保険料(個人)", taxCategory: "非課税", personalDeductionOnly: true, note: "個人事業主の場合、事業の必要経費ではなく所得控除（社会保険料控除）の対象です" },
   { pattern: /所得税|住民税|印紙|租税公課|消費税(?!.{0,4}還付)/, account: "租税公課", taxCategory: "不課税" },
-  { pattern: /給与|給料|賞与|外注費(?!.{0,4}消費税)/, account: "給料賃金/外注工賃", taxCategory: "不課税", note: "給与は不課税。外注（事業者への業務委託）は課税仕入となる場合あり、要確認" },
+  { pattern: /給与|給料|賞与/, account: "給料賃金/外注工賃", taxCategory: "不課税", note: "雇用関係に基づく給与・賞与の支払いは消費税の対象外（不課税）です" },
+  {
+    pattern: /外注費(?!.{0,4}消費税)/,
+    account: "給料賃金/外注工賃",
+    taxCategory: "要確認",
+    note: "外注（事業者への業務委託）は多くの場合課税仕入となりますが、相手がインボイス発行事業者（適格請求書発行事業者）として登録済みかどうかで控除税額が変わるため要確認です",
+  },
   { pattern: /役員報酬/, account: "役員報酬", taxCategory: "不課税", note: "法人の場合、定期同額給与でないと損金不算入になる可能性があり要確認" },
   { pattern: /広告|リスティング|Meta広告|Google広告|SNS広告/i, account: "広告宣伝費", taxCategory: "課税仕入10%" },
   { pattern: /セミナー|研修|講座受講/, account: "研修費", taxCategory: "課税仕入10%" },
@@ -89,8 +102,20 @@ export const EXPENSE_RULES: CategoryRule[] = [
 
 export const INCOME_RULES: CategoryRule[] = [
   { pattern: /返金|キャッシュバック|還付/, account: "雑収入", taxCategory: "対象外" },
-  { pattern: /借入|融資|ローン実行/, account: "借入金", taxCategory: "対象外" },
-  { pattern: /出資|資本金/, account: "元入金", taxCategory: "対象外" },
+  {
+    pattern: /借入|融資|ローン実行/,
+    account: "借入金",
+    taxCategory: "対象外",
+    note: "借入金の実行は負債の増加であり、所得税・法人税上の収入（益金）にも消費税の課税売上にも該当しません",
+    nonRevenue: true,
+  },
+  {
+    pattern: /出資|資本金/,
+    account: "元入金",
+    taxCategory: "対象外",
+    note: "出資・資本金の払込は純資産の増加であり、所得税・法人税上の収入（益金）にも消費税の課税売上にも該当しません",
+    nonRevenue: true,
+  },
   { pattern: /利息|受取利子/, account: "受取利息", taxCategory: "非課税" },
 ];
 

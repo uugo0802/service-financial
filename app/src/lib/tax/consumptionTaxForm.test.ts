@@ -104,6 +104,18 @@ describe("buildConsumptionTaxForm", () => {
     expect(overThreshold.isLikelyExempt).toBe(false);
   });
 
+  it("excludes nonRevenue rows (loan disbursements) from isLikelyExempt's income threshold", () => {
+    const rows = [
+      tx({ id: "1", amount: 9_500_000, taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 5_000_000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+    ];
+    const form = buildConsumptionTaxForm(rows);
+
+    // 借入金5,000,000円を合算すると1,000万円を超えてしまうが、事業収入ではないため
+    // isLikelyExemptの判定には影響しない
+    expect(form.isLikelyExempt).toBe(true);
+  });
+
   it("returns all zeros for an empty input", () => {
     const form = buildConsumptionTaxForm([]);
     expect(form).toEqual({

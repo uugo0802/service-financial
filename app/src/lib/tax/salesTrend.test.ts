@@ -62,6 +62,15 @@ describe("buildMonthlyTrend", () => {
     ];
     expect(buildMonthlyTrend(rows)).toEqual([{ key: "2026-04", income: 10000, expense: 40000, profit: -30000 }]);
   });
+
+  it("excludes nonRevenue rows (loan disbursements) from both income and expense so they don't distort the trend", () => {
+    const rows = [
+      tx({ id: "1", date: "2026-05-01", amount: 10000 }),
+      tx({ id: "2", date: "2026-05-05", amount: -3000 }),
+      tx({ id: "3", date: "2026-05-10", amount: 2000000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+    ];
+    expect(buildMonthlyTrend(rows)).toEqual([{ key: "2026-05", income: 10000, expense: 3000, profit: 7000 }]);
+  });
 });
 
 describe("buildYearlyTrend", () => {

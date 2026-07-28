@@ -61,7 +61,8 @@ export interface IndividualEstimate {
 }
 
 export function estimateForIndividual(rows: CategorizedTransaction[]): IndividualEstimate {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資の払込等（nonRevenue）は入金でも事業収入ではないため除外する
+  const income = rows.filter((r) => r.amount > 0 && !r.nonRevenue);
   const allExpense = rows.filter((r) => r.amount < 0);
   const businessExpense = allExpense.filter((r) => !r.personalDeductionOnly);
 

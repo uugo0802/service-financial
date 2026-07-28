@@ -38,7 +38,8 @@ export interface CorporateEstimate {
 }
 
 export function estimateForMicroCorp(rows: CategorizedTransaction[]): CorporateEstimate {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資の払込等（nonRevenue）は入金でも益金ではないため除外する
+  const income = rows.filter((r) => r.amount > 0 && !r.nonRevenue);
   const expense = rows.filter((r) => r.amount < 0);
 
   const revenue = income.reduce((sum, r) => sum + r.amount, 0);

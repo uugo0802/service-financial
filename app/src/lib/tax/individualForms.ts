@@ -84,7 +84,8 @@ const STANDARD_DISPLAY_LABEL: Record<string, string> = {
 };
 
 export function buildBlueReturnStatement(rows: CategorizedTransaction[]): BlueReturnStatement {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資の払込等（nonRevenue）は入金でも売上ではないため除外する
+  const income = rows.filter((r) => r.amount > 0 && !r.nonRevenue);
   const expense = rows.filter((r) => r.amount < 0 && !r.personalDeductionOnly);
 
   const salesTotal = income.reduce((s, r) => s + r.amount, 0);
