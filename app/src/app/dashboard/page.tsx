@@ -5,6 +5,8 @@ import { buildMonthlyTrend, buildYearlyTrend, TrendPoint } from "@/lib/tax/sales
 import { TrendLineChart } from "@/components/dashboard/TrendLineChart";
 import { TrendBarChart } from "@/components/dashboard/TrendBarChart";
 import { StatTile } from "@/components/dashboard/StatTile";
+import { PartnerReferralBanner } from "@/components/PartnerReferralBanner";
+import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferral";
 import { buildSampleTransactions } from "./sampleData";
 
 function sumOf(points: TrendPoint[], field: keyof Omit<TrendPoint, "key">): number {
@@ -20,6 +22,7 @@ export default function DashboardPage() {
   const transactions = useMemo(() => buildSampleTransactions(), []);
   const monthlyTrend = useMemo(() => buildMonthlyTrend(transactions), [transactions]);
   const yearlyTrend = useMemo(() => buildYearlyTrend(transactions), [transactions]);
+  const partnerCategories = useMemo(() => recommendPartnerCategories(yearlyTrend), [yearlyTrend]);
 
   const currentYear = yearlyTrend[yearlyTrend.length - 1];
   const priorFullYear = yearlyTrend.length >= 2 ? yearlyTrend[yearlyTrend.length - 2] : null;
@@ -88,6 +91,8 @@ export default function DashboardPage() {
         <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
           <TrendBarChart points={yearlyTrend} title="年度別 売上・経費・損益" />
         </section>
+
+        <PartnerReferralBanner categories={partnerCategories} />
 
         <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
           表示している金額はサンプルデータに基づく概算であり、実際の申告内容を示すものではありません。
