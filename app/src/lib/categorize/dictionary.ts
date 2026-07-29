@@ -30,9 +30,9 @@ export interface CategoryRule {
 export const EXPENSE_RULES: CategoryRule[] = [
   { pattern: /法定福利費|社会保険料.{0,4}(会社|法人)負担/, account: "法定福利費", taxCategory: "不課税" },
   { pattern: /家賃|賃貸|不動産管理/, account: "地代家賃", taxCategory: "課税仕入10%", note: "事業用と仮定。住居兼用の場合は家事按分が必要" },
-  { pattern: /NTT|ドコモ|docomo|au(?!.{0,3}損保)|ソフトバンク|softbank|光回線|インターネット|プロバイダ/i, account: "通信費", taxCategory: "課税仕入10%" },
+  { pattern: /NTT|ドコモ|docomo|\bau\b(?!.{0,3}損保)|ソフトバンク|softbank|光回線|インターネット|プロバイダ/i, account: "通信費", taxCategory: "課税仕入10%" },
   { pattern: /電気|東京電力|関西電力|中部電力|水道局|ガス(?!ソリン)/, account: "水道光熱費", taxCategory: "課税仕入10%" },
-  { pattern: /JR|ANA|JAL|Suica|PASMO|タクシー|新幹線|航空券|高速道路|ETC/i, account: "旅費交通費", taxCategory: "課税仕入10%" },
+  { pattern: /\bJR\b|\bANA\b|\bJAL\b|Suica|PASMO|タクシー|新幹線|航空券|高速道路|\bETC\b/i, account: "旅費交通費", taxCategory: "課税仕入10%" },
   { pattern: /Amazon|ヨドバシ|文房具|事務用品|コクヨ/i, account: "消耗品費", taxCategory: "課税仕入10%" },
   { pattern: /AWS|Google\s?Workspace|GCP|Adobe|Slack|Zoom|GitHub|Notion|Dropbox|Microsoft|サブスクリプション/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "国外事業者のリバースチャージ対象の可能性あり、要確認" },
   { pattern: /振込手数料|送金手数料|PayPal|Stripe手数料|銀行手数料|口座維持手数料/i, account: "支払手数料", taxCategory: "課税仕入10%" },
