@@ -75,6 +75,38 @@ describe("estimateForMicroCorp - expenses only, zero income", () => {
     expect(estimate.consumptionTax.payable).toBe(0);
   });
 
+  // Regression: loan proceeds and capital contributions are balance-sheet items, not corporate
+  // revenue. A micro-corp's initial 資本金 payment or a business loan drawdown (both routinely
+  // categorized this way by the rule dictionary) must not be summed into revenue/taxableIncome
+  // as if it were a taxable sale.
+  it("excludes loan proceeds and capital contributions from revenue, taxable income, and the exemption threshold", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({
+        id: "2",
+        amount: 5_000_000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({
+        id: "3",
+        amount: 2_000_000,
+        account: "元入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+    ];
+
+    const estimate = estimateForMicroCorp(rows);
+
+    expect(estimate.revenue).toBe(3_000_000);
+    expect(estimate.taxableIncome).toBe(3_000_000);
+    // Total cash in (10,000,000) exceeds the 10,000,000 exemption threshold, but actual revenue
+    // is only 3,000,000, so this should still read as likely-exempt.
+    expect(estimate.consumptionTax.isLikelyExempt).toBe(true);
+  });
+
   it("returns all zeroed figures for a fully empty transaction list", () => {
     const estimate = estimateForMicroCorp([]);
 

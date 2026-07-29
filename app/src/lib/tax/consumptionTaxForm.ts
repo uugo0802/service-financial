@@ -54,7 +54,10 @@ interface SalesAndGeneralPurchaseTax {
 
 /** 売上に係る消費税額（②）と、原則課税の場合の実額仕入税額控除を集計する共通部分 */
 function computeSalesAndGeneralPurchaseTax(rows: CategorizedTransaction[]): SalesAndGeneralPurchaseTax {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資の払込み等（excludeFromIncome）は課税売上高ではないため、免税判定の
+  // 基準となる totalIncome から除外する（②消費税額・①課税標準額は taxCategory で別途絞り
+  // 込んでいるため、こちらは元々借入・出資の影響を受けない）。
+  const income = rows.filter((r) => r.amount > 0 && !r.excludeFromIncome);
   const expense = rows.filter((r) => r.amount < 0 && !r.personalDeductionOnly);
 
   let salesNational = 0;
