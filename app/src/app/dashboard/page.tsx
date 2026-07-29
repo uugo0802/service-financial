@@ -2,10 +2,30 @@
 
 import { useMemo } from "react";
 import { buildMonthlyTrend, buildYearlyTrend, TrendPoint } from "@/lib/tax/salesTrend";
+import { buildExpenseBreakdown } from "@/lib/tax/expenseBreakdown";
 import { TrendLineChart } from "@/components/dashboard/TrendLineChart";
 import { TrendBarChart } from "@/components/dashboard/TrendBarChart";
+import { ExpenseBreakdownChart } from "@/components/dashboard/ExpenseBreakdownChart";
 import { StatTile } from "@/components/dashboard/StatTile";
+import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { buildSampleTransactions } from "./sampleData";
+
+// buildSampleTransactions() は売上・損益推移グラフ用に「経費合計」1科目へ
+// まとめた経費しか持たないため、経費内訳（カテゴリ別）チャートのサンプル表示用に
+// 直近1年分を想定した科目別のダミー経費行をここに追加する（sampleData.tsは
+// 他チャートと共有のため変更しない）。
+const SAMPLE_EXPENSE_CATEGORY_ROWS: CategorizedTransaction[] = [
+  { id: "cat-rent", date: "2026-06-05", description: "サンプル: 事務所家賃", amount: -180000, account: "地代家賃", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-outsourcing", date: "2026-06-10", description: "サンプル: 外注デザイン費", amount: -260000, account: "外注費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-travel", date: "2026-06-12", description: "サンプル: 客先訪問交通費", amount: -45000, account: "旅費交通費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-comm", date: "2026-06-15", description: "サンプル: 通信費（回線・電話）", amount: -32000, account: "通信費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-supplies", date: "2026-06-18", description: "サンプル: 消耗品購入", amount: -21000, account: "消耗品費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-entertain", date: "2026-06-20", description: "サンプル: 取引先との会食", amount: -38000, account: "接待交際費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-utilities", date: "2026-06-22", description: "サンプル: 水道光熱費", amount: -14000, account: "水道光熱費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-books", date: "2026-06-25", description: "サンプル: 専門書籍購入", amount: -9000, account: "新聞図書費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-misc-1", date: "2026-06-27", description: "サンプル: 振込手数料", amount: -2200, account: "支払手数料", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+  { id: "cat-misc-2", date: "2026-06-28", description: "サンプル: 会費", amount: -3000, account: "諸会費", taxCategory: "課税仕入10%", confidence: 1, source: "rule" },
+];
 
 function sumOf(points: TrendPoint[], field: keyof Omit<TrendPoint, "key">): number {
   return points.reduce((s, p) => s + p[field], 0);
@@ -20,6 +40,10 @@ export default function DashboardPage() {
   const transactions = useMemo(() => buildSampleTransactions(), []);
   const monthlyTrend = useMemo(() => buildMonthlyTrend(transactions), [transactions]);
   const yearlyTrend = useMemo(() => buildYearlyTrend(transactions), [transactions]);
+  const expenseBreakdown = useMemo(
+    () => buildExpenseBreakdown([...transactions, ...SAMPLE_EXPENSE_CATEGORY_ROWS]),
+    [transactions]
+  );
 
   const currentYear = yearlyTrend[yearlyTrend.length - 1];
   const priorFullYear = yearlyTrend.length >= 2 ? yearlyTrend[yearlyTrend.length - 2] : null;
@@ -87,6 +111,10 @@ export default function DashboardPage() {
 
         <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
           <TrendBarChart points={yearlyTrend} title="年度別 売上・経費・損益" />
+        </section>
+
+        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+          <ExpenseBreakdownChart breakdown={expenseBreakdown} title="経費内訳（勘定科目別）" />
         </section>
 
         <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
