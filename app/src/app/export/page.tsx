@@ -78,7 +78,6 @@ export default function ExportPage() {
     taxEstimate: { kind: "corporate", estimate },
   });
   const summaryRows = taxEstimateSummaryRows({ kind: "corporate", estimate });
-  const fileName = `journal-export-${new Date().toISOString().slice(0, 10)}.csv`;
 
   return (
     <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
@@ -175,7 +174,7 @@ export default function ExportPage() {
             </p>
           </div>
           <div>
-            <ExportDataButton csvContent={csv} fileName={fileName} label="CSVをダウンロード" />
+            <ExportDataButton csvContent={csv} fileNamePrefix="journal-export" label="CSVをダウンロード" />
           </div>
         </section>
       </main>
