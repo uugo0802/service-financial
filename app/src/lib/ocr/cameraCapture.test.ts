@@ -43,6 +43,15 @@ describe("isCameraCaptureSupported", () => {
     expect(isCameraCaptureSupported({ userAgent: "iPhone" })).toBe(true);
     expect(isCameraCaptureSupported({ maxTouchPoints: 2 })).toBe(true);
   });
+
+  it("falls back to defaults without throwing when called with no argument at all (e.g. SSR, no navigator)", () => {
+    expect(() => isCameraCaptureSupported()).not.toThrow();
+    expect(isCameraCaptureSupported()).toBe(false);
+  });
+
+  it("matches mobile user agent tokens case-insensitively", () => {
+    expect(isCameraCaptureSupported({ userAgent: "some android device", maxTouchPoints: 0 })).toBe(true);
+  });
 });
 
 describe("getCameraCaptureLabel", () => {

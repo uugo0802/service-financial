@@ -18,6 +18,11 @@ describe("getCrossSellRecommendations", () => {
   it("returns no recommendations for non-finite profit values", () => {
     expect(getCrossSellRecommendations({ annualProfitYen: NaN })).toEqual([]);
     expect(getCrossSellRecommendations({ annualProfitYen: Infinity })).toEqual([]);
+    expect(getCrossSellRecommendations({ annualProfitYen: -Infinity })).toEqual([]);
+  });
+
+  it("returns no recommendations when annualProfitYen is omitted from the inputs", () => {
+    expect(getCrossSellRecommendations({} as never)).toEqual([]);
   });
 
   it("returns only the loan item for negative profit with no cash trend given", () => {

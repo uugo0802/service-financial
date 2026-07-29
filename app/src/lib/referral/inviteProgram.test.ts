@@ -34,6 +34,13 @@ describe("generateReferralCode", () => {
     expect(() => generateReferralCode("")).toThrow();
     expect(() => generateReferralCode("   ")).toThrow();
   });
+
+  it("never includes visually-ambiguous characters (0, 1, I, O)", () => {
+    const userIds = Array.from({ length: 50 }, (_, i) => `user-${i}@example.com`);
+    for (const userId of userIds) {
+      expect(generateReferralCode(userId)).not.toMatch(/[01IO]/);
+    }
+  });
 });
 
 describe("buildReferralShareUrl", () => {
@@ -43,6 +50,14 @@ describe("buildReferralShareUrl", () => {
 
   it("builds an absolute URL when an origin is given, stripping a trailing slash", () => {
     expect(buildReferralShareUrl("ABC12345", "https://example.com/")).toBe("https://example.com/invite?ref=ABC12345");
+  });
+
+  it("falls back to a relative path when origin is an empty string (falsy)", () => {
+    expect(buildReferralShareUrl("ABC12345", "")).toBe("/invite?ref=ABC12345");
+  });
+
+  it("URL-encodes a referral code containing characters that are unsafe in a query string", () => {
+    expect(buildReferralShareUrl("AB C+12/34")).toBe("/invite?ref=AB%20C%2B12%2F34");
   });
 });
 

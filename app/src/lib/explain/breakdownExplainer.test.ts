@@ -47,6 +47,14 @@ describe("explainCategorization", () => {
     expect(result[1].detail).toBe("取引先との打ち合わせに関連する飲食と推定されるため会議費と判定");
   });
 
+  it("does not add the low-confidence follow-up step when AI confidence is exactly at the review threshold (boundary)", () => {
+    const result = explainCategorization(
+      tx({ description: "領収書A", account: "消耗品費", confidence: 0.75, source: "ai" })
+    );
+
+    expect(result.map((s) => s.label)).toEqual(["AIによる判定"]);
+  });
+
   it("adds a low-confidence follow-up step for AI results below the review threshold", () => {
     const result = explainCategorization(
       tx({
@@ -89,6 +97,25 @@ describe("explainCategorization", () => {
   it("omits the note step when no note is present", () => {
     const result = explainCategorization(tx({ source: "rule", confidence: 1, note: undefined }));
     expect(result.every((s) => s.label !== "補足" && s.label !== "AIの判定根拠")).toBe(true);
+  });
+
+  it("combines the personal-deduction-only step with an uncategorized transaction", () => {
+    const result = explainCategorization(
+      tx({
+        description: "国民年金保険料",
+        account: "要確認(未分類の経費)",
+        confidence: 0,
+        source: "uncategorized",
+        personalDeductionOnly: true,
+      })
+    );
+
+    expect(result.map((s) => s.label)).toEqual(["未分類（要確認）", "事業の必要経費には含まれません"]);
+  });
+
+  it("rounds a zero confidence to 0% rather than producing a negative or NaN label", () => {
+    const result = explainCategorization(tx({ source: "rule", confidence: 0 }));
+    expect(result[0].detail).toContain("0%");
   });
 });
 

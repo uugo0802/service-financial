@@ -38,6 +38,11 @@ describe("isSupportedImageMediaType", () => {
     expect(isSupportedImageMediaType("text/csv")).toBe(false);
     expect(isSupportedImageMediaType("image/heic")).toBe(false);
   });
+
+  it("is case-sensitive and rejects an empty string (documents current strict matching)", () => {
+    expect(isSupportedImageMediaType("IMAGE/JPEG")).toBe(false);
+    expect(isSupportedImageMediaType("")).toBe(false);
+  });
 });
 
 describe("validateOcrToolInput", () => {
@@ -113,6 +118,18 @@ describe("validateOcrToolInput", () => {
   it("defaults confidence to 0.5 when missing or non-numeric", () => {
     expect(validateOcrToolInput({ account: "消耗品費", taxCategory: "要確認", reasoning: "" })?.confidence).toBe(0.5);
     expect(validateOcrToolInput({ account: "消耗品費", taxCategory: "要確認", confidence: "high", reasoning: "" })?.confidence).toBe(0.5);
+  });
+
+  it("defaults confidence to 0.5 when it is NaN", () => {
+    const result = validateOcrToolInput({ account: "消耗品費", taxCategory: "要確認", confidence: NaN, reasoning: "" });
+    expect(result?.confidence).toBe(0.5);
+  });
+
+  it("accepts amount 0 and a negative amount (e.g. refunds) as valid numbers rather than nulling them out", () => {
+    expect(validateOcrToolInput({ account: "消耗品費", taxCategory: "要確認", confidence: 0.5, reasoning: "", amount: 0 })?.amount).toBe(0);
+    expect(validateOcrToolInput({ account: "消耗品費", taxCategory: "要確認", confidence: 0.5, reasoning: "", amount: -500 })?.amount).toBe(
+      -500
+    );
   });
 
   it("defaults reasoning and rawOcrText to empty strings when missing", () => {
