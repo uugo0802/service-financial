@@ -62,6 +62,12 @@ export function getDistinctEntityTypes(logs: AuditLogRow[]): string[] {
   return Array.from(new Set(logs.map((log) => log.entity_type))).sort();
 }
 
+// 年度確定・ロック機能（app/src/lib/journal/yearClose.ts）向けのaction/entity_typeコード。
+// 監査ログのスキーマ自体は文字列なので新規追加は既存レコードに影響しない（追記のみ）。
+export const FISCAL_YEAR_CLOSE_ACTION = "fiscalyear.close";
+export const FISCAL_YEAR_REOPEN_ACTION = "fiscalyear.reopen";
+export const FISCAL_YEAR_ENTITY_TYPE = "fiscal_year";
+
 const ACTION_LABELS: Record<string, string> = {
   "transaction.create": "取引明細を作成",
   "transaction.edit": "仕訳を編集",
@@ -71,6 +77,8 @@ const ACTION_LABELS: Record<string, string> = {
   "document.delete": "証憑を削除",
   "account.create": "勘定科目を作成",
   "account.edit": "勘定科目を編集",
+  [FISCAL_YEAR_CLOSE_ACTION]: "年度を確定（ロック）",
+  [FISCAL_YEAR_REOPEN_ACTION]: "年度のロックを解除",
 };
 
 /** action コード（例: "transaction.confirm"）を画面表示用の日本語ラベルに変換する。未知の値はそのまま返す。 */
@@ -83,6 +91,7 @@ const ENTITY_TYPE_LABELS: Record<string, string> = {
   journal_entry: "仕訳",
   document: "証憑",
   account: "勘定科目",
+  [FISCAL_YEAR_ENTITY_TYPE]: "年度",
 };
 
 /** entity_type（例: "transaction"）を画面表示用の日本語ラベルに変換する。未知の値はそのまま返す。 */

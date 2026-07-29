@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { buildYearArchive, YearlyFilingRecord } from "@/lib/tax/yearArchive";
 import { YearArchiveTable } from "@/components/YearArchiveTable";
+import { YearCloseControl } from "@/components/YearCloseControl";
 
 export const metadata: Metadata = {
   title: "過去の記帳・申告アーカイブ｜税務申告AI（ジャービス）",
@@ -74,6 +75,19 @@ export default function HistoryPage() {
         </div>
 
         <YearArchiveTable archive={archive} />
+
+        <div className="flex flex-col gap-3">
+          <h2 className="font-serif text-lg">年度の確定・ロック</h2>
+          <p className="text-stone-600 text-xs leading-relaxed max-w-2xl">
+            申告が完了した年度は「確定（ロック）」することで、その年度に属する仕訳の編集・削除を防止できます
+            （電子帳簿保存法が求める「訂正・削除ができないシステムでの保存」への対応）。ロック解除には理由の入力が必要です。
+          </p>
+          <div className="flex flex-col gap-2">
+            {archive.entries.map((e) => (
+              <YearCloseControl key={e.fiscalYear} fiscalYear={e.fiscalYear} />
+            ))}
+          </div>
+        </div>
       </main>
 
       <footer className="border-t border-stone-300 bg-white mt-4">
