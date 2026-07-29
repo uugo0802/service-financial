@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DeadlineReminderBanner } from "@/components/DeadlineReminderBanner";
 import { DeadlineUrgency, EntityType, getUpcomingFilingDeadlines } from "@/lib/filing/deadlines";
+import { buildDeadlinesIcs, buildDeadlinesIcsFilename } from "@/lib/filing/icsExport";
 
 const MONTH_LABELS = Array.from({ length: 12 }, (_, i) => `${i + 1}月`);
 
@@ -21,6 +22,19 @@ export default function DeadlinesPage() {
     () => getUpcomingFilingDeadlines({ entityType, referenceDate: new Date(), fiscalYearEndMonth }),
     [entityType, fiscalYearEndMonth],
   );
+
+  const handleDownloadIcs = useCallback(() => {
+    const ics = buildDeadlinesIcs(deadlines);
+    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = buildDeadlinesIcsFilename();
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [deadlines]);
 
   return (
     <div className="bg-stone-50 text-stone-900 min-h-screen">
@@ -101,7 +115,17 @@ export default function DeadlinesPage() {
         </section>
 
         <section>
-          <h2 className="text-lg font-semibold mb-3">申告期限カレンダー（一覧）</h2>
+          <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+            <h2 className="text-lg font-semibold">申告期限カレンダー（一覧）</h2>
+            <button
+              type="button"
+              onClick={handleDownloadIcs}
+              disabled={deadlines.length === 0}
+              className="text-sm px-4 py-2 border border-stone-400 bg-white text-stone-700 hover:border-stone-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              カレンダーに追加 (.ics)
+            </button>
+          </div>
           <div className="border border-stone-300 bg-white overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
