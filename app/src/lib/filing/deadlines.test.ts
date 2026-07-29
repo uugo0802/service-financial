@@ -38,6 +38,23 @@ describe("getUpcomingFilingDeadlines / individual", () => {
     expect(result[0].dueDate).toBe("2026-03-15");
     expect(result[0].daysRemaining).toBe(14);
   });
+
+  it("ignores a fiscalYearEndMonth passed in for an individual (it only applies to corporate)", () => {
+    const withoutMonth = getUpcomingFilingDeadlines({ entityType: "individual", referenceDate: "2026-01-10" });
+    const withMonth = getUpcomingFilingDeadlines({
+      entityType: "individual",
+      referenceDate: "2026-01-10",
+      fiscalYearEndMonth: 6,
+    });
+
+    expect(withMonth).toEqual(withoutMonth);
+  });
+
+  it("throws for a referenceDate string that isn't a valid YYYY-MM-DD date", () => {
+    expect(() =>
+      getUpcomingFilingDeadlines({ entityType: "individual", referenceDate: "not-a-date" }),
+    ).toThrow();
+  });
 });
 
 describe("getUpcomingFilingDeadlines / corporate", () => {
@@ -106,6 +123,28 @@ describe("getUpcomingFilingDeadlines / corporate", () => {
     expect(() =>
       getUpcomingFilingDeadlines({ entityType: "corporate", referenceDate: "2026-01-01", fiscalYearEndMonth: 1.5 }),
     ).toThrow();
+    expect(() =>
+      getUpcomingFilingDeadlines({ entityType: "corporate", referenceDate: "2026-01-01", fiscalYearEndMonth: -1 }),
+    ).toThrow();
+  });
+
+  it("breaks a same-due-date tie between the two corporate deadlines alphabetically by id", () => {
+    const result = getUpcomingFilingDeadlines({ entityType: "corporate", referenceDate: "2026-01-01" });
+
+    expect(result[0].daysRemaining).toBe(result[1].daysRemaining);
+    expect(result.map((d) => d.id)).toEqual(["corporate-local-tax", "corporate-national-tax"]);
+  });
+
+  it("treats a corporate deadline that falls exactly on the reference date as 0 days remaining, not rolled forward", () => {
+    const result = getUpcomingFilingDeadlines({
+      entityType: "corporate",
+      referenceDate: "2026-05-31",
+      fiscalYearEndMonth: 3,
+    });
+
+    expect(result[0].dueDate).toBe("2026-05-31");
+    expect(result[0].daysRemaining).toBe(0);
+    expect(result[0].urgency).toBe("urgent");
   });
 });
 

@@ -91,6 +91,37 @@ describe("normalizeCsvWithBankFormat", () => {
     const result = normalizeCsvWithBankFormat(csv, "smcc");
     expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
   });
+
+  it("strips yen signs and thousands-separator commas before parsing an amount", () => {
+    const csv = "ご利用日,ご利用店名,ご利用金額\n2026-01-12,家電量販店,\"¥12,800\"\n";
+    const result = normalizeCsvWithBankFormat(csv, "smcc");
+    expect(result.transactions[0].amount).toBe(-12800);
+  });
+
+  it("treats a lone '-' amount value as zero (not NaN) while still emitting the row, since date/description are present", () => {
+    const csv = "ご利用日,ご利用店名,ご利用金額\n2026-01-12,不明,-\n";
+    const result = normalizeCsvWithBankFormat(csv, "smcc");
+    expect(result.skippedRows).toBe(0);
+    expect(result.transactions).toHaveLength(1);
+    expect(result.transactions[0]).toMatchObject({ id: "row-1", date: "2026-01-12", description: "不明" });
+    // toNumber("-") -> 0, then Math.abs(0) negated yields -0; assert numeric equality (-0 === 0) rather
+    // than Object.is-based toBe/toEqual, which would otherwise treat -0 and 0 as distinct.
+    expect(result.transactions[0].amount === 0).toBe(true);
+  });
+
+  it("produces an empty transaction list (not an error) for a header-only CSV with no data rows", () => {
+    const csv = "日付,内容,出金金額,入金金額,残高\n";
+    const result = normalizeCsvWithBankFormat(csv, "sbi_sumishin");
+    expect(result.transactions).toEqual([]);
+    expect(result.skippedRows).toBe(0);
+    expect(result.detectedColumns).toEqual({ date: "日付", description: "内容", amount: "出金/入金列を合成" });
+  });
+
+  it("computes a deposit-only amount as positive when the withdraw column is entirely absent from the header", () => {
+    const csv = "日付,内容,入金金額\n2026-01-08,振込入金,450000\n";
+    const result = normalizeCsvWithBankFormat(csv, "sbi_sumishin");
+    expect(result.transactions[0].amount).toBe(450000);
+  });
 });
 
 describe("detectBankFormat", () => {

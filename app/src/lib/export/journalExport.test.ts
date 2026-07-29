@@ -85,6 +85,27 @@ describe("journalEntriesToCsv", () => {
     const csv = journalEntriesToCsv([tx({ note: undefined })]);
     expect(csv).not.toContain("undefined");
   });
+
+  it("quotes a field containing a lone carriage return with no accompanying newline", () => {
+    const csv = journalEntriesToCsv([tx({ note: "備考1\r備考2" })]);
+    expect(csv).toContain('"備考1\r備考2"');
+  });
+
+  it("renders a zero amount as the digit 0, not an empty field", () => {
+    const csv = journalEntriesToCsv([tx({ amount: 0 })]);
+    const row = csv.split("\r\n")[1];
+    expect(row.split(",")[2]).toBe("0");
+  });
+
+  it("preserves entry order across multiple rows", () => {
+    const csv = journalEntriesToCsv([
+      tx({ id: "1", description: "一件目" }),
+      tx({ id: "2", description: "二件目" }),
+      tx({ id: "3", description: "三件目" }),
+    ]);
+    const rows = csv.split("\r\n").slice(1);
+    expect(rows.map((r) => r.split(",")[1])).toEqual(["一件目", "二件目", "三件目"]);
+  });
 });
 
 describe("taxEstimateSummaryToCsv", () => {
@@ -163,5 +184,10 @@ describe("buildJournalExportCsv", () => {
     const csv = buildJournalExportCsv({ entries: [] });
     expect(csv.length).toBeGreaterThan(0);
     expect(csv).toContain(JOURNAL_ENTRY_CSV_HEADERS.join(","));
+  });
+
+  it("stamps an ISO-8601 generated-at timestamp using the current time when none is supplied", () => {
+    const csv = buildJournalExportCsv({ entries: [] });
+    expect(csv).toMatch(/出力日時: \d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/);
   });
 });

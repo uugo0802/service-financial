@@ -106,6 +106,28 @@ describe("filterTransactions", () => {
     });
     expect(result.map((r) => r.id)).toEqual(["tx-supplies"]);
   });
+
+  it("returns an empty array for an empty input list regardless of filters", () => {
+    expect(filterTransactions([])).toEqual([]);
+    expect(filterTransactions([], { keyword: "家賃" })).toEqual([]);
+  });
+
+  it("returns an empty array when minAmount exceeds maxAmount (an inverted, unsatisfiable range)", () => {
+    const result = filterTransactions(rows, { minAmount: 0, maxAmount: -100000 });
+    expect(result).toEqual([]);
+  });
+
+  it("does not spuriously match the literal word 'null' when a row's note is null", () => {
+    const result = filterTransactions(rows, { keyword: "null" });
+    expect(result).toEqual([]);
+  });
+
+  it("matches a keyword that spans the description/note join boundary only if it's contiguous", () => {
+    // "事務所家賃" description with a null note becomes "事務所家賃 " (trailing space, no note text) —
+    // a keyword requiring text after the space must not match.
+    const result = filterTransactions(rows, { keyword: "家賃 something" });
+    expect(result).toEqual([]);
+  });
 });
 
 describe("searchTransactions", () => {
