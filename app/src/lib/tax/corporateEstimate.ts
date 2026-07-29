@@ -16,8 +16,9 @@ const LOCAL_CORPORATE_TAX_RATE = 0.103; // 地方法人税 = 法人税額 × 10.
 // 自治体・資本金・従業者数により実際の金額は変わるため、あくまで参考表示。
 const PER_CAPITA_TAX_REFERENCE = 70_000;
 
+// 消費税額の端数処理は円未満切り捨てが原則のため、Math.round ではなく Math.floor を用いる。
 function extractTax(amountInclusive: number, ratePercent: number): number {
-  return Math.round((amountInclusive * ratePercent) / (100 + ratePercent));
+  return Math.floor((amountInclusive * ratePercent) / (100 + ratePercent));
 }
 
 export interface CorporateEstimate {

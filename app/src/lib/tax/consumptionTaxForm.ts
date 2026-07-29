@@ -17,10 +17,16 @@ function round100Down(n: number): number {
   return Math.floor(n / 100) * 100;
 }
 
-/** 税込金額から「税率のうち国税部分」「地方消費税部分」を分けて抜き出す */
+/**
+ * 税込金額から「税率のうち国税部分」「地方消費税部分」を分けて抜き出す。
+ * 消費税額の計算は円未満切り捨て（国税庁の税額計算における端数処理の原則）のため、
+ * Math.round ではなく Math.floor を用いる。四捨五入すると、切り捨てを前提とする
+ * round1000Down/round100Down との整合が取れず、①課税標準額や⑨差引税額といった
+ * 後続の欄が本来の額より過大に計算されてしまう。
+ */
 function splitTax(amountInclusive: number, combinedRate: number, nationalRate: number) {
-  const totalTax = Math.round((amountInclusive * combinedRate) / (100 + combinedRate));
-  const national = Math.round((totalTax * nationalRate) / combinedRate);
+  const totalTax = Math.floor((amountInclusive * combinedRate) / (100 + combinedRate));
+  const national = Math.floor((totalTax * nationalRate) / combinedRate);
   const local = totalTax - national;
   return { totalTax, national, local };
 }

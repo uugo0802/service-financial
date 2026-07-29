@@ -61,13 +61,27 @@ describe("estimateForIndividual", () => {
     expect(result.reconstructionSurtax).toBe(8_922);
     expect(result.totalIncomeTax).toBe(433_822);
 
-    // 消費税: 税込金額から税率で逆算
+    // 消費税: 税込金額から税率で逆算（円未満切り捨て）
+    // 8,000,000 * 10/110 = 727,272.727... → 切り捨てで727,272円
     expect(result.consumptionTax).toEqual({
       isLikelyExempt: true,
-      salesTax: 727_273,
+      salesTax: 727_272,
       purchaseTax: 189_818,
-      payable: 537_455,
+      payable: 537_454,
     });
+  });
+
+  // Regression: consumption tax amounts extracted from a tax-inclusive total must be truncated
+  // (円未満切り捨て), not rounded to the nearest yen. Math.round silently rounded .5-and-above
+  // fractional yen up, which both overstates the estimated consumption tax collected on sales
+  // and is inconsistent with the truncating helpers used elsewhere (e.g. consumptionTaxForm.ts's
+  // round1000Down/round100Down).
+  it("truncates (does not round) the extracted consumption tax on a sale with a fractional yen remainder", () => {
+    const rows = [tx({ id: "1", amount: 1000, account: "売上高", taxCategory: "課税売上10%" })];
+    const result = estimateForIndividual(rows);
+
+    // 1,000 * 10/110 = 90.909... → truncated to 90円 (Math.round would incorrectly give 91)
+    expect(result.consumptionTax.salesTax).toBe(90);
   });
 
   it("floors taxable income and tax at zero when expenses exceed income", () => {
