@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getSupabaseClient, AuditLogRow } from "./supabaseClient";
-import { listAuditLogs } from "./auditLogs";
+import {
+  listAuditLogs,
+  filterAuditLogs,
+  getDistinctEntityTypes,
+  describeAuditAction,
+  describeEntityType,
+  extractChangeSummary,
+} from "./auditLogs";
 
 vi.mock("./supabaseClient", async () => {
   const actual = await vi.importActual<typeof import("./supabaseClient")>("./supabaseClient");
@@ -51,5 +58,120 @@ describe("listAuditLogs", () => {
     vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
 
     await expect(listAuditLogs("tenant-1")).rejects.toThrow(/監査ログの取得に失敗しました/);
+  });
+});
+
+const LOGS: AuditLogRow[] = [
+  {
+    id: "log-1",
+    tenant_id: "tenant-1",
+    user_id: "user-1",
+    action: "transaction.confirm",
+    entity_type: "transaction",
+    entity_id: "tx-1",
+    changes: { before: { account_id: null }, after: { account_id: "acc-1" } },
+    created_at: "2026-01-10T00:00:00Z",
+  },
+  {
+    id: "log-2",
+    tenant_id: "tenant-1",
+    user_id: null,
+    action: "document.upload",
+    entity_type: "document",
+    entity_id: "doc-1",
+    changes: null,
+    created_at: "2026-03-05T00:00:00Z",
+  },
+  {
+    id: "log-3",
+    tenant_id: "tenant-1",
+    user_id: "user-2",
+    action: "unknown.action",
+    entity_type: "account",
+    entity_id: "acc-9",
+    changes: { note: "no before/after keys" },
+    created_at: "2026-06-20T00:00:00Z",
+  },
+];
+
+describe("filterAuditLogs", () => {
+  it("returns all logs when no filter is given", () => {
+    expect(filterAuditLogs(LOGS)).toEqual(LOGS);
+    expect(filterAuditLogs(LOGS, {})).toEqual(LOGS);
+  });
+
+  it("filters by entityType", () => {
+    expect(filterAuditLogs(LOGS, { entityType: "document" })).toEqual([LOGS[1]]);
+  });
+
+  it("filters by action", () => {
+    expect(filterAuditLogs(LOGS, { action: "transaction.confirm" })).toEqual([LOGS[0]]);
+  });
+
+  it("filters by inclusive date range", () => {
+    const result = filterAuditLogs(LOGS, { from: "2026-02-01", to: "2026-05-01" });
+    expect(result).toEqual([LOGS[1]]);
+  });
+
+  it("treats an unparsable date filter as no bound", () => {
+    expect(filterAuditLogs(LOGS, { from: "not-a-date" })).toEqual(LOGS);
+  });
+
+  it("combines multiple conditions", () => {
+    expect(filterAuditLogs(LOGS, { entityType: "account", from: "2026-06-01" })).toEqual([LOGS[2]]);
+    expect(filterAuditLogs(LOGS, { entityType: "account", from: "2026-07-01" })).toEqual([]);
+  });
+});
+
+describe("getDistinctEntityTypes", () => {
+  it("dedupes and sorts entity types", () => {
+    expect(getDistinctEntityTypes(LOGS)).toEqual(["account", "document", "transaction"]);
+  });
+
+  it("returns an empty array for no logs", () => {
+    expect(getDistinctEntityTypes([])).toEqual([]);
+  });
+});
+
+describe("describeAuditAction", () => {
+  it("maps known action codes to Japanese labels", () => {
+    expect(describeAuditAction("transaction.confirm")).toBe("仕訳を確定");
+  });
+
+  it("falls back to the raw code for unknown actions", () => {
+    expect(describeAuditAction("unknown.action")).toBe("unknown.action");
+  });
+});
+
+describe("describeEntityType", () => {
+  it("maps known entity types to Japanese labels", () => {
+    expect(describeEntityType("transaction")).toBe("取引明細");
+  });
+
+  it("falls back to the raw value for unknown entity types", () => {
+    expect(describeEntityType("widget")).toBe("widget");
+  });
+});
+
+describe("extractChangeSummary", () => {
+  it("extracts before/after when both are present", () => {
+    expect(extractChangeSummary({ before: { a: 1 }, after: { a: 2 } })).toEqual({
+      before: { a: 1 },
+      after: { a: 2 },
+    });
+  });
+
+  it("extracts before/after when only one is present", () => {
+    expect(extractChangeSummary({ after: { a: 2 } })).toEqual({ before: undefined, after: { a: 2 } });
+  });
+
+  it("returns null when changes has no before/after keys", () => {
+    expect(extractChangeSummary({ note: "x" })).toBeNull();
+  });
+
+  it("returns null for null, non-object, or array changes", () => {
+    expect(extractChangeSummary(null)).toBeNull();
+    expect(extractChangeSummary("string")).toBeNull();
+    expect(extractChangeSummary([1, 2])).toBeNull();
   });
 });
