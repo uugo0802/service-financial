@@ -5,9 +5,60 @@ import { CategorizedTransaction } from "../categorize/engine";
 // 実際の申告にあたっては必ずご自身（または税理士）の確認を経てください。
 // ------------------------------------------------------------------
 
-const BLUE_RETURN_DEDUCTION = 650_000; // 青色申告特別控除（e-Tax提出・複式簿記を仮定した最大額）
 const BASIC_DEDUCTION = 480_000; // 基礎控除（合計所得金額2,400万円以下）
 const RECONSTRUCTION_SURTAX_RATE = 0.021; // 復興特別所得税＝基準所得税額×2.1%
+
+/** 記帳方法: 複式簿記（貸借対照表を作成） or 簡易簿記（単式簿記） */
+export type BookkeepingMethod = "double" | "simple";
+/** 申告方法: e-Tax電子申告 / 優良な電子帳簿保存 / 書面提出 */
+export type FilingMethod = "eTax" | "electronicBooks" | "paper";
+
+export interface BlueReturnDeductionOptions {
+  /** 記帳方法。未指定の場合は複式簿記（"double"）を仮定します（最大控除額を保証するものではありません） */
+  bookkeepingMethod?: BookkeepingMethod;
+  /** 申告方法。未指定の場合は書面提出（"paper"）を仮定します（65万円の要件を満たすとは仮定しません） */
+  filingMethod?: FilingMethod;
+}
+
+interface BlueReturnDeductionResult {
+  amount: number;
+  note: string;
+}
+
+/**
+ * 青色申告特別控除額を、実際の記帳方法・申告方法に基づいて決定します。
+ * - 65万円: 複式簿記 かつ（e-Tax提出 または 優良な電子帳簿保存）、貸借対照表添付
+ * - 55万円: 複式簿記だが、書面提出（e-Tax・電子帳簿保存の要件を満たさない）
+ * - 10万円: 簡易簿記（申告方法によらず）
+ *
+ * オプション未指定時は、65万円を一律適用しないよう保守的に「複式簿記・書面提出＝55万円」を既定値とします。
+ */
+export function resolveBlueReturnDeduction(options?: BlueReturnDeductionOptions): BlueReturnDeductionResult {
+  const bookkeepingMethod = options?.bookkeepingMethod ?? "double";
+  const filingMethod = options?.filingMethod ?? "paper";
+
+  if (bookkeepingMethod === "simple") {
+    return {
+      amount: 100_000,
+      note: "青色申告特別控除10万円（簡易簿記を選択されているため）を適用しています",
+    };
+  }
+
+  if (filingMethod === "eTax" || filingMethod === "electronicBooks") {
+    return {
+      amount: 650_000,
+      note:
+        filingMethod === "eTax"
+          ? "青色申告特別控除65万円（複式簿記・貸借対照表添付・e-Tax提出の要件を満たす前提）を適用しています"
+          : "青色申告特別控除65万円（複式簿記・貸借対照表添付・優良な電子帳簿保存の要件を満たす前提）を適用しています",
+    };
+  }
+
+  return {
+    amount: 550_000,
+    note: "青色申告特別控除55万円（複式簿記・貸借対照表添付だが、e-Tax提出/優良な電子帳簿保存の要件は満たさない書面提出を仮定）を適用しています",
+  };
+}
 
 interface IncomeTaxBracket {
   upTo: number; // この金額以下
@@ -47,6 +98,7 @@ export interface IndividualEstimate {
   businessProfit: number; // 収入 - 必要経費
   socialInsuranceDeduction: number; // 社会保険料控除（国民健康保険・国民年金など、全額控除）
   lifeInsurancePaidInfo: number; // 生命保険料の年間支払額（参考表示のみ。控除額の上限計算は未対応）
+  blueReturnDeduction: number; // 青色申告特別控除額（記帳方法・申告方法に応じて65万/55万/10万円）
   taxableIncome: number; // 事業所得 - 青色控除 - 社会保険料控除 - 基礎控除（他の所得控除は考慮しない）
   incomeTax: { tax: number; marginalRate: number };
   reconstructionSurtax: number; // 復興特別所得税（所得税額×2.1%）
@@ -60,7 +112,12 @@ export interface IndividualEstimate {
   assumptions: string[];
 }
 
-export function estimateForIndividual(rows: CategorizedTransaction[]): IndividualEstimate {
+export function estimateForIndividual(
+  rows: CategorizedTransaction[],
+  options?: BlueReturnDeductionOptions
+): IndividualEstimate {
+  const { amount: blueReturnDeduction, note: blueReturnDeductionNote } = resolveBlueReturnDeduction(options);
+
   const income = rows.filter((r) => r.amount > 0);
   const allExpense = rows.filter((r) => r.amount < 0);
   const businessExpense = allExpense.filter((r) => !r.personalDeductionOnly);
@@ -78,7 +135,7 @@ export function estimateForIndividual(rows: CategorizedTransaction[]): Individua
 
   const taxableIncome = Math.max(
     0,
-    Math.floor((businessProfit - BLUE_RETURN_DEDUCTION - socialInsuranceDeduction - BASIC_DEDUCTION) / 1000) * 1000
+    Math.floor((businessProfit - blueReturnDeduction - socialInsuranceDeduction - BASIC_DEDUCTION) / 1000) * 1000
   );
   const { tax, rate } = calcIncomeTax(taxableIncome);
   const reconstructionSurtax = Math.floor(tax * RECONSTRUCTION_SURTAX_RATE);
@@ -102,6 +159,7 @@ export function estimateForIndividual(rows: CategorizedTransaction[]): Individua
     businessProfit,
     socialInsuranceDeduction,
     lifeInsurancePaidInfo,
+    blueReturnDeduction,
     taxableIncome,
     incomeTax: { tax, marginalRate: rate },
     reconstructionSurtax,
@@ -113,7 +171,7 @@ export function estimateForIndividual(rows: CategorizedTransaction[]): Individua
       payable: Math.max(0, salesTax10 - (purchaseTax10 + purchaseTax8)),
     },
     assumptions: [
-      "青色申告特別控除65万円（e-Tax提出・複式簿記を満たす前提）を一律適用しています",
+      blueReturnDeductionNote,
       "社会保険料控除（国民健康保険・国民年金等の全額）と基礎控除48万円のみ考慮し、生命保険料控除・扶養控除等の他の所得控除は含みません",
       "生命保険料の支払いは参考表示のみで、生命保険料控除額（上限あり）の自動計算は行っていません",
       "消費税は金額を税込として扱い、税率から逆算した概算です（簡易課税は考慮していません）",
