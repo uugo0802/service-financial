@@ -123,6 +123,20 @@ describe("buildConsumptionTaxForm", () => {
     expect(form.isLikelyExempt).toBe(true);
   });
 
+  // Regression: the national/local consumption tax split extracted from a tax-inclusive amount
+  // must be truncated (円未満切り捨て), not rounded to the nearest yen. Math.round silently
+  // rounded .5-and-above fractional yen up, which both overstates ②消費税額/④控除対象仕入税額
+  // and is inconsistent with the truncating round1000Down/round100Down helpers used for
+  // ①課税標準額 and ⑨差引税額 in this same file.
+  it("truncates (does not round) the national tax split on an amount with a fractional yen remainder", () => {
+    const rows = [tx({ id: "1", amount: 1000, taxCategory: "課税売上10%", account: "売上高" })];
+    const form = buildConsumptionTaxForm(rows);
+
+    // 1,000 * 10/110 = 90.909...(totalTax) → truncated to 90
+    // 90 * 7.8/10 = 70.2(national) → truncated to 70 (Math.round would incorrectly give 71)
+    expect(form.taxOnSales).toBe(70);
+  });
+
   it("returns all zeros for an empty input", () => {
     const form = buildConsumptionTaxForm([]);
     expect(form).toEqual({

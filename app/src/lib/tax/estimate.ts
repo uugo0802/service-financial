@@ -84,9 +84,12 @@ function calcIncomeTax(taxableIncome: number): { tax: number; rate: number } {
   return { tax, rate: bracket.rate };
 }
 
-/** 税込金額から消費税額を抜き出す（総額表示前提） */
+/**
+ * 税込金額から消費税額を抜き出す（総額表示前提）。
+ * 消費税額の端数処理は円未満切り捨てが原則のため、Math.round ではなく Math.floor を用いる。
+ */
 function extractTax(amountInclusive: number, ratePercent: number): number {
-  return Math.round((amountInclusive * ratePercent) / (100 + ratePercent));
+  return Math.floor((amountInclusive * ratePercent) / (100 + ratePercent));
 }
 
 const SOCIAL_INSURANCE_ACCOUNT = "社会保険料(個人)";

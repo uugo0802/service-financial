@@ -109,6 +109,30 @@ describe("ruleBasedCategorize", () => {
     expect(result.account).toBe("消耗品費");
   });
 
+  // Regression: the 水道光熱費 rule's "ガス(?!ソリン)" pattern matched the bare 2-character
+  // substring "ガス" anywhere in the description. "ガスト" (Gusto, a nationwide Japanese
+  // family restaurant chain) contains "ガス" as its first two characters, so a dining/
+  // entertainment expense at Gusto was silently misclassified as a utility bill
+  // (水道光熱費) instead of falling through to the 会議費/接待交際費 rules later in the list.
+  it("does not misclassify a Gusto restaurant receipt as 水道光熱費 via the bare 'ガス' substring", () => {
+    const result = ruleBasedCategorize({
+      id: "17",
+      date: "2026-01-05",
+      description: "ガスト 渋谷店",
+      amount: -3200,
+    });
+    expect(result.account).not.toBe("水道光熱費");
+  });
+
+  it("still matches actual gas utility bills as 水道光熱費", () => {
+    expect(
+      ruleBasedCategorize({ id: "18", date: "2026-01-05", description: "東京ガス 都市ガス料金", amount: -4500 }).account
+    ).toBe("水道光熱費");
+    expect(
+      ruleBasedCategorize({ id: "19", date: "2026-01-05", description: "プロパンガス代", amount: -6000 }).account
+    ).toBe("水道光熱費");
+  });
+
   it("still matches ANA/JR/ETC/au as whole-word brand references", () => {
     expect(ruleBasedCategorize({ id: "9", date: "2026-01-05", description: "ANA航空券購入", amount: -30000 }).account).toBe(
       "旅費交通費"
