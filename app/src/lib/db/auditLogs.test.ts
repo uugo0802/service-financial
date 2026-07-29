@@ -59,6 +59,15 @@ describe("listAuditLogs", () => {
 
     await expect(listAuditLogs("tenant-1")).rejects.toThrow(/監査ログの取得に失敗しました/);
   });
+
+  it("returns an empty array (not null/undefined) when the query succeeds with no data", async () => {
+    const builder = createBuilder({ data: null, error: null });
+    vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
+
+    const result = await listAuditLogs("tenant-1");
+
+    expect(result).toEqual([]);
+  });
 });
 
 const LOGS: AuditLogRow[] = [
@@ -121,6 +130,23 @@ describe("filterAuditLogs", () => {
     expect(filterAuditLogs(LOGS, { entityType: "account", from: "2026-06-01" })).toEqual([LOGS[2]]);
     expect(filterAuditLogs(LOGS, { entityType: "account", from: "2026-07-01" })).toEqual([]);
   });
+
+  it("includes a log whose created_at exactly equals the from/to boundary instant", () => {
+    expect(filterAuditLogs(LOGS, { from: "2026-01-10T00:00:00Z", to: "2026-01-10T00:00:00Z" })).toEqual([LOGS[0]]);
+  });
+
+  it("excludes a log one millisecond outside an exact-instant boundary", () => {
+    expect(filterAuditLogs(LOGS, { to: "2026-01-09T23:59:59.999Z" })).toEqual([]);
+    expect(filterAuditLogs(LOGS, { from: "2026-01-10T00:00:00.001Z", to: "2026-01-10T00:00:00.001Z" })).toEqual([]);
+  });
+
+  it("returns an empty array when 'to' precedes 'from' (an inverted, unsatisfiable range)", () => {
+    expect(filterAuditLogs(LOGS, { from: "2026-06-01", to: "2026-01-01" })).toEqual([]);
+  });
+
+  it("returns an empty array for an empty logs input regardless of filter", () => {
+    expect(filterAuditLogs([], { entityType: "transaction" })).toEqual([]);
+  });
 });
 
 describe("getDistinctEntityTypes", () => {
@@ -130,6 +156,11 @@ describe("getDistinctEntityTypes", () => {
 
   it("returns an empty array for no logs", () => {
     expect(getDistinctEntityTypes([])).toEqual([]);
+  });
+
+  it("dedupes when multiple logs share the same entity_type", () => {
+    const duplicated = [LOGS[0], { ...LOGS[0], id: "log-1b", entity_id: "tx-2" }, LOGS[1]];
+    expect(getDistinctEntityTypes(duplicated)).toEqual(["document", "transaction"]);
   });
 });
 

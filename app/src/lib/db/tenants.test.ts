@@ -76,6 +76,17 @@ describe("getMyTenantUser", () => {
 
     expect(result).toBeNull();
   });
+
+  it("returns null when auth.getUser() itself errors, even if a user object is present", async () => {
+    const auth = {
+      getUser: vi.fn().mockResolvedValue({ data: { user: { id: "user-1" } }, error: { message: "auth failure" } }),
+    };
+    vi.mocked(getSupabaseClient).mockReturnValue({ auth, from: vi.fn() } as never);
+
+    const result = await getMyTenantUser();
+
+    expect(result).toBeNull();
+  });
 });
 
 describe("getTenant", () => {
@@ -193,6 +204,65 @@ describe("validateTenantProfileDraft", () => {
 
     expect(hasTenantProfileErrors(errors)).toBe(false);
   });
+
+  it("accepts the boundary months 1 and 12, including a zero-padded value", () => {
+    for (const month of ["1", "01", "12"]) {
+      const draft: TenantProfileDraft = {
+        entityType: "corp",
+        displayName: "今ごえん合同会社",
+        fiscalYearEndMonth: month,
+        blueReturn: false,
+      };
+      expect(hasTenantProfileErrors(validateTenantProfileDraft(draft))).toBe(false);
+    }
+  });
+
+  it("rejects a fiscal year end month of 0", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "0",
+      blueReturn: false,
+    };
+
+    expect(validateTenantProfileDraft(draft).fiscalYearEndMonth).toBeDefined();
+  });
+
+  it("rejects a fractional fiscal year end month", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "3.5",
+      blueReturn: false,
+    };
+
+    expect(validateTenantProfileDraft(draft).fiscalYearEndMonth).toBeDefined();
+  });
+
+  it("treats a whitespace-only fiscal year end month as missing for a corporation", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "   ",
+      blueReturn: false,
+    };
+
+    expect(validateTenantProfileDraft(draft).fiscalYearEndMonth).toBeDefined();
+  });
+
+  it("reports both displayName and fiscalYearEndMonth errors at once when both are invalid", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "  ",
+      fiscalYearEndMonth: "",
+      blueReturn: false,
+    };
+
+    const errors = validateTenantProfileDraft(draft);
+
+    expect(errors.displayName).toBeDefined();
+    expect(errors.fiscalYearEndMonth).toBeDefined();
+  });
 });
 
 describe("tenantProfileToDraft / draftToTenantProfilePatch", () => {
@@ -236,6 +306,32 @@ describe("tenantProfileToDraft / draftToTenantProfilePatch", () => {
     });
 
     expect(patch.display_name).toBe("山田太郎");
+  });
+
+  it("forces fiscal_year_end_month to null for a corporation whose month field is whitespace-only", () => {
+    const patch = draftToTenantProfilePatch({
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "   ",
+      blueReturn: false,
+    });
+
+    expect(patch.fiscal_year_end_month).toBeNull();
+  });
+
+  it("round-trips an individual profile with a null fiscal_year_end_month to an empty draft field", () => {
+    const individualProfile: TenantProfile = {
+      id: "tenant-2",
+      entity_type: "individual",
+      display_name: "山田太郎",
+      created_at: "2026-01-01T00:00:00Z",
+      fiscal_year_end_month: null,
+      blue_return: false,
+    };
+
+    const draft = tenantProfileToDraft(individualProfile);
+
+    expect(draft.fiscalYearEndMonth).toBe("");
   });
 });
 

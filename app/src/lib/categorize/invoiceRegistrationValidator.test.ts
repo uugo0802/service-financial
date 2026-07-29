@@ -82,6 +82,32 @@ describe("validateInvoiceRegistrationNumber", () => {
     expect(result.valid).toBe(false);
     expect(result.reason).toBe("empty");
   });
+
+  it("treats a null/undefined input at runtime the same as an empty string", () => {
+    expect(validateInvoiceRegistrationNumber(null as unknown as string).reason).toBe("empty");
+    expect(validateInvoiceRegistrationNumber(undefined as unknown as string).reason).toBe("empty");
+  });
+
+  it("rejects hyphenated digits (a common copy-paste format) as non-numeric", () => {
+    const result = validateInvoiceRegistrationNumber("T2120-9010-07402");
+    expect(result.valid).toBe(false);
+    // The hyphens make the body neither 13 chars nor purely numeric depending on count;
+    // either invalid_length or non_numeric is an acceptable rejection reason here.
+    expect(["invalid_length", "non_numeric"]).toContain(result.reason);
+  });
+
+  it("rejects full-width (Zenkaku) digits as non-numeric", () => {
+    const result = validateInvoiceRegistrationNumber("T２１２０９０１００７４０２");
+    expect(result.valid).toBe(false);
+    expect(result.reason).toBe("non_numeric");
+  });
+
+  it("accepts a check digit of 9, the maximum possible value from the NTA formula", () => {
+    // base12 "000000000000" -> weightedSum 0 -> checkDigit = 9 - (0 % 9) = 9.
+    const result = validateInvoiceRegistrationNumber("T9000000000000");
+    expect(result.valid).toBe(true);
+    expect(result.normalized).toBe("T9000000000000");
+  });
 });
 
 describe("assessInputTaxCreditEligibility", () => {
@@ -106,5 +132,17 @@ describe("assessInputTaxCreditEligibility", () => {
   it("falls back to a generic counterparty label when the name is blank", () => {
     const advisory = assessInputTaxCreditEligibility("", null);
     expect(advisory.headline).toContain("この取引先");
+  });
+
+  it("treats a whitespace-only registration number the same as a missing one", () => {
+    const advisory = assessInputTaxCreditEligibility("株式会社サンプル", "   ");
+    expect(advisory.status).toBe("要確認");
+    expect(advisory.registrationNumberValid).toBeNull();
+  });
+
+  it("trims a padded counterparty name before using it in the headline", () => {
+    const advisory = assessInputTaxCreditEligibility("  株式会社サンプル  ", undefined);
+    expect(advisory.headline).toContain("株式会社サンプル");
+    expect(advisory.headline).not.toContain("  株式会社サンプル  ");
   });
 });
