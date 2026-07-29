@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseImageDimensions } from "./imageMeta";
+import { hasRecommendedMinimumResolution, parseImageDimensions, RECOMMENDED_MIN_LONG_EDGE_PX } from "./imageMeta";
 
 function writeUint32BE(bytes: Uint8Array, offset: number, value: number) {
   bytes[offset] = (value >>> 24) & 0xff;
@@ -105,5 +105,24 @@ describe("parseImageDimensions", () => {
       const result = parseImageDimensions(new ArrayBuffer(0), "image/jpeg");
       expect(result).toBeNull();
     });
+  });
+});
+
+describe("hasRecommendedMinimumResolution", () => {
+  it("returns true for a typical modern smartphone camera photo", () => {
+    expect(hasRecommendedMinimumResolution({ width: 3024, height: 4032 })).toBe(true);
+  });
+
+  it("returns true when exactly at the threshold on the long edge", () => {
+    expect(hasRecommendedMinimumResolution({ width: 800, height: RECOMMENDED_MIN_LONG_EDGE_PX })).toBe(true);
+  });
+
+  it("returns false for a low-resolution thumbnail-sized image", () => {
+    expect(hasRecommendedMinimumResolution({ width: 320, height: 240 })).toBe(false);
+  });
+
+  it("uses the longer of width/height (portrait or landscape)", () => {
+    expect(hasRecommendedMinimumResolution({ width: 1600, height: 200 })).toBe(true);
+    expect(hasRecommendedMinimumResolution({ width: 200, height: 1600 })).toBe(true);
   });
 });

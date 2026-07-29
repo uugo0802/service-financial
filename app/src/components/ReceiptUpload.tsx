@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { getCameraCaptureLabel, getFilePickerLabel, isCameraCaptureSupported } from "@/lib/ocr/cameraCapture";
+import { hasRecommendedMinimumResolution, parseImageDimensions } from "@/lib/ocr/imageMeta";
 import { ReceiptJournalCandidate, recordCorrection } from "@/lib/ocr/receiptCandidate";
 import { TAX_CATEGORIES } from "@/lib/ocr/receiptOcr";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // サーバー側(app/api/ocr/route.ts)の上限と揃える
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
+
+// isCameraCaptureSupported()の判定結果はマウント後に変化しないため、購読は何もしない
+function subscribeNoop() {
+  return () => {};
+}
 
 export function ReceiptUpload({
   onConfirm,
@@ -20,6 +27,14 @@ export function ReceiptUpload({
   const [aiConfigured, setAiConfigured] = useState(true);
   const [candidate, setCandidate] = useState<ReceiptJournalCandidate | null>(null);
   const [confirmedCount, setConfirmedCount] = useState(0);
+  const [resolutionHint, setResolutionHint] = useState<string | null>(null);
+  // navigatorはサーバー側で参照できないため、SSR時は「未対応」扱いの既定値を返し、
+  // クライアントでの実際の値とはuseSyncExternalStoreがハイドレーション不一致なく同期する。
+  const cameraSupported = useSyncExternalStore(
+    subscribeNoop,
+    () => isCameraCaptureSupported(),
+    () => false
+  );
 
   useEffect(() => {
     // 選択中のファイルのオブジェクトURLは差し替え・アンマウント時に必ず解放する
@@ -28,11 +43,31 @@ export function ReceiptUpload({
     };
   }, [previewUrl]);
 
+  // アップロード前にクライアント側だけで分かる「明らかに解像度が低い」ケースを、
+  // サーバーの解析結果を待たずに即座にお知らせするための非ブロッキングな事前チェック。
+  // カメラ撮影直後にその場で撮り直せるようにするのが狙い（電子帳簿保存法 スキャナ保存要件の目安）。
+  // 失敗しても本来のアップロード・解析フロー（handleFile）には一切影響させない。
+  async function updateResolutionHint(file: File) {
+    setResolutionHint(null);
+    try {
+      const buffer = await file.arrayBuffer();
+      const dims = parseImageDimensions(buffer, file.type);
+      if (dims && !hasRecommendedMinimumResolution(dims)) {
+        setResolutionHint(
+          "画像の解像度が低い可能性があります。電子帳簿保存法のスキャナ保存要件の目安（200dpi相当）に近づけるため、明るい場所でレシート全体が大きく写るように撮影し直すことをおすすめします。"
+        );
+      }
+    } catch {
+      // 事前チェックはあくまで補助的な注意喚起のため、失敗しても無視する
+    }
+  }
+
   async function handleFile(file: File) {
     if (loading) return; // 解析中の二重送信を防止
 
     setError(null);
     setCandidate(null);
+    void updateResolutionHint(file);
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setError(`ファイルサイズが大きすぎます（上限 ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB）。`);
@@ -74,6 +109,7 @@ export function ReceiptUpload({
     onConfirm?.(candidate);
     setConfirmedCount((n) => n + 1);
     setCandidate(null);
+    setResolutionHint(null);
     setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
@@ -89,18 +125,44 @@ export function ReceiptUpload({
       </p>
 
       <div className="flex items-center gap-3 flex-wrap">
+        {/* カメラでの撮影に特化した入り口。既存のファイル選択（下記）を置き換えるものではなく、
+            モバイル端末でその場で撮影したいユーザー向けに並べて用意する追加の導線。 */}
+        {cameraSupported && (
+          <label
+            className={`inline-flex min-w-[11rem] items-center justify-center gap-3 border px-5 py-3 text-sm transition-colors ${
+              loading
+                ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
+                : "border-stone-400 bg-white cursor-pointer hover:border-red-700"
+            }`}
+          >
+            <span>{getCameraCaptureLabel(loading)}</span>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              disabled={loading}
+              aria-busy={loading}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFile(f);
+                e.target.value = ""; // 同じファイルを選び直しても再度onChangeが発火するようにする
+              }}
+            />
+          </label>
+        )}
+
         <label
-          className={`inline-flex min-w-[13rem] items-center justify-center gap-3 border px-5 py-3 text-sm transition-colors ${
+          className={`inline-flex min-w-[11rem] items-center justify-center gap-3 border px-5 py-3 text-sm transition-colors ${
             loading
               ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
               : "border-stone-400 bg-white cursor-pointer hover:border-red-700"
           }`}
         >
-          <span>{loading ? "解析中…" : "レシート画像を撮影・選択"}</span>
+          <span>{getFilePickerLabel(loading)}</span>
           <input
             type="file"
             accept="image/*"
-            capture="environment"
             className="hidden"
             disabled={loading}
             aria-busy={loading}
@@ -115,6 +177,7 @@ export function ReceiptUpload({
       </div>
 
       {error && <p className="text-sm text-red-700">{error}</p>}
+      {!error && resolutionHint && <p className="text-xs text-amber-700">{resolutionHint}</p>}
       {!aiConfigured && (
         <p className="text-xs text-amber-700">
           ANTHROPIC_API_KEYが未設定のため、画像からの自動読み取りは行われていません（「要確認」のまま表示されています）。
