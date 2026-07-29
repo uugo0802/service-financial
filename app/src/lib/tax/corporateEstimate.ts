@@ -41,7 +41,10 @@ export function estimateForMicroCorp(rows: CategorizedTransaction[]): CorporateE
   const income = rows.filter((r) => r.amount > 0);
   const expense = rows.filter((r) => r.amount < 0);
 
-  const revenue = income.reduce((sum, r) => sum + r.amount, 0);
+  // 借入金の実行・出資の払込み等（excludeFromIncome）は負債・純資産の増加であり、法人の
+  // 収益（益金）ではないため、益金・所得金額・免税判定のいずれからも除外する。
+  const businessIncome = income.filter((r) => !r.excludeFromIncome);
+  const revenue = businessIncome.reduce((sum, r) => sum + r.amount, 0);
   const expenses = expense.reduce((sum, r) => sum + Math.abs(r.amount), 0);
   const taxableIncome = Math.max(0, Math.floor((revenue - expenses) / 1000) * 1000);
 

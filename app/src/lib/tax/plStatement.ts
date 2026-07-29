@@ -31,7 +31,9 @@ function groupByAccount(rows: CategorizedTransaction[]): PlLine[] {
  * （日付の正規化・並び替えは行っていないため、CSVの並び順に依存する）。
  */
 export function buildProfitLossStatement(rows: CategorizedTransaction[]): ProfitLossStatement {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資（資本金）の払込み等（excludeFromIncome）は貸借対照表項目であり、
+  // 損益計算書の「収入」には含めない。
+  const income = rows.filter((r) => r.amount > 0 && !r.excludeFromIncome);
   const expense = rows.filter((r) => r.amount < 0);
 
   const incomeLines = groupByAccount(income);

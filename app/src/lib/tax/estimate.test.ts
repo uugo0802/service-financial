@@ -87,6 +87,39 @@ describe("estimateForIndividual", () => {
     expect(result.consumptionTax.payable).toBe(0);
   });
 
+  // Regression: loan proceeds and capital contributions are balance-sheet items, not business
+  // revenue. Before excludeFromIncome was threaded through, a business loan drawdown or capital
+  // injection (both routinely categorized this way by the rule dictionary) would have been summed
+  // into totalIncome/businessProfit exactly like a sale, inflating taxable income and the tax due.
+  it("excludes loan proceeds and capital contributions from income, profit, and the exemption threshold", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({
+        id: "2",
+        amount: 5_000_000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({
+        id: "3",
+        amount: 2_000_000,
+        account: "元入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({ id: "4", amount: -1_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+
+    const result = estimateForIndividual(rows);
+
+    expect(result.totalIncome).toBe(3_000_000);
+    expect(result.businessProfit).toBe(2_000_000);
+    // Total cash in (10,000,000) is well over the 10,000,000 exemption threshold, but actual
+    // business income is only 3,000,000, so this should still read as likely-exempt.
+    expect(result.consumptionTax.isLikelyExempt).toBe(true);
+  });
+
   it("returns all-zero figures for an empty transaction list", () => {
     const result = estimateForIndividual([]);
 

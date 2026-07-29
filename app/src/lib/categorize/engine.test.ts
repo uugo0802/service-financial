@@ -34,6 +34,27 @@ describe("ruleBasedCategorize", () => {
     expect(result.personalDeductionOnly).toBe(true);
   });
 
+  // Regression: loan proceeds and capital contributions are balance-sheet items (増加する負債・純資産), not
+  // business revenue. They must be flagged so downstream tax calculators (estimate.ts, corporateEstimate.ts,
+  // etc.) can exclude them from taxable income - otherwise drawing down a business loan or injecting capital
+  // would be miscounted as taxable sales and inflate the income/corporate tax estimate.
+  it("flags loan proceeds as excluded from income", () => {
+    const result = ruleBasedCategorize({ id: "13", date: "2026-01-05", description: "銀行融資 借入実行", amount: 3000000 });
+    expect(result.account).toBe("借入金");
+    expect(result.excludeFromIncome).toBe(true);
+  });
+
+  it("flags capital contributions as excluded from income", () => {
+    const result = ruleBasedCategorize({ id: "14", date: "2026-01-05", description: "資本金払込み", amount: 1000000 });
+    expect(result.account).toBe("元入金");
+    expect(result.excludeFromIncome).toBe(true);
+  });
+
+  it("does not flag ordinary sales as excluded from income", () => {
+    const result = ruleBasedCategorize({ id: "15", date: "2026-01-05", description: "クライアントA社 業務委託料", amount: 300000 });
+    expect(result.excludeFromIncome).toBeUndefined();
+  });
+
   // Regression: the bare "ANA"/"JR"/"JAL"/"ETC"/"au" keywords in the travel and
   // telecom rules previously had no word-boundary, so they matched as a plain
   // substring anywhere in the description (case-insensitively, via the /i flag).
@@ -71,6 +92,21 @@ describe("ruleBasedCategorize", () => {
       amount: -3000,
     });
     expect(result.account).not.toBe("旅費交通費");
+  });
+
+  // Regression: the previous fix added \b word boundaries around ETC, but "ETC" the highway-toll
+  // brand and "etc" the English abbreviation ("et cetera") are the same token at word-boundary
+  // granularity. Real Japanese bookkeeping memos routinely end with "...etc." or "...etc" to mean
+  // "and so on", which should NOT be classified as 旅費交通費 (a highway toll charge).
+  it("does not misclassify a supplies purchase noted with the English abbreviation 'etc.' as 旅費交通費", () => {
+    const result = ruleBasedCategorize({
+      id: "16",
+      date: "2026-01-05",
+      description: "文房具・伝票用紙etc.",
+      amount: -3000,
+    });
+    expect(result.account).not.toBe("旅費交通費");
+    expect(result.account).toBe("消耗品費");
   });
 
   it("still matches ANA/JR/ETC/au as whole-word brand references", () => {

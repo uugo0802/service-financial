@@ -104,6 +104,25 @@ describe("buildConsumptionTaxForm", () => {
     expect(overThreshold.isLikelyExempt).toBe(false);
   });
 
+  // Regression: 免税判定に使う totalIncome（isLikelyExempt の基準）に、借入金の実行や
+  // 出資の払込みのような課税売上に該当しない資金調達を含めてはならない。含めてしまうと、
+  // 実際の課税売上高が1,000万円以下でも、借入・出資の分だけ合計が押し上げられて誤って
+  // 「免税事業者ではない」と判定されてしまう。
+  it("does not let loan proceeds or capital contributions push isLikelyExempt to false", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, taxCategory: "課税売上10%", account: "売上高" }),
+      tx({
+        id: "2",
+        amount: 8_000_000,
+        taxCategory: "対象外",
+        account: "借入金",
+        excludeFromIncome: true,
+      }),
+    ];
+    const form = buildConsumptionTaxForm(rows);
+    expect(form.isLikelyExempt).toBe(true);
+  });
+
   it("returns all zeros for an empty input", () => {
     const form = buildConsumptionTaxForm([]);
     expect(form).toEqual({

@@ -64,6 +64,26 @@ describe("buildMonthlyTrend", () => {
   });
 });
 
+describe("buildMonthlyTrend - excludeFromIncome", () => {
+  // Regression: the dashboard trend's "income" should reflect business revenue, not raw cash-in.
+  // A loan drawdown or capital contribution must not appear as income (or inflate profit).
+  it("excludes loan proceeds and capital contributions from the income/profit trend", () => {
+    const rows = [
+      tx({ id: "1", date: "2026-01-05", amount: 100000 }),
+      tx({
+        id: "2",
+        date: "2026-01-10",
+        amount: 5000000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+    ];
+    const result = buildMonthlyTrend(rows);
+    expect(result).toEqual([{ key: "2026-01", income: 100000, expense: 0, profit: 100000 }]);
+  });
+});
+
 describe("buildYearlyTrend", () => {
   it("aggregates income/expense/profit by year, collapsing months within the year", () => {
     const rows = [
