@@ -90,3 +90,20 @@ function readUint16BE(bytes: Uint8Array, offset: number): number {
 function readUint32BE(bytes: Uint8Array, offset: number): number {
   return ((bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3]) >>> 0;
 }
+
+// レシートの長辺をおよそ15cmと仮定し、電子帳簿保存法のスキャナ保存要件の目安である
+// 200dpi相当を満たすために必要な最低限の長辺ピクセル数を概算したもの
+// （lib/ocr/receiptCandidate.ts の estimateDpi と同じ前提: 200dpi × 15cm ÷ 2.54cm/inch）。
+// カメラで撮影した直後など、サーバーに送る前にクライアント側で「明らかに解像度が低い」
+// ケースだけを即座に検知するための、非ブロッキングな簡易チェック用の目安値。
+// 正式な充足判定（DPI推定・カラー判定を含む）はサーバー側の buildScanMetadata で行う。
+export const RECOMMENDED_MIN_LONG_EDGE_PX = 1181;
+
+/**
+ * 画像の長辺ピクセル数が {@link RECOMMENDED_MIN_LONG_EDGE_PX} 以上かどうかを判定する。
+ * あくまで目安であり、これを満たさない場合でも即座にエラー扱いにはせず、
+ * 呼び出し側でソフトな注意喚起として使うことを想定している。
+ */
+export function hasRecommendedMinimumResolution(dims: Pick<ImageDimensions, "width" | "height">): boolean {
+  return Math.max(dims.width, dims.height) >= RECOMMENDED_MIN_LONG_EDGE_PX;
+}
