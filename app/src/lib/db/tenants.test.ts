@@ -1,6 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getSupabaseClient, Tenant, TenantUser } from "./supabaseClient";
-import { getMyTenantUser, getTenant } from "./tenants";
+import {
+  TenantProfile,
+  TenantProfileDraft,
+  draftToTenantProfilePatch,
+  getMyTenantUser,
+  getTenant,
+  hasTenantProfileErrors,
+  tenantProfileToDraft,
+  updateTenantProfile,
+  validateTenantProfileDraft,
+} from "./tenants";
 
 vi.mock("./supabaseClient", async () => {
   const actual = await vi.importActual<typeof import("./supabaseClient")>("./supabaseClient");
@@ -92,5 +102,191 @@ describe("getTenant", () => {
     const result = await getTenant("other-tenant");
 
     expect(result).toBeNull();
+  });
+});
+
+const sampleTenantProfile: TenantProfile = {
+  id: "tenant-1",
+  entity_type: "corp",
+  display_name: "今ごえん合同会社",
+  created_at: "2024-04-01T00:00:00Z",
+  fiscal_year_end_month: 3,
+  blue_return: true,
+};
+
+describe("validateTenantProfileDraft", () => {
+  it("requires a display name", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "individual",
+      displayName: "  ",
+      fiscalYearEndMonth: "",
+      blueReturn: false,
+    };
+
+    const errors = validateTenantProfileDraft(draft);
+
+    expect(errors.displayName).toBeDefined();
+    expect(hasTenantProfileErrors(errors)).toBe(true);
+  });
+
+  it("does not require a fiscal year end month for individuals", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "individual",
+      displayName: "山田太郎",
+      fiscalYearEndMonth: "",
+      blueReturn: true,
+    };
+
+    const errors = validateTenantProfileDraft(draft);
+
+    expect(hasTenantProfileErrors(errors)).toBe(false);
+  });
+
+  it("requires a fiscal year end month for corporations", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "",
+      blueReturn: false,
+    };
+
+    const errors = validateTenantProfileDraft(draft);
+
+    expect(errors.fiscalYearEndMonth).toBeDefined();
+  });
+
+  it("rejects a fiscal year end month outside of 1-12", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "13",
+      blueReturn: false,
+    };
+
+    const errors = validateTenantProfileDraft(draft);
+
+    expect(errors.fiscalYearEndMonth).toBeDefined();
+  });
+
+  it("rejects a non-numeric fiscal year end month", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "abc",
+      blueReturn: false,
+    };
+
+    const errors = validateTenantProfileDraft(draft);
+
+    expect(errors.fiscalYearEndMonth).toBeDefined();
+  });
+
+  it("accepts a valid corporation draft", () => {
+    const draft: TenantProfileDraft = {
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "3",
+      blueReturn: true,
+    };
+
+    const errors = validateTenantProfileDraft(draft);
+
+    expect(hasTenantProfileErrors(errors)).toBe(false);
+  });
+});
+
+describe("tenantProfileToDraft / draftToTenantProfilePatch", () => {
+  it("round-trips a corporation profile through the draft", () => {
+    const draft = tenantProfileToDraft(sampleTenantProfile);
+
+    expect(draft).toEqual({
+      entityType: "corp",
+      displayName: "今ごえん合同会社",
+      fiscalYearEndMonth: "3",
+      blueReturn: true,
+    });
+
+    const patch = draftToTenantProfilePatch(draft);
+
+    expect(patch).toEqual({
+      entity_type: "corp",
+      display_name: "今ごえん合同会社",
+      fiscal_year_end_month: 3,
+      blue_return: true,
+    });
+  });
+
+  it("forces fiscal_year_end_month to null for individuals even if a stray value is present", () => {
+    const patch = draftToTenantProfilePatch({
+      entityType: "individual",
+      displayName: "山田太郎",
+      fiscalYearEndMonth: "3",
+      blueReturn: false,
+    });
+
+    expect(patch.fiscal_year_end_month).toBeNull();
+  });
+
+  it("trims the display name", () => {
+    const patch = draftToTenantProfilePatch({
+      entityType: "individual",
+      displayName: "  山田太郎  ",
+      fiscalYearEndMonth: "",
+      blueReturn: false,
+    });
+
+    expect(patch.display_name).toBe("山田太郎");
+  });
+});
+
+describe("updateTenantProfile", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function createUpdateBuilder(result: { data: unknown; error: unknown }) {
+    const builder: Record<string, unknown> = {};
+    for (const method of ["update", "select", "eq"]) {
+      builder[method] = vi.fn(() => builder);
+    }
+    builder.single = vi.fn(() => Promise.resolve(result));
+    return builder;
+  }
+
+  it("updates the tenant scoped by tenantId and returns the updated profile", async () => {
+    const builder = createUpdateBuilder({ data: sampleTenantProfile, error: null });
+    const from = vi.fn(() => builder);
+    vi.mocked(getSupabaseClient).mockReturnValue({ from } as never);
+
+    const result = await updateTenantProfile("tenant-1", {
+      entity_type: "corp",
+      display_name: "今ごえん合同会社",
+      fiscal_year_end_month: 3,
+      blue_return: true,
+    });
+
+    expect(result).toEqual(sampleTenantProfile);
+    expect(from).toHaveBeenCalledWith("tenants");
+    expect(builder.update).toHaveBeenCalledWith({
+      entity_type: "corp",
+      display_name: "今ごえん合同会社",
+      fiscal_year_end_month: 3,
+      blue_return: true,
+    });
+    expect(builder.eq).toHaveBeenCalledWith("id", "tenant-1");
+  });
+
+  it("throws a Japanese error message on failure", async () => {
+    const builder = createUpdateBuilder({ data: null, error: { message: "boom" } });
+    vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
+
+    await expect(
+      updateTenantProfile("tenant-1", {
+        entity_type: "individual",
+        display_name: "山田太郎",
+        fiscal_year_end_month: null,
+        blue_return: false,
+      })
+    ).rejects.toThrow(/テナント情報の更新に失敗しました/);
   });
 });
