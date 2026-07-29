@@ -1,5 +1,5 @@
 import { CategorizedTransaction } from "../categorize/engine";
-import { IndividualEstimate } from "./estimate";
+import { BlueReturnDeductionOptions, IndividualEstimate, resolveBlueReturnDeduction } from "./estimate";
 
 // ------------------------------------------------------------------
 // 「所得税及び復興特別所得税の確定申告書」第一表と、
@@ -18,7 +18,7 @@ export interface IndividualReturnForm {
 export function buildIndividualReturnForm(estimate: IndividualEstimate): IndividualReturnForm {
   const businessIncomeAfterBlueDeduction = Math.max(
     0,
-    estimate.businessProfit - 650_000
+    estimate.businessProfit - estimate.blueReturnDeduction
   );
 
   return {
@@ -83,7 +83,12 @@ const STANDARD_DISPLAY_LABEL: Record<string, string> = {
   "給料賃金/外注工賃": "給料賃金・外注工賃（合算表示）",
 };
 
-export function buildBlueReturnStatement(rows: CategorizedTransaction[]): BlueReturnStatement {
+export function buildBlueReturnStatement(
+  rows: CategorizedTransaction[],
+  options?: BlueReturnDeductionOptions
+): BlueReturnStatement {
+  const maxBlueReturnDeduction = resolveBlueReturnDeduction(options).amount;
+
   const income = rows.filter((r) => r.amount > 0);
   const expense = rows.filter((r) => r.amount < 0 && !r.personalDeductionOnly);
 
@@ -110,7 +115,7 @@ export function buildBlueReturnStatement(rows: CategorizedTransaction[]): BlueRe
     standardExpenseLines.reduce((s, l) => s + l.amount, 0) + otherExpenseLines.reduce((s, l) => s + l.amount, 0);
 
   const incomeBeforeBlueDeduction = salesTotal - expenseTotal;
-  const blueReturnDeduction = Math.min(650_000, Math.max(0, incomeBeforeBlueDeduction));
+  const blueReturnDeduction = Math.min(maxBlueReturnDeduction, Math.max(0, incomeBeforeBlueDeduction));
 
   return {
     salesTotal,

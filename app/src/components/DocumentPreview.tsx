@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
-import { IndividualEstimate } from "@/lib/tax/estimate";
+import { BookkeepingMethod, estimateForIndividual, FilingMethod, IndividualEstimate } from "@/lib/tax/estimate";
 import { CorporateEstimate } from "@/lib/tax/corporateEstimate";
 import { buildProfitLossStatement } from "@/lib/tax/plStatement";
 import { buildConsumptionTaxForm } from "@/lib/tax/consumptionTaxForm";
@@ -102,14 +102,54 @@ export function DocumentPreview({
 }) {
   const [individualDoc, setIndividualDoc] = useState<IndividualDocType>("blueReturn");
   const [corpDoc, setCorpDoc] = useState<CorpDocType>("financialStatements");
+  // 青色申告特別控除額（65万/55万/10万円）の判定に使う記帳方法・申告方法。
+  // 既定値は最大控除額を一律適用しないよう保守的な組み合わせ（複式簿記・書面提出＝55万円）。
+  const [bookkeepingMethod, setBookkeepingMethod] = useState<BookkeepingMethod>("double");
+  const [filingMethod, setFilingMethod] = useState<FilingMethod>("paper");
 
   const pl = buildProfitLossStatement(rows);
   const consumptionForm = buildConsumptionTaxForm(rows);
   const tabs = mode === "corp" ? CORP_DOC_TABS : INDIVIDUAL_DOC_TABS;
   const active = mode === "corp" ? corpDoc : individualDoc;
+  const blueReturnOptions = { bookkeepingMethod, filingMethod };
+  // 個人事業主向けの書類は、渡された概算値ではなく上記の選択を反映した最新の概算値で表示する
+  const effectiveIndividualEstimate =
+    mode === "individual" ? estimateForIndividual(rows, blueReturnOptions) : individualEstimate;
 
   return (
     <div>
+      {mode === "individual" && (
+        <div className="flex flex-wrap items-end gap-4 mb-4 print:hidden">
+          <label className="flex flex-col gap-1 text-xs text-stone-500">
+            記帳方法
+            <select
+              value={bookkeepingMethod}
+              onChange={(e) => setBookkeepingMethod(e.target.value as BookkeepingMethod)}
+              className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+            >
+              <option value="double">複式簿記（貸借対照表を作成）</option>
+              <option value="simple">簡易簿記（単式簿記）</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-stone-500">
+            申告方法
+            <select
+              value={filingMethod}
+              onChange={(e) => setFilingMethod(e.target.value as FilingMethod)}
+              disabled={bookkeepingMethod === "simple"}
+              className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600 disabled:bg-stone-100 disabled:text-stone-400"
+            >
+              <option value="paper">書面提出</option>
+              <option value="eTax">e-Tax電子申告</option>
+              <option value="electronicBooks">優良な電子帳簿保存</option>
+            </select>
+          </label>
+          <p className="text-xs text-stone-400 max-w-sm leading-relaxed">
+            青色申告特別控除額（65万円/55万円/10万円）の判定に使用します。要件を満たすか不明な場合は「複式簿記・書面提出」のままにしてください。
+          </p>
+        </div>
+      )}
+
       <div className="flex gap-2 mb-4 flex-wrap print:hidden">
         {tabs.map((t) => (
           <button
@@ -132,10 +172,11 @@ export function DocumentPreview({
           <IndividualDocuments
             doc={individualDoc}
             rows={rows}
-            estimate={individualEstimate}
+            estimate={effectiveIndividualEstimate}
             entityName={entityName}
             pl={pl}
             consumptionForm={consumptionForm}
+            blueReturnOptions={blueReturnOptions}
           />
         ) : (
           <CorpDocuments
@@ -162,6 +203,7 @@ function IndividualDocuments({
   entityName,
   pl,
   consumptionForm,
+  blueReturnOptions,
 }: {
   doc: IndividualDocType;
   rows: CategorizedTransaction[];
@@ -169,9 +211,10 @@ function IndividualDocuments({
   entityName: string;
   pl: ReturnType<typeof buildProfitLossStatement>;
   consumptionForm: ReturnType<typeof buildConsumptionTaxForm>;
+  blueReturnOptions: { bookkeepingMethod: BookkeepingMethod; filingMethod: FilingMethod };
 }) {
   if (doc === "blueReturn") {
-    const blueReturn = buildBlueReturnStatement(rows);
+    const blueReturn = buildBlueReturnStatement(rows, blueReturnOptions);
     return (
       <>
         <DocHeader title="所得税青色申告決算書（一般用）－ 損益計算書" entityName={entityName} periodStart={pl.periodStart} periodEnd={pl.periodEnd} />

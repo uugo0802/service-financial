@@ -17,7 +17,7 @@ function tx(overrides: Partial<CategorizedTransaction>): CategorizedTransaction 
 }
 
 describe("estimateForIndividual", () => {
-  it("computes profit, deductions, income tax, and consumption tax for a typical freelancer", () => {
+  it("computes profit, deductions, income tax, and consumption tax for a typical freelancer (double-entry + e-Tax, 65万円控除)", () => {
     const rows = [
       tx({ id: "1", amount: 8_000_000, account: "売上高", taxCategory: "課税売上10%" }),
       tx({ id: "2", amount: -2_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
@@ -38,7 +38,8 @@ describe("estimateForIndividual", () => {
       }),
     ];
 
-    const result = estimateForIndividual(rows);
+    // 複式簿記・e-Tax提出（65万円控除の要件を満たす想定）を明示的に指定
+    const result = estimateForIndividual(rows, { bookkeepingMethod: "double", filingMethod: "eTax" });
 
     // 収入・経費: 社会保険料・生命保険料（personalDeductionOnly）は必要経費に含めない
     expect(result.totalIncome).toBe(8_000_000);
@@ -48,6 +49,8 @@ describe("estimateForIndividual", () => {
     // 個人的な控除項目は別枠で集計される
     expect(result.socialInsuranceDeduction).toBe(500_000);
     expect(result.lifeInsurancePaidInfo).toBe(100_000);
+
+    expect(result.blueReturnDeduction).toBe(650_000);
 
     // 事業所得 - 青色控除65万 - 社保控除50万 - 基礎控除48万 = 4,262,000（千円未満切り捨て）
     expect(result.taxableIncome).toBe(4_262_000);
@@ -97,16 +100,17 @@ describe("estimateForIndividual", () => {
   });
 
   it("applies the next income tax bracket once taxable income crosses a threshold", () => {
-    // 課税所得がちょうど1,950,000円（5%帯の上限）
+    // 既定（複式簿記・書面提出＝青色控除55万円）の下で、課税所得がちょうど1,950,000円（5%帯の上限）
     const atThreshold = estimateForIndividual([
-      tx({ id: "1", amount: 3_080_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "1", amount: 2_980_000, account: "売上高", taxCategory: "課税売上10%" }),
     ]);
+    expect(atThreshold.blueReturnDeduction).toBe(550_000);
     expect(atThreshold.taxableIncome).toBe(1_950_000);
     expect(atThreshold.incomeTax).toEqual({ tax: 97_500, marginalRate: 5 });
 
     // 課税所得が1,951,000円（1,000円超えて10%帯に入る）
     const justAbove = estimateForIndividual([
-      tx({ id: "1", amount: 3_081_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "1", amount: 2_981_000, account: "売上高", taxCategory: "課税売上10%" }),
     ]);
     expect(justAbove.taxableIncome).toBe(1_951_000);
     expect(justAbove.incomeTax).toEqual({ tax: 97_600, marginalRate: 10 });
@@ -122,5 +126,52 @@ describe("estimateForIndividual", () => {
       tx({ id: "1", amount: 10_000_001, account: "売上高", taxCategory: "課税売上10%" }),
     ]);
     expect(overLimit.consumptionTax.isLikelyExempt).toBe(false);
+  });
+
+  describe("blue-return deduction (bookkeeping method / filing method)", () => {
+    const bigProfitRows = [tx({ id: "1", amount: 10_000_000, account: "売上高", taxCategory: "課税売上10%" })];
+
+    it("defaults to the conservative 550,000 tier (double-entry, paper filing) when no options are given", () => {
+      const result = estimateForIndividual(bigProfitRows);
+      expect(result.blueReturnDeduction).toBe(550_000);
+      expect(result.assumptions[0]).toContain("55万円");
+    });
+
+    it("defaults to 550,000 when bookkeepingMethod is double but filingMethod is omitted", () => {
+      const result = estimateForIndividual(bigProfitRows, { bookkeepingMethod: "double" });
+      expect(result.blueReturnDeduction).toBe(550_000);
+    });
+
+    it("applies 650,000 for double-entry bookkeeping filed via e-Tax", () => {
+      const result = estimateForIndividual(bigProfitRows, { bookkeepingMethod: "double", filingMethod: "eTax" });
+      expect(result.blueReturnDeduction).toBe(650_000);
+      expect(result.assumptions[0]).toContain("65万円");
+    });
+
+    it("applies 650,000 for double-entry bookkeeping with 優良な電子帳簿保存 even on paper filing status otherwise", () => {
+      const result = estimateForIndividual(bigProfitRows, {
+        bookkeepingMethod: "double",
+        filingMethod: "electronicBooks",
+      });
+      expect(result.blueReturnDeduction).toBe(650_000);
+    });
+
+    it("applies 550,000 for double-entry bookkeeping filed on paper (explicitly)", () => {
+      const result = estimateForIndividual(bigProfitRows, { bookkeepingMethod: "double", filingMethod: "paper" });
+      expect(result.blueReturnDeduction).toBe(550_000);
+      expect(result.assumptions[0]).toContain("55万円");
+    });
+
+    it("applies 100,000 for simple bookkeeping regardless of filing method", () => {
+      const eTaxResult = estimateForIndividual(bigProfitRows, { bookkeepingMethod: "simple", filingMethod: "eTax" });
+      expect(eTaxResult.blueReturnDeduction).toBe(100_000);
+      expect(eTaxResult.assumptions[0]).toContain("10万円");
+
+      const paperResult = estimateForIndividual(bigProfitRows, {
+        bookkeepingMethod: "simple",
+        filingMethod: "paper",
+      });
+      expect(paperResult.blueReturnDeduction).toBe(100_000);
+    });
   });
 });
