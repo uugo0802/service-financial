@@ -18,23 +18,28 @@ function splitIntoGroups(digits: string[]): string[][] {
 }
 
 export function DigitAmount({ value }: { value: number }) {
-  const digits = Math.max(0, Math.round(value)).toString().padStart(TOTAL_DIGITS, " ").slice(-TOTAL_DIGITS).split("");
+  const rounded = Math.max(0, Math.round(value));
+  const digits = rounded.toString().padStart(TOTAL_DIGITS, " ").slice(-TOTAL_DIGITS).split("");
   const groups = splitIntoGroups(digits);
   return (
-    <div className="inline-flex border border-stone-800 shrink-0">
-      {groups.map((group, gi) => (
-        <div key={gi} className={`flex ${gi > 0 ? "border-l-2 border-stone-800" : ""}`}>
-          {group.map((d, i) => (
-            <span
-              key={i}
-              className="w-[0.95em] sm:w-[1.15em] h-[1.3em] sm:h-[1.5em] flex items-center justify-center border-l border-stone-300 first:border-l-0 text-[0.68rem] sm:text-[0.82rem] tabular-nums"
-            >
-              {d.trim()}
-            </span>
-          ))}
-        </div>
-      ))}
-    </div>
+    <>
+      {/* 1マス1文字のマス目表示は装飾目的の再現であり、スクリーンリーダーには意味のある金額として読み上げる */}
+      <div className="inline-flex border border-stone-800 shrink-0" aria-hidden="true">
+        {groups.map((group, gi) => (
+          <div key={gi} className={`flex ${gi > 0 ? "border-l-2 border-stone-800" : ""}`}>
+            {group.map((d, i) => (
+              <span
+                key={i}
+                className="w-[0.95em] sm:w-[1.15em] h-[1.3em] sm:h-[1.5em] flex items-center justify-center border-l border-stone-300 first:border-l-0 text-[0.68rem] sm:text-[0.82rem] tabular-nums"
+              >
+                {d.trim()}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+      <span className="sr-only">{rounded.toLocaleString("ja-JP")}円</span>
+    </>
   );
 }
 
