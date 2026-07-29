@@ -115,6 +115,7 @@ export function DocumentPreview({
           <button
             key={t.key}
             type="button"
+            aria-pressed={active === t.key}
             onClick={() => (mode === "corp" ? setCorpDoc(t.key as CorpDocType) : setIndividualDoc(t.key as IndividualDocType))}
             className={`text-sm px-4 py-2 border transition-colors ${
               active === t.key
@@ -435,8 +436,11 @@ function CorpDocuments({
           <p className="text-sm text-stone-600 mb-6">取引明細から役員報酬の支払いは検出されませんでした。役員貸付金・借入金等、取引明細に現れない関連当事者取引がある場合は別途記載してください。</p>
         )}
 
-        <div className="text-xs font-semibold text-stone-500 mb-1 mt-4">重要な後発事象に関する注記</div>
+        <label htmlFor="subsequentEvents" className="block text-xs font-semibold text-stone-500 mb-1 mt-4">
+          重要な後発事象に関する注記
+        </label>
         <textarea
+          id="subsequentEvents"
           className="print:hidden w-full border border-stone-300 rounded px-2 py-1.5 text-sm mb-2"
           rows={2}
           value={subsequentEvents}
@@ -575,20 +579,20 @@ function BusinessOverviewSection({
 
       <div className="print:hidden grid gap-4 mb-8 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className="block text-xs font-semibold text-stone-500 mb-1">業種</label>
-          <input className={inputClass} value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="例：ソフトウェア受託開発業" />
+          <label htmlFor="bo-industry" className="block text-xs font-semibold text-stone-500 mb-1">業種</label>
+          <input id="bo-industry" className={inputClass} value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="例：ソフトウェア受託開発業" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-stone-500 mb-1">事業内容の概要</label>
-          <textarea className={inputClass} rows={3} value={businessDescription} onChange={(e) => setBusinessDescription(e.target.value)} placeholder="例：法人向け業務システムの受託開発・保守" />
+          <label htmlFor="bo-description" className="block text-xs font-semibold text-stone-500 mb-1">事業内容の概要</label>
+          <textarea id="bo-description" className={inputClass} rows={3} value={businessDescription} onChange={(e) => setBusinessDescription(e.target.value)} placeholder="例：法人向け業務システムの受託開発・保守" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-stone-500 mb-1">従業者数（役員含む）</label>
-          <input className={inputClass} value={employeeCount} onChange={(e) => setEmployeeCount(e.target.value)} placeholder="例：1名" />
+          <label htmlFor="bo-employeeCount" className="block text-xs font-semibold text-stone-500 mb-1">従業者数（役員含む）</label>
+          <input id="bo-employeeCount" className={inputClass} value={employeeCount} onChange={(e) => setEmployeeCount(e.target.value)} placeholder="例：1名" />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-stone-500 mb-1">主要な取引先</label>
-          <textarea className={inputClass} rows={2} value={mainClients} onChange={(e) => setMainClients(e.target.value)} placeholder="例：株式会社〇〇（売上構成比の高い順に）" />
+          <label htmlFor="bo-mainClients" className="block text-xs font-semibold text-stone-500 mb-1">主要な取引先</label>
+          <textarea id="bo-mainClients" className={inputClass} rows={2} value={mainClients} onChange={(e) => setMainClients(e.target.value)} placeholder="例：株式会社〇〇（売上構成比の高い順に）" />
         </div>
       </div>
 

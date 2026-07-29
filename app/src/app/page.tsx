@@ -95,8 +95,8 @@ export default function Home() {
 
           <div className="flex flex-col gap-4">
             <div>
-              <div className="text-xs text-stone-500 mb-2">事業形態</div>
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="text-xs text-stone-500 mb-2" id="entity-mode-label">事業形態</div>
+              <div className="flex items-center gap-3 flex-wrap" role="group" aria-labelledby="entity-mode-label">
                 <button
                   type="button"
                   aria-pressed={mode === "individual"}
@@ -125,10 +125,11 @@ export default function Home() {
             </div>
 
             <div>
-              <div className="text-xs text-stone-500 mb-2">
+              <label htmlFor="entityName" className="block text-xs text-stone-500 mb-2">
                 {mode === "corp" ? "法人名（書類プレビュー用）" : "氏名・屋号（書類プレビュー用）"}
-              </div>
+              </label>
               <input
+                id="entityName"
                 type="text"
                 value={entityName}
                 onChange={(e) => setEntityName(e.target.value)}
@@ -357,6 +358,7 @@ export default function Home() {
               <div className="flex gap-3">
                 <button
                   type="button"
+                  aria-expanded={showDocuments}
                   onClick={() => setShowDocuments((v) => !v)}
                   className="text-sm px-4 py-2 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
                 >
