@@ -21,9 +21,9 @@ export function resetWizardState(totalSteps: number): WizardProgressState {
   return createWizardState(totalSteps);
 }
 
-/** 指定ステップが解放済み（閲覧・操作可能）かどうか */
+/** 指定ステップが解放済み（閲覧・操作可能）かどうか。1未満のステップ番号は常に未解放として扱う */
 export function isStepUnlocked(state: WizardProgressState, step: number): boolean {
-  return step <= state.maxUnlockedStep;
+  return step >= 1 && step <= state.maxUnlockedStep;
 }
 
 export function isStepCompleted(state: WizardProgressState, step: number): boolean {

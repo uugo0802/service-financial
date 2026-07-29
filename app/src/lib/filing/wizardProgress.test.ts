@@ -45,6 +45,21 @@ describe("completeStep", () => {
     expect(isStepCompleted(attempt, 3)).toBe(false);
   });
 
+  it("ignores step 0 and negative step numbers instead of treating them as unlocked", () => {
+    const state = createWizardState(5);
+
+    expect(completeStep(state, 5, 0)).toEqual(state);
+    expect(completeStep(state, 5, -1)).toEqual(state);
+    expect(isStepCompleted(state, 0)).toBe(false);
+  });
+
+  it("throws when totalSteps is not a positive integer", () => {
+    const state = createWizardState(5);
+    expect(() => completeStep(state, 0, 1)).toThrow();
+    expect(() => completeStep(state, -3, 1)).toThrow();
+    expect(() => completeStep(state, 2.5, 1)).toThrow();
+  });
+
   it("does not advance past the last step when completing the final step", () => {
     let state = createWizardState(3);
     state = completeStep(state, 3, 1);
@@ -84,6 +99,13 @@ describe("goToStep", () => {
     const attempt = goToStep(state, 4);
 
     expect(attempt).toEqual(state);
+  });
+
+  it("refuses to navigate to step 0 or a negative step number", () => {
+    const state = createWizardState(5);
+
+    expect(goToStep(state, 0)).toEqual(state);
+    expect(goToStep(state, -2)).toEqual(state);
   });
 });
 

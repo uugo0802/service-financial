@@ -66,6 +66,17 @@ describe("parseImageDimensions", () => {
       const result = parseImageDimensions(buffer, "application/octet-stream");
       expect(result).not.toBeNull();
     });
+
+    it("treats an undefined/reserved PNG color type as color-indeterminate", () => {
+      const buffer = buildPngBuffer(800, 600, 1); // 1 is not a valid PNG color type
+      const result = parseImageDimensions(buffer, "image/png");
+      expect(result?.isColor).toBeNull();
+    });
+
+    it("returns null when width or height is zero", () => {
+      expect(parseImageDimensions(buildPngBuffer(0, 600, 2), "image/png")).toBeNull();
+      expect(parseImageDimensions(buildPngBuffer(800, 0, 2), "image/png")).toBeNull();
+    });
   });
 
   describe("JPEG", () => {
@@ -79,6 +90,21 @@ describe("parseImageDimensions", () => {
       const buffer = buildJpegBuffer(640, 480, 1);
       const result = parseImageDimensions(buffer, "image/jpeg");
       expect(result?.isColor).toBe(false);
+    });
+
+    it("returns null instead of looping forever on a segment with a corrupt (too-short) length", () => {
+      // SOI + a non-SOF marker (APP0) whose declared segment length is below the minimum of 2
+      const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x00]);
+      expect(() => parseImageDimensions(bytes.buffer, "image/jpeg")).not.toThrow();
+      expect(parseImageDimensions(bytes.buffer, "image/jpeg")).toBeNull();
+    });
+
+    it("skips restart markers (0xD0-0xD7) with no payload while scanning for SOF", () => {
+      const bytes: number[] = [0xff, 0xd8, 0xff, 0xd0]; // SOI + a restart marker (no length field)
+      const sof = buildJpegBuffer(320, 240, 3);
+      bytes.push(...new Uint8Array(sof).subarray(2)); // append a real SOF0 segment after it
+      const buffer = new Uint8Array(bytes).buffer;
+      expect(parseImageDimensions(buffer, "image/jpeg")).toEqual({ width: 320, height: 240, isColor: true });
     });
   });
 
