@@ -110,6 +110,32 @@ describe("estimateForMicroCorp", () => {
     expect(result.taxableIncome).toBe(3_000_000);
   });
 
+  // Regression: excludeFromIncome must take priority over taxCategory when computing the
+  // consumption tax on sales, not just revenue/taxableIncome. The rule dictionary always pairs
+  // excludeFromIncome with taxCategory "対象外", but AI classification (aiEscalate.ts)
+  // re-attaches excludeFromIncome from the account name independently of the LLM-supplied
+  // taxCategory, so the two can disagree (e.g. account="元入金" with taxCategory="課税売上10%").
+  // Before this fix, salesTax10 was computed from the unfiltered `income` list, so a capital
+  // injection mistakenly tagged with a taxable-sales category would have leaked phantom
+  // consumption tax into the payable amount even though it's correctly excluded from revenue.
+  it("excludes an excludeFromIncome row from consumption tax on sales even if its taxCategory is mistakenly '課税売上10%'", () => {
+    const rows = [
+      tx({ id: "1", amount: 4_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({
+        id: "2",
+        amount: 10_000_000,
+        account: "元入金",
+        taxCategory: "課税売上10%", // mis-tagged by AI classification; excludeFromIncome must still win
+        excludeFromIncome: true,
+      }),
+    ];
+
+    const result = estimateForMicroCorp(rows);
+
+    // Only the genuine 4,000,000 sale should be taxed: 4,000,000 * 10/110 = 363,636.36... -> 363,636
+    expect(result.consumptionTax.salesTax).toBe(363_636);
+  });
+
   it("marks consumption tax as not exempt once revenue exceeds 10,000,000", () => {
     const rows = [tx({ id: "1", amount: 11_000_000, taxCategory: "課税売上10%" })];
 

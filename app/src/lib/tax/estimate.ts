@@ -146,7 +146,14 @@ export function estimateForIndividual(
   const { tax, rate } = calcIncomeTax(taxableIncome);
   const reconstructionSurtax = Math.floor(tax * RECONSTRUCTION_SURTAX_RATE);
 
-  const salesTax10 = income
+  // excludeFromIncome（借入金の実行・出資の払込み等）は事業の売上ではないため、
+  // taxCategoryの値に関わらず消費税の課税売上高からも除外する。ルールベース辞書では
+  // excludeFromIncomeな科目は常にtaxCategory「対象外」になるため通常は影響しないが、
+  // AI分類（aiEscalate.ts）はaccount名からexcludeFromIncomeを再引当てする一方でtaxCategory自体は
+  // LLMの出力をそのまま使うため、両者が食い違う結果（account="借入金"だがtaxCategory="課税売上10%"等）
+  // を返す可能性がある。businessIncome（excludeFromIncomeを除外済み）を使うことで、
+  // そのような食い違いがあっても借入金・出資を課税売上として扱わないようにする。
+  const salesTax10 = businessIncome
     .filter((r) => r.taxCategory === "課税売上10%")
     .reduce((sum, r) => sum + extractTax(r.amount, 10), 0);
 

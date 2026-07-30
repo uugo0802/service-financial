@@ -134,6 +134,33 @@ describe("estimateForIndividual", () => {
     expect(result.consumptionTax.isLikelyExempt).toBe(true);
   });
 
+  // Regression: excludeFromIncome must take priority over taxCategory when computing the
+  // consumption tax on sales, not just totalIncome/businessProfit. The rule dictionary always
+  // pairs excludeFromIncome with taxCategory "対象外", but AI classification (aiEscalate.ts)
+  // re-attaches excludeFromIncome from the account name independently of the LLM-supplied
+  // taxCategory, so the two can disagree (e.g. account="借入金" with taxCategory="課税売上10%").
+  // Before this fix, salesTax10 was computed from the unfiltered `income` list, so a loan
+  // drawdown or capital injection mistakenly tagged with a taxable-sales category would have
+  // leaked phantom consumption tax into the payable amount even though it's correctly excluded
+  // from totalIncome/businessProfit.
+  it("excludes an excludeFromIncome row from consumption tax on sales even if its taxCategory is mistakenly '課税売上10%'", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({
+        id: "2",
+        amount: 5_000_000,
+        account: "借入金",
+        taxCategory: "課税売上10%", // mis-tagged by AI classification; excludeFromIncome must still win
+        excludeFromIncome: true,
+      }),
+    ];
+
+    const result = estimateForIndividual(rows);
+
+    // Only the genuine 3,000,000 sale should be taxed: 3,000,000 * 10/110 = 272,727.27... -> 272,727
+    expect(result.consumptionTax.salesTax).toBe(272_727);
+  });
+
   it("returns all-zero figures for an empty transaction list", () => {
     const result = estimateForIndividual([]);
 
