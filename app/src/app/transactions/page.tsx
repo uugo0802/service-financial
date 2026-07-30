@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { TransactionRow } from "@/lib/db/supabaseClient";
 import { TransactionSearchForm } from "@/components/TransactionSearchForm";
+import { CsvColumnMapper } from "@/components/CsvColumnMapper";
 
 export const metadata: Metadata = {
   title: "取引検索｜税務申告AI（ジャービス）",
@@ -118,6 +119,16 @@ export default function TransactionsPage() {
         </div>
 
         <TransactionSearchForm transactions={SAMPLE_TRANSACTIONS} />
+
+        <div className="flex flex-col gap-2 border-t border-stone-300 pt-6">
+          <h2 className="text-sm font-semibold text-stone-700">明細CSVの取込（対応銀行が一覧に無い場合）</h2>
+          <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
+            住信SBIネット銀行・楽天銀行・GMOあおぞらネット銀行・三井住友カード・楽天カードなど、
+            対応済みの主要な銀行・カード会社であればCSVの列名を自動判定して取り込めます。
+            それ以外の銀行・カード会社をお使いの場合や自動判定がうまくいかない場合は、以下からCSVの列をご自身で指定して取り込めます。
+          </p>
+          <CsvColumnMapper />
+        </div>
       </main>
 
       <footer className="border-t border-stone-300 bg-white mt-4">
