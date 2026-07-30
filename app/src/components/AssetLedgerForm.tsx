@@ -1,10 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Asset, FiscalPeriod, summarizeDepreciation } from "@/lib/tax/depreciation";
+import {
+  Asset,
+  DepreciationMethod,
+  FiscalPeriod,
+  summarizeDepreciation,
+  validateDeMinimisAnnualCap,
+} from "@/lib/tax/depreciation";
 import { AssetDisposalResult, calculateAssetDisposal } from "@/lib/tax/assetDisposal";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
+
+const DEPRECIATION_METHOD_LABEL: Record<DepreciationMethod, string> = {
+  "straight-line": "定額法",
+  "declining-balance": "定率法",
+};
 
 function currentFiscalYearDefaults(): FiscalPeriod {
   const now = new Date();
@@ -31,6 +42,7 @@ export function AssetLedgerForm() {
   const [acquisitionCost, setAcquisitionCost] = useState("");
   const [usefulLifeYears, setUsefulLifeYears] = useState("");
   const [immediateExpensing, setImmediateExpensing] = useState(false);
+  const [method, setMethod] = useState<DepreciationMethod>("straight-line");
   const [formError, setFormError] = useState<string | null>(null);
 
   const [disposalAssetId, setDisposalAssetId] = useState("");
@@ -40,6 +52,7 @@ export function AssetLedgerForm() {
   const [disposalResult, setDisposalResult] = useState<AssetDisposalResult | null>(null);
 
   const summary = useMemo(() => summarizeDepreciation(assets, period), [assets, period]);
+  const deMinimisCapCheck = useMemo(() => validateDeMinimisAnnualCap(assets, period), [assets, period]);
 
   function resetForm() {
     setName("");
@@ -47,6 +60,7 @@ export function AssetLedgerForm() {
     setAcquisitionCost("");
     setUsefulLifeYears("");
     setImmediateExpensing(false);
+    setMethod("straight-line");
   }
 
   function handleAddAsset(e: React.FormEvent) {
@@ -80,6 +94,7 @@ export function AssetLedgerForm() {
       acquisitionCost: cost,
       usefulLifeYears: life,
       immediateExpensing,
+      method,
     };
     setAssets((prev) => [...prev, newAsset]);
     resetForm();
@@ -195,6 +210,22 @@ export function AssetLedgerForm() {
                 法定耐用年数（減価償却資産の耐用年数等に関する省令）は本アプリでは自動判定しません。国税庁の耐用年数表等でご確認のうえ入力してください。
               </p>
             </div>
+            <div>
+              <label className={labelClass}>減価償却の方法</label>
+              <select
+                value={method}
+                onChange={(e) => setMethod(e.target.value as DepreciationMethod)}
+                className={inputClass}
+              >
+                <option value="straight-line">定額法</option>
+                <option value="declining-balance">定率法（200%償却・簡略化した計算）</option>
+              </select>
+              {method === "declining-balance" && (
+                <p className="mt-1 text-xs text-stone-400 leading-relaxed">
+                  定率法は簡略化した実装です。国税庁の公式な償却率表（保証率・改定償却率を含む耐用年数省令別表）は使用していません。正式な金額は税理士等の専門家にご確認ください。
+                </p>
+              )}
+            </div>
           </div>
 
           <label className="flex items-center gap-2 text-sm text-stone-700">
@@ -203,7 +234,7 @@ export function AssetLedgerForm() {
               checked={immediateExpensing}
               onChange={(e) => setImmediateExpensing(e.target.checked)}
             />
-            少額減価償却資産の特例を適用する（取得価額30万円未満・取得年度に全額経費算入）
+            少額減価償却資産の特例を適用する（取得価額30万円未満・取得年度に全額経費算入。方法の選択に関わらず優先されます）
           </label>
 
           {formError && <p className="text-sm text-red-700">{formError}</p>}
@@ -232,6 +263,7 @@ export function AssetLedgerForm() {
                   <th className="px-3 py-2 font-normal whitespace-nowrap">取得年月日</th>
                   <th className="px-3 py-2 font-normal text-right whitespace-nowrap">取得価額</th>
                   <th className="px-3 py-2 font-normal text-right whitespace-nowrap">耐用年数</th>
+                  <th className="px-3 py-2 font-normal whitespace-nowrap">方法</th>
                   <th className="px-3 py-2 font-normal text-right whitespace-nowrap">当期供用月数</th>
                   <th className="px-3 py-2 font-normal text-right whitespace-nowrap">期首帳簿価額</th>
                   <th className="px-3 py-2 font-normal text-right whitespace-nowrap">当期償却額</th>
@@ -248,6 +280,9 @@ export function AssetLedgerForm() {
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">{r.asset.acquisitionDate}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(r.asset.acquisitionCost)}</td>
                     <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{r.asset.usefulLifeYears}年</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-stone-600">
+                      {r.immediateExpensingApplied ? "少額特例" : DEPRECIATION_METHOD_LABEL[r.method]}
+                    </td>
                     <td className="px-3 py-2 text-right tabular-nums">{r.monthsInService}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(r.openingBookValue)}</td>
                     <td className="px-3 py-2 text-right tabular-nums font-medium">{yen.format(r.currentYearDepreciation)}</td>
@@ -272,7 +307,7 @@ export function AssetLedgerForm() {
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-stone-800 font-semibold">
-                  <td className="px-3 py-2" colSpan={6}>
+                  <td className="px-3 py-2" colSpan={7}>
                     合計
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(summary.totalCurrentYearDepreciation)}</td>
@@ -284,9 +319,50 @@ export function AssetLedgerForm() {
             </table>
           </div>
         )}
+
+        {deMinimisCapCheck.capExceeded && (
+          <div className="mt-3 border border-amber-400 bg-amber-50 p-4 text-sm text-amber-900">
+            <p className="font-semibold">
+              少額減価償却資産の特例（取得価額30万円未満の全額即時償却）の年間上限を超えています
+            </p>
+            <p className="mt-1">
+              当期の即時償却額の合計は{yen.format(deMinimisCapCheck.totalExpensedAmount)}
+              円で、青色申告者の年間上限{yen.format(deMinimisCapCheck.annualCap)}円を
+              {yen.format(deMinimisCapCheck.excessAmount)}円超えています。
+              上限を超える部分については、いずれかの資産について特例の適用を取りやめ、通常の減価償却（定額法・定率法）に
+              切り替える必要があります。<strong>本アプリはどの資産を切り替えるかを自動決定しません。</strong>
+              以下を参考に、利用者（または税理士等の専門家）が対象資産を選んでください。
+            </p>
+            <div className="mt-3 grid sm:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs font-medium text-amber-800">取得年月日が新しい順（見直しの参考）</p>
+                <ul className="mt-1 text-xs list-disc list-inside space-y-0.5">
+                  {deMinimisCapCheck.assetsByAcquisitionDateDesc.map((a) => (
+                    <li key={a.asset.id}>
+                      {a.asset.name}（{a.asset.acquisitionDate}）— {yen.format(a.expensedAmount)}円
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-amber-800">即時償却額が大きい順（見直しの参考）</p>
+                <ul className="mt-1 text-xs list-disc list-inside space-y-0.5">
+                  {deMinimisCapCheck.assetsByExpensedAmountDesc.map((a) => (
+                    <li key={a.asset.id}>
+                      {a.asset.name}（{a.asset.acquisitionDate}）— {yen.format(a.expensedAmount)}円
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+
         <p className="mt-3 text-xs text-stone-400 leading-relaxed">
           少額減価償却資産の特例（取得価額30万円未満の全額即時償却）には、青色申告者について年間合計300万円までという上限があります。
-          このアプリは資産ごとの判定のみを行い、資産横断の年間合計はチェックしていないため、対象資産が多い場合はご自身で合計額をご確認ください。
+          このアプリは対象資産の当期即時償却額を資産横断で自動的に合計し、上限超過の有無を上記の警告で表示しますが、
+          上限を超えた場合にどの資産の特例適用を取りやめるかは自動的には決定・修正しません。最終的な判断は、必ずご自身
+          （または税理士等の専門家）で行ってください。
         </p>
       </section>
 
