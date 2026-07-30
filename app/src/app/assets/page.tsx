@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AssetLedgerForm } from "@/components/AssetLedgerForm";
+import { AssetLifecycleAlertBanner } from "@/components/AssetLifecycleAlertBanner";
 
 export const metadata: Metadata = {
   title: "固定資産台帳・減価償却費の計算｜税務申告AI（ジャービス）",
@@ -19,6 +20,13 @@ export default function AssetsPage() {
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+        {/*
+          ライブの資産一覧（AssetLedgerFormのstate）が未連携のため、このページ単体では
+          空配列を渡している（AssetLedgerForm.tsxは変更せず読み取りのみに留める方針のため）。
+          資産の登録状態が共有ストア等に載った時点で、実際の assets / period を渡すこと。
+        */}
+        <AssetLifecycleAlertBanner assets={[]} period={{ start: `${new Date().getFullYear()}-01-01`, end: `${new Date().getFullYear()}-12-31` }} />
+
         <section>
           <h1 className="text-2xl font-semibold mb-2">固定資産台帳・減価償却費の計算</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
