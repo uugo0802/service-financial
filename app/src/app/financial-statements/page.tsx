@@ -11,6 +11,8 @@ import { buildEquityChangeForm } from "@/lib/tax/equityChangeForm";
 import { buildNotesForm } from "@/lib/tax/notesForm";
 import { EquityChangeStatement } from "@/components/EquityChangeStatement";
 import { NotesToFinancialStatements } from "@/components/NotesToFinancialStatements";
+import { PrintableStatementLayout } from "@/components/PrintableStatementLayout";
+import { formatFiscalYearRange } from "@/lib/export/printLayout";
 
 export const metadata: Metadata = {
   title: "決算書類（貸借対照表・株主資本等変動計算書・個別注記表）｜税務申告AI（ジャービス）",
@@ -118,6 +120,91 @@ export default function FinancialStatementsPage() {
     shareCount: SAMPLE_SHARE_COUNT,
   });
 
+  const fiscalYearLabel = formatFiscalYearRange(pl.periodStart, pl.periodEnd);
+
+  const balanceSheetSection = (
+    <section>
+      <h2 className="text-lg font-semibold mb-3">貸借対照表</h2>
+      <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">
+        固定資産・売掛金・借入金等、現金以外の資産負債はこのアプリでは反映されません。
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                <th className="px-3 py-2 font-normal" colSpan={2}>資産の部</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-stone-100 dark:border-stone-800 print:break-inside-avoid">
+                <td className="px-3 py-2">現金及び預金</td>
+                <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.endingCash)}</td>
+              </tr>
+              <tr className="print:break-inside-avoid">
+                <td className="px-3 py-2 font-semibold">資産の部合計</td>
+                <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.assetsTotal)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div className="flex flex-col gap-4">
+          <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                  <th className="px-3 py-2 font-normal" colSpan={2}>負債の部</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-stone-100 dark:border-stone-800 print:break-inside-avoid">
+                  <td className="px-3 py-2">未払法人税等</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidCorporateTaxes)}</td>
+                </tr>
+                <tr className="border-b border-stone-100 dark:border-stone-800 print:break-inside-avoid">
+                  <td className="px-3 py-2">未払消費税等</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidConsumptionTax)}</td>
+                </tr>
+                <tr className="print:break-inside-avoid">
+                  <td className="px-3 py-2 font-semibold">負債の部合計</td>
+                  <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.liabilitiesTotal)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                  <th className="px-3 py-2 font-normal" colSpan={2}>純資産の部</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-stone-100 dark:border-stone-800 print:break-inside-avoid">
+                  <td className="px-3 py-2">資本金</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.capitalStock)}</td>
+                </tr>
+                <tr className="border-b border-stone-100 dark:border-stone-800 print:break-inside-avoid">
+                  <td className="px-3 py-2">繰越利益剰余金</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.retainedEarningsEnding)}</td>
+                </tr>
+                <tr className="print:break-inside-avoid">
+                  <td className="px-3 py-2 font-semibold">純資産の部合計</td>
+                  <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.netAssetsTotal)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <p className={`text-xs mt-3 ${balanceSheet.balanced ? "text-stone-400" : "text-red-700"}`}>
+        {balanceSheet.balanced
+          ? "検算: 資産合計＝負債＋純資産合計（一致）"
+          : "検算エラー: 資産合計と負債＋純資産合計が一致していません。入力値をご確認ください。"}
+      </p>
+    </section>
+  );
+
   return (
     <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
@@ -144,90 +231,15 @@ export default function FinancialStatementsPage() {
           </p>
         </section>
 
-        <section>
-          <h2 className="text-lg font-semibold mb-3">貸借対照表</h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">
-            固定資産・売掛金・借入金等、現金以外の資産負債はこのアプリでは反映されません。
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
-                    <th className="px-3 py-2 font-normal" colSpan={2}>資産の部</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr className="border-b border-stone-100 dark:border-stone-800">
-                    <td className="px-3 py-2">現金及び預金</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.endingCash)}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-3 py-2 font-semibold">資産の部合計</td>
-                    <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.assetsTotal)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="flex flex-col gap-4">
-              <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
-                      <th className="px-3 py-2 font-normal" colSpan={2}>負債の部</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-stone-100 dark:border-stone-800">
-                      <td className="px-3 py-2">未払法人税等</td>
-                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidCorporateTaxes)}</td>
-                    </tr>
-                    <tr className="border-b border-stone-100 dark:border-stone-800">
-                      <td className="px-3 py-2">未払消費税等</td>
-                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidConsumptionTax)}</td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 font-semibold">負債の部合計</td>
-                      <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.liabilitiesTotal)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
-                      <th className="px-3 py-2 font-normal" colSpan={2}>純資産の部</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-b border-stone-100 dark:border-stone-800">
-                      <td className="px-3 py-2">資本金</td>
-                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.capitalStock)}</td>
-                    </tr>
-                    <tr className="border-b border-stone-100 dark:border-stone-800">
-                      <td className="px-3 py-2">繰越利益剰余金</td>
-                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.retainedEarningsEnding)}</td>
-                    </tr>
-                    <tr>
-                      <td className="px-3 py-2 font-semibold">純資産の部合計</td>
-                      <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.netAssetsTotal)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <p className={`text-xs mt-3 ${balanceSheet.balanced ? "text-stone-400" : "text-red-700"}`}>
-            {balanceSheet.balanced
-              ? "検算: 資産合計＝負債＋純資産合計（一致）"
-              : "検算エラー: 資産合計と負債＋純資産合計が一致していません。入力値をご確認ください。"}
-          </p>
-        </section>
-
-        <EquityChangeStatement form={equityChange} />
-
-        <NotesToFinancialStatements form={notes} />
+        <PrintableStatementLayout
+          tenantName={SAMPLE_ENTITY_NAME}
+          fiscalYearLabel={fiscalYearLabel}
+          sections={[
+            { id: "balance-sheet", content: balanceSheetSection },
+            { id: "equity-change", content: <EquityChangeStatement form={equityChange} /> },
+            { id: "notes", content: <NotesToFinancialStatements form={notes} />, forceNewPage: true },
+          ]}
+        />
       </main>
 
       <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4">
