@@ -125,16 +125,69 @@ describe("buildConsumptionTaxForm", () => {
 
   // Regression: the national/local consumption tax split extracted from a tax-inclusive amount
   // must be truncated (円未満切り捨て), not rounded to the nearest yen. Math.round silently
-  // rounded .5-and-above fractional yen up, which both overstates ②消費税額/④控除対象仕入税額
+  // rounded .5-and-above fractional yen up, which both overstates ④控除対象仕入税額
   // and is inconsistent with the truncating round1000Down/round100Down helpers used for
   // ①課税標準額 and ⑨差引税額 in this same file.
-  it("truncates (does not round) the national tax split on an amount with a fractional yen remainder", () => {
-    const rows = [tx({ id: "1", amount: 1000, taxCategory: "課税売上10%", account: "売上高" })];
+  it("truncates (does not round) the national tax split on a purchase with a fractional yen remainder", () => {
+    const rows = [tx({ id: "1", amount: -1000, taxCategory: "課税仕入10%", account: "外注費" })];
     const form = buildConsumptionTaxForm(rows);
 
     // 1,000 * 10/110 = 90.909...(totalTax) → truncated to 90
     // 90 * 7.8/10 = 70.2(national) → truncated to 70 (Math.round would incorrectly give 71)
-    expect(form.taxOnSales).toBe(70);
+    expect(form.deductibleInputTax).toBe(70);
+  });
+
+  // Regression: a single sale of ¥1,000 (tax-inclusive) has a tax-exclusive base of ¥909, which
+  // is below the ¥1,000 rounding unit, so ①課税標準額 truncates it to ¥0 and ②消費税額 must
+  // also be ¥0 (計算根拠: ②は①に税率を掛けて算出するのであって、取引ごとの端数処理済み
+  // 税額を合算するのではない). Before the aggregation-order fix, this case produced a nonzero
+  // taxOnSales because it summed a per-transaction tax split instead of deriving ② from the
+  // already-rounded ①.
+  it("reports zero tax on sales when the single transaction's taxable base rounds below the 1,000 yen unit", () => {
+    const rows = [tx({ id: "1", amount: 1000, taxCategory: "課税売上10%", account: "売上高" })];
+    const form = buildConsumptionTaxForm(rows);
+
+    expect(form.taxStandardBase).toBe(0);
+    expect(form.taxOnSales).toBe(0);
+  });
+
+  // Regression: ②消費税額 must be computed from ①課税標準額 (the 1,000-yen-truncated
+  // aggregate taxable base), not by truncating each transaction's tax individually and summing
+  // the results. Two sales of ¥1,100 and ¥550 (tax-inclusive, 10%) have taxable bases of
+  // ¥1,000 and ¥500 respectively (¥1,500 combined), which ①課税標準額 truncates down to
+  // ¥1,000 -> ②消費税額 = floor(1,000 * 7.8 / 100) = 78円. Summing each transaction's own
+  // truncated tax first (78円 + 39円 = 117円) ignores the 1,000-yen rounding that is supposed
+  // to apply to the aggregate base, and materially overstates the tax due.
+  it("derives ②消費税額 from the aggregated, 1,000-yen-truncated taxable base rather than summing per-transaction splits", () => {
+    const rows = [
+      tx({ id: "1", amount: 1_100, taxCategory: "課税売上10%", account: "売上高" }),
+      tx({ id: "2", amount: 550, taxCategory: "課税売上10%", account: "売上高" }),
+    ];
+    const form = buildConsumptionTaxForm(rows);
+
+    expect(form.taxStandardBase).toBe(1_000);
+    expect(form.taxOnSales).toBe(78);
+    // The pre-fix (buggy) per-transaction-summed result would have been 117.
+    expect(form.taxOnSales).not.toBe(117);
+  });
+
+  // Regression: ④控除対象仕入税額 must likewise be computed by summing the tax-inclusive
+  // purchase amounts per rate first (割戻し計算) and truncating once, not by truncating each
+  // transaction's split individually and summing the truncated results. Two purchases of ¥21
+  // each (10%, tax-inclusive) individually truncate to ¥0 deductible tax each (floor(21*10/110)
+  // = 1 -> floor(1*7.8/10) = 0), but the combined ¥42 truncates to national tax ¥2
+  // (floor(42*10/110) = 3 -> floor(3*7.8/10) = 2): summing the per-transaction results would
+  // understate the deduction.
+  it("derives ④控除対象仕入税額 from the aggregated purchase amount rather than summing per-transaction splits", () => {
+    const rows = [
+      tx({ id: "1", amount: -21, taxCategory: "課税仕入10%", account: "外注費" }),
+      tx({ id: "2", amount: -21, taxCategory: "課税仕入10%", account: "外注費" }),
+    ];
+    const form = buildConsumptionTaxForm(rows);
+
+    expect(form.deductibleInputTax).toBe(2);
+    // The pre-fix (buggy) per-transaction-summed result would have been 0.
+    expect(form.deductibleInputTax).not.toBe(0);
   });
 
   it("returns all zeros for an empty input", () => {

@@ -58,7 +58,19 @@ interface SalesAndGeneralPurchaseTax {
   totalIncome: number;
 }
 
-/** 売上に係る消費税額（②）と、原則課税の場合の実額仕入税額控除を集計する共通部分 */
+/**
+ * 売上に係る消費税額（②）と、原則課税の場合の実額仕入税額控除を集計する共通部分。
+ *
+ * 「割戻し計算」（国税庁の原則的な計算方法）は、取引ごとに端数処理した税額を積み上げるの
+ * ではなく、税率区分ごとに税込金額をまず合計し、その合計額に対して1回だけ税抜化・端数
+ * 処理を行う（①課税標準額の1,000円未満切り捨て後の金額を基準に②消費税額を算出するのも
+ * この一環）。取引ごとに端数処理してから合算すると、集計後の1,000円未満切り捨てで失われる
+ * はずの端数が反映されないまま個々の端数処理誤差も積み重なり、税額が本来より過大に算出
+ * されてしまう（例: 税込1,100円・550円の売上2件は合計1,650円→税抜1,500円→①は
+ * 1,000円に切り捨てられ②は78円になるべきだが、取引ごとに端数処理してから合算すると
+ * 78円+39円=117円という本来より過大な額になってしまう）。このアプリは請求書に記載された
+ * 税額（積み上げ計算の根拠となる数値）を保持していないため、割戻し計算のみを実装する。
+ */
 function computeSalesAndGeneralPurchaseTax(rows: CategorizedTransaction[]): SalesAndGeneralPurchaseTax {
   // 借入金の実行・出資の払込み等（excludeFromIncome）は課税売上高ではないため、免税判定の
   // 基準となる totalIncome から除外する（②消費税額・①課税標準額は taxCategory で別途絞り
@@ -66,29 +78,28 @@ function computeSalesAndGeneralPurchaseTax(rows: CategorizedTransaction[]): Sale
   const income = rows.filter((r) => r.amount > 0 && !r.excludeFromIncome);
   const expense = rows.filter((r) => r.amount < 0 && !r.personalDeductionOnly);
 
-  let salesNational = 0;
-  let salesTaxableBase = 0;
-  for (const r of income) {
-    if (r.taxCategory === "課税売上10%") {
-      const { totalTax, national } = splitTax(r.amount, 10, NATIONAL_STANDARD);
-      salesNational += national;
-      salesTaxableBase += r.amount - totalTax;
-    }
-  }
+  const salesInclusive10 = income
+    .filter((r) => r.taxCategory === "課税売上10%")
+    .reduce((sum, r) => sum + r.amount, 0);
+  const salesTotalTax10 = splitTax(salesInclusive10, 10, NATIONAL_STANDARD).totalTax;
+  const taxStandardBase = round1000Down(salesInclusive10 - salesTotalTax10);
+  // ②消費税額は①（1,000円未満切り捨て済みの課税標準額）に税率を掛けて算出する
+  // （取引ごとの税額を合算するのではない）。
+  const taxOnSales = Math.floor((taxStandardBase * NATIONAL_STANDARD) / 100);
 
-  let purchaseNational = 0;
-  for (const r of expense) {
-    const abs = Math.abs(r.amount);
-    if (r.taxCategory === "課税仕入10%") {
-      purchaseNational += splitTax(abs, 10, NATIONAL_STANDARD).national;
-    } else if (r.taxCategory === "課税仕入8%(軽減)") {
-      purchaseNational += splitTax(abs, 8, NATIONAL_REDUCED).national;
-    }
-  }
+  const purchaseInclusive10 = expense
+    .filter((r) => r.taxCategory === "課税仕入10%")
+    .reduce((sum, r) => sum + Math.abs(r.amount), 0);
+  const purchaseInclusive8 = expense
+    .filter((r) => r.taxCategory === "課税仕入8%(軽減)")
+    .reduce((sum, r) => sum + Math.abs(r.amount), 0);
+  const purchaseNational =
+    splitTax(purchaseInclusive10, 10, NATIONAL_STANDARD).national +
+    splitTax(purchaseInclusive8, 8, NATIONAL_REDUCED).national;
 
   return {
-    taxStandardBase: round1000Down(salesTaxableBase),
-    taxOnSales: salesNational,
+    taxStandardBase,
+    taxOnSales,
     generalDeductibleInputTax: purchaseNational,
     totalIncome: income.reduce((s, r) => s + r.amount, 0),
   };
