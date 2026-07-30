@@ -4,6 +4,8 @@ import {
   DEFAULT_INCOME,
   EXPENSE_RULES,
   INCOME_RULES,
+  isExcludeFromIncomeAccount,
+  isPersonalDeductionOnlyAccount,
   TAX_CATEGORIES,
   TaxCategory,
 } from "./dictionary";
@@ -219,5 +221,40 @@ describe("INCOME_RULES", () => {
     expect(rule?.account).toBe("受取利息");
     expect(rule?.taxCategory).toBe("非課税");
     expect(rule?.excludeFromIncome).toBeUndefined();
+  });
+});
+
+describe("isPersonalDeductionOnlyAccount / isExcludeFromIncomeAccount", () => {
+  // Regression (see aiEscalate.test.ts): these lookups let AI-classified rows (which only carry
+  // an account name, not a matched CategoryRule) recover the personalDeductionOnly/
+  // excludeFromIncome flags that the same account gets via the rule-based path.
+
+  it("flags the unambiguous personal-deduction accounts (every rule using that account name agrees)", () => {
+    expect(isPersonalDeductionOnlyAccount("社会保険料(個人)")).toBe(true);
+    expect(isPersonalDeductionOnlyAccount("生命保険料(個人)")).toBe(true);
+  });
+
+  it("does not flag 租税公課 as personal-deduction-only, since the account name is shared with the non-personal 印紙/消費税 rule", () => {
+    expect(isPersonalDeductionOnlyAccount("租税公課")).toBe(false);
+  });
+
+  it("does not flag ordinary business expense accounts", () => {
+    expect(isPersonalDeductionOnlyAccount("通信費")).toBe(false);
+    expect(isPersonalDeductionOnlyAccount("地代家賃")).toBe(false);
+  });
+
+  it("flags the unambiguous excludeFromIncome accounts (loan proceeds, capital contributions)", () => {
+    expect(isExcludeFromIncomeAccount("借入金")).toBe(true);
+    expect(isExcludeFromIncomeAccount("元入金")).toBe(true);
+  });
+
+  it("does not flag ordinary income accounts", () => {
+    expect(isExcludeFromIncomeAccount("売上高")).toBe(false);
+    expect(isExcludeFromIncomeAccount("受取利息")).toBe(false);
+  });
+
+  it("returns false for an unknown account name", () => {
+    expect(isPersonalDeductionOnlyAccount("存在しない科目")).toBe(false);
+    expect(isExcludeFromIncomeAccount("存在しない科目")).toBe(false);
   });
 });

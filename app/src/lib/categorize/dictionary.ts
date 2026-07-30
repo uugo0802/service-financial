@@ -146,3 +146,46 @@ export const DEFAULT_INCOME: CategoryRule = {
   account: "売上高",
   taxCategory: "課税売上10%",
 };
+
+/**
+ * 勘定科目名から、その科目が「常に」personalDeductionOnly / excludeFromIncome 扱いかどうかを
+ * 逆引きするヘルパー。ルールベース分類（engine.ts）は一致したルールから直接これらのフラグを
+ * コピーするため問題ないが、AI分類（aiEscalate.ts）はLLMが返す勘定科目名しか持っておらず、
+ * どのルールにも一致していない（＝どちらのフラグも知らない）ため、account名から再引き当てる
+ * 必要がある。
+ *
+ * 「租税公課」のように同じ科目名が personalDeductionOnly:true のルール（所得税・住民税）と
+ * そうでないルール（印紙・消費税）の両方に使われている科目は、科目名だけでは判別できないため
+ * 意図的に対象外（false を返す）とする。事業主個人の家事費（社会保険料(個人)・生命保険料(個人)）
+ * や貸借対照表項目（借入金・元入金）のように、同じ科目名を使うルールが必ず同じフラグを持つ
+ * 「曖昧でない」科目のみを対象とする。
+ */
+function buildUnambiguousAccountFlagLookup(flag: "personalDeductionOnly" | "excludeFromIncome"): Set<string> {
+  const allRules = [...EXPENSE_RULES, ...INCOME_RULES];
+  const result = new Set<string>();
+  const seenFalseOrUndefined = new Set<string>();
+  for (const rule of allRules) {
+    if (rule[flag]) {
+      result.add(rule.account);
+    } else {
+      seenFalseOrUndefined.add(rule.account);
+    }
+  }
+  for (const account of seenFalseOrUndefined) {
+    result.delete(account);
+  }
+  return result;
+}
+
+const PERSONAL_DEDUCTION_ONLY_ACCOUNTS = buildUnambiguousAccountFlagLookup("personalDeductionOnly");
+const EXCLUDE_FROM_INCOME_ACCOUNTS = buildUnambiguousAccountFlagLookup("excludeFromIncome");
+
+/** 科目名（例:「社会保険料(個人)」）が、辞書上つねに personalDeductionOnly 扱いの科目かどうか */
+export function isPersonalDeductionOnlyAccount(account: string): boolean {
+  return PERSONAL_DEDUCTION_ONLY_ACCOUNTS.has(account);
+}
+
+/** 科目名（例:「借入金」）が、辞書上つねに excludeFromIncome 扱いの科目かどうか */
+export function isExcludeFromIncomeAccount(account: string): boolean {
+  return EXCLUDE_FROM_INCOME_ACCOUNTS.has(account);
+}
