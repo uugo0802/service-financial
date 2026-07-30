@@ -102,6 +102,12 @@ describe("validateInvoiceRegistrationNumber", () => {
     expect(result.reason).toBe("non_numeric");
   });
 
+  it("rejects a full-width (Zenkaku) 'Ｔ' prefix as missing the required (half-width) prefix", () => {
+    const result = validateInvoiceRegistrationNumber("Ｔ2120901007402");
+    expect(result.valid).toBe(false);
+    expect(result.reason).toBe("missing_prefix");
+  });
+
   it("accepts a check digit of 9, the maximum possible value from the NTA formula", () => {
     // base12 "000000000000" -> weightedSum 0 -> checkDigit = 9 - (0 % 9) = 9.
     const result = validateInvoiceRegistrationNumber("T9000000000000");

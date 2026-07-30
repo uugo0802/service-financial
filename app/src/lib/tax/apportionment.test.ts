@@ -74,9 +74,65 @@ describe("calculateApportionment — 床面積按分", () => {
       })
     ).toThrow(/数値で入力/);
   });
+
+  it("rejects a negative total area (checked before the '0以下' business-rule check)", () => {
+    expect(() =>
+      calculateApportionment({
+        totalAmount: 100_000,
+        basisInput: { basis: "floorArea", businessAreaSqm: 5, totalAreaSqm: -10 },
+      })
+    ).toThrow(/0以上/);
+  });
+
+  it("rejects an Infinite total area as non-finite rather than treating it as a valid (if extreme) number", () => {
+    expect(() =>
+      calculateApportionment({
+        totalAmount: 100_000,
+        basisInput: { basis: "floorArea", businessAreaSqm: 5, totalAreaSqm: Infinity },
+      })
+    ).toThrow(/数値で入力/);
+  });
 });
 
 describe("calculateApportionment — 使用時間按分", () => {
+  it("treats zero business hours as 0% deductible", () => {
+    const result = calculateApportionment({
+      totalAmount: 50_000,
+      basisInput: { basis: "time", businessHoursPerWeek: 0 },
+    });
+
+    expect(result.businessUseRatioPercent).toBe(0);
+    expect(result.deductibleAmount).toBe(0);
+  });
+
+  it("treats business hours equal to a custom total as 100% deductible", () => {
+    const result = calculateApportionment({
+      totalAmount: 40_000,
+      basisInput: { basis: "time", businessHoursPerWeek: 56, totalHoursPerWeek: 56 },
+    });
+
+    expect(result.businessUseRatioPercent).toBe(100);
+    expect(result.deductibleAmount).toBe(40_000);
+  });
+
+  it("rejects a negative total-hours-per-week distinctly from the zero case (0以上 check runs before the >0 check)", () => {
+    expect(() =>
+      calculateApportionment({
+        totalAmount: 10_000,
+        basisInput: { basis: "time", businessHoursPerWeek: 10, totalHoursPerWeek: -1 },
+      })
+    ).toThrow(/0以上/);
+  });
+
+  it("rejects a negative business-hours-per-week", () => {
+    expect(() =>
+      calculateApportionment({
+        totalAmount: 10_000,
+        basisInput: { basis: "time", businessHoursPerWeek: -5 },
+      })
+    ).toThrow(/0以上/);
+  });
+
   it("computes the deductible amount from business hours per week against the default 168-hour week", () => {
     const result = calculateApportionment({
       totalAmount: 33_600,
@@ -179,5 +235,22 @@ describe("calculateApportionmentFromRatio", () => {
 
   it("rejects a NaN ratio", () => {
     expect(() => calculateApportionmentFromRatio(50_000, NaN)).toThrow(/数値で入力/);
+  });
+
+  it("accepts a zero total amount, returning a zero deductible regardless of ratio", () => {
+    const result = calculateApportionmentFromRatio(0, 50);
+    expect(result.deductibleAmount).toBe(0);
+  });
+
+  it("rejects a negative total amount", () => {
+    expect(() => calculateApportionmentFromRatio(-1, 50)).toThrow(/0以上/);
+  });
+
+  it("rejects a non-finite (Infinity) total amount", () => {
+    expect(() => calculateApportionmentFromRatio(Infinity, 50)).toThrow(/数値で入力/);
+  });
+
+  it("rejects a NaN total amount", () => {
+    expect(() => calculateApportionmentFromRatio(NaN, 50)).toThrow(/数値で入力/);
   });
 });

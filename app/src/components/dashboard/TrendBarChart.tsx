@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { TrendPoint } from "@/lib/tax/salesTrend";
+import { computeTrendAxisRange } from "@/lib/dashboard/trendAxisScale";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
@@ -47,14 +48,7 @@ export function TrendBarChart({ points, title }: { points: TrendPoint[]; title: 
 
   const { min, max, ticks } = useMemo(() => {
     const values = points.flatMap((p) => [p.income, p.expense, p.profit]);
-    const rawMin = Math.min(0, ...values);
-    const rawMax = Math.max(0, ...values, 1);
-    const pad = (rawMax - rawMin) * 0.1 || 1;
-    const min = rawMin - (rawMin < 0 ? pad : 0);
-    const max = rawMax + pad;
-    const tickCount = 4;
-    const ticks = Array.from({ length: tickCount + 1 }, (_, i) => min + ((max - min) * i) / tickCount);
-    return { min, max, ticks };
+    return computeTrendAxisRange(values, { floorMaxAtOne: true });
   }, [points]);
 
   function yScale(v: number): number {
