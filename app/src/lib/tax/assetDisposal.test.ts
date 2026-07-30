@@ -172,6 +172,24 @@ describe("calculateAssetDisposal", () => {
     expect(result.notes.join(" ")).toMatch(/取得年月日より前になっています/);
   });
 
+  it("silently treats a NaN disposalProceeds as 0 (retirement) without the negative-value warning note", () => {
+    // Unlike an explicit negative number, NaN fails the Number.isFinite guard on both branches,
+    // so it falls through to 0 without any note being pushed. This documents that current
+    // (silent) behavior, which is asymmetric with how negative numbers are warned about.
+    const result = calculateAssetDisposal(input({ disposalProceeds: NaN }));
+
+    expect(result.disposalProceeds).toBe(0);
+    expect(result.disposalCase).toBe("retirement");
+    expect(result.notes.join(" ")).not.toMatch(/負の値が入力されたため/);
+  });
+
+  it("silently treats an Infinity disposalProceeds as 0 (retirement) since Number.isFinite rejects it", () => {
+    const result = calculateAssetDisposal(input({ disposalProceeds: Infinity }));
+
+    expect(result.disposalProceeds).toBe(0);
+    expect(result.disposalCase).toBe("retirement");
+  });
+
   it("propagates notes from the underlying depreciation calculation (e.g. non-positive useful life)", () => {
     const a = asset({ acquisitionCost: 120_000, usefulLifeYears: 0, acquisitionDate: "2025-04-01" });
     const result = calculateAssetDisposal({ asset: a, disposalDate: "2025-10-01", disposalProceeds: 0 });
