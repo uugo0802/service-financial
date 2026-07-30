@@ -45,6 +45,18 @@ describe("buildNotesForm", () => {
     expect(notes.goingConcern.lines[0].value).toContain("入力されていません");
   });
 
+  it("falls back to a placeholder when the description is only whitespace", () => {
+    const notes = buildNotesForm({
+      hasGoingConcernConcern: true,
+      goingConcernDescription: "   \n\t  ",
+      unpaidCorporateTaxes: 0,
+      unpaidConsumptionTax: 0,
+      equityChange: sampleEquityChange,
+    });
+
+    expect(notes.goingConcern.lines[0].value).toContain("入力されていません");
+  });
+
   it("always states the cash-basis simplification disclaimer in accounting policy notes", () => {
     const notes = buildNotesForm({
       unpaidCorporateTaxes: 0,
@@ -93,6 +105,20 @@ describe("buildNotesForm", () => {
 
     expect(notes.balanceSheetNotes.lines).toHaveLength(1);
     expect(notes.balanceSheetNotes.lines[0].label).toContain("未払法人税等");
+  });
+
+  it("treats a negative unpaid tax figure (data-entry anomaly) as 該当なし rather than displaying a negative amount", () => {
+    // The > 0 guard means a negative unpaid-tax figure (which shouldn't occur, but could result
+    // from a bad prior calculation) is silently omitted instead of showing a nonsensical negative yen amount.
+    const notes = buildNotesForm({
+      unpaidCorporateTaxes: -100_000,
+      unpaidConsumptionTax: -1,
+      equityChange: sampleEquityChange,
+    });
+
+    expect(notes.balanceSheetNotes.lines).toEqual([
+      { label: "該当なし", value: "期末時点の未払法人税等・未払消費税等はありません。" },
+    ]);
   });
 
   it("reflects the equity change form's ending balances in the equity note", () => {

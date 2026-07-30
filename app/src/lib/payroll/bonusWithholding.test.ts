@@ -225,6 +225,43 @@ describe("calculateBonusWithholding", () => {
     ).toThrow();
   });
 
+  it("stays at the 0% bracket exactly at the 68,000円 minimum taxable threshold", () => {
+    const result = calculateBonusWithholding({
+      bonusGrossAmount: 500_000,
+      bonusInsurancePremium: 0,
+      previousMonthSalaryAfterInsurance: 68_000,
+      dependentCount: 0,
+    });
+
+    expect(result.appliedRatePercent).toBe(0);
+    expect(result.withholdingTax).toBe(0);
+  });
+
+  it("moves to the first non-zero bracket at 1 yen above the 68,000円 minimum taxable threshold", () => {
+    const result = calculateBonusWithholding({
+      bonusGrossAmount: 500_000,
+      bonusInsurancePremium: 0,
+      previousMonthSalaryAfterInsurance: 68_001,
+      dependentCount: 0,
+    });
+
+    expect(result.appliedRatePercent).toBe(5.105);
+    expect(result.withholdingTax).toBeGreaterThan(0);
+  });
+
+  it("does not throw when the bonus insurance premium exactly equals the bonus gross amount (zero taxable base)", () => {
+    const result = calculateBonusWithholding({
+      bonusGrossAmount: 200_000,
+      bonusInsurancePremium: 200_000,
+      previousMonthSalaryAfterInsurance: 300_000,
+      dependentCount: 0,
+    });
+
+    expect(result.bonusTaxableBase).toBe(0);
+    expect(result.withholdingTax).toBe(0);
+    expect(result.netPay).toBe(0);
+  });
+
   it("returns zero withholding and full net pay for a zero bonus", () => {
     const result = calculateBonusWithholding({
       bonusGrossAmount: 0,

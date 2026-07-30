@@ -113,3 +113,38 @@ describe("buildYearlyTrend", () => {
     expect(buildYearlyTrend([])).toEqual([]);
   });
 });
+
+describe("buildMonthlyTrend - edge cases", () => {
+  it("creates a zero-valued point for a bucket whose only rows have amount exactly 0", () => {
+    const rows = [tx({ id: "1", date: "2026-06-01", amount: 0 })];
+    expect(buildMonthlyTrend(rows)).toEqual([{ key: "2026-06", income: 0, expense: 0, profit: 0 }]);
+  });
+
+  it("parses dates with single-digit, unpadded months (slash separator) into a zero-padded key", () => {
+    const rows = [tx({ id: "1", date: "2026/1/5", amount: 1000 })];
+    expect(buildMonthlyTrend(rows)).toEqual([{ key: "2026-01", income: 1000, expense: 0, profit: 1000 }]);
+  });
+
+  it("excludes an excludeFromIncome row entirely (from both income and expense) when its amount is positive", () => {
+    const rows = [
+      tx({ id: "1", date: "2026-07-01", amount: 3_000_000, account: "借入金", excludeFromIncome: true }),
+    ];
+    // A positive excludeFromIncome row matches neither the income branch (blocked by the flag)
+    // nor the expense branch (amount is not negative), so the bucket exists but is entirely zero.
+    expect(buildMonthlyTrend(rows)).toEqual([{ key: "2026-07", income: 0, expense: 0, profit: 0 }]);
+  });
+
+  it("still counts a negative-amount excludeFromIncome row as an expense (the flag only suppresses the income side)", () => {
+    // excludeFromIncome is designed for positive inflows (loan disbursements); this documents
+    // that a negative excludeFromIncome row (e.g. a loan repayment) is NOT excluded from expense.
+    const rows = [
+      tx({ id: "1", date: "2026-07-01", amount: -50_000, account: "借入金", excludeFromIncome: true }),
+    ];
+    expect(buildMonthlyTrend(rows)).toEqual([{ key: "2026-07", income: 0, expense: 50_000, profit: -50_000 }]);
+  });
+
+  it("treats a two-digit-year-like malformed date (e.g. missing separators) as unparseable and excludes it", () => {
+    const rows = [tx({ id: "1", date: "20260105", amount: 1000 })];
+    expect(buildMonthlyTrend(rows)).toEqual([]);
+  });
+});

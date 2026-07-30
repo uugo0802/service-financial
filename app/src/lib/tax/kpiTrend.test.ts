@@ -61,4 +61,30 @@ describe("buildKpiTrend", () => {
     expect(result[0].netIncome).toBe(-300_000);
     expect(result[0].expenseRatio).toBe(160);
   });
+
+  it("returns null for revenueGrowth (not a negative percentage) when the previous year's revenue was itself negative", () => {
+    const result = buildKpiTrend([
+      point({ key: "2024", income: -100_000, expense: 0 }),
+      point({ key: "2025", income: 1_000_000, expense: 400_000 }),
+    ]);
+    // previous.income (-100,000) is not > 0, so growth is treated as incomputable, same as the zero case.
+    expect(result[1].revenueGrowth).toBeNull();
+  });
+
+  it("treats duplicate fiscal-year keys as separate entries rather than merging them", () => {
+    const result = buildKpiTrend([
+      point({ key: "2025", income: 1_000_000, expense: 500_000 }),
+      point({ key: "2025", income: 2_000_000, expense: 1_000_000 }),
+    ]);
+    // buildKpiTrend does not de-duplicate by key; it is a pure per-point transform over
+    // whatever the caller passes in (de-duplication, if needed, is the caller's responsibility).
+    expect(result).toHaveLength(2);
+    expect(result[1].revenueGrowth).toBeCloseTo(100); // 1,000,000 -> 2,000,000
+  });
+
+  it("computes a negative expense ratio when expense itself is negative (unusual but not clamped)", () => {
+    const result = buildKpiTrend([point({ key: "2025", income: 500_000, expense: -100_000 })]);
+    expect(result[0].expenseRatio).toBe(-20);
+    expect(result[0].netIncome).toBe(600_000);
+  });
 });

@@ -177,6 +177,87 @@ describe("calculateYearEndAdjustment", () => {
     expect(result.assumptions.some((a) => a.includes("年末調整"))).toBe(true);
   });
 
+  it("accepts an empty array of monthly withholding amounts as zero already withheld", () => {
+    const result = calculateYearEndAdjustment({
+      annualGrossCompensation: 4_000_000,
+      annualSocialInsurancePremium: 0,
+      dependentCount: 0,
+      monthlyWithholdingTotal: [],
+    });
+
+    expect(result.alreadyWithheld).toBe(0);
+    expect(result.outcome).toBe("shortfall");
+  });
+
+  it("floors taxable income to the nearest 1,000円 below when the raw computation isn't a round thousand", () => {
+    // salaryIncome - insurance - basic - dependent = 2,760,000 - 0 - 480,000 - 0 = 2,280,000 normally;
+    // add 1 yen of extra insurance deduction to produce a non-round remainder (2,279,999).
+    const result = calculateYearEndAdjustment({
+      annualGrossCompensation: 4_000_000,
+      annualSocialInsurancePremium: 1,
+      dependentCount: 0,
+      monthlyWithholdingTotal: 0,
+    });
+
+    // 2,279,999 floored to the nearest 1,000 = 2,279,000
+    expect(result.taxableIncome).toBe(2_279_000);
+  });
+
+  it("moves from the 5% bracket to the 10% bracket once taxable income crosses the 1,950,000円 boundary", () => {
+    const belowBoundary = calculateYearEndAdjustment({
+      annualGrossCompensation: 3_000_000,
+      annualSocialInsurancePremium: 0,
+      dependentCount: 0,
+      monthlyWithholdingTotal: 0,
+    });
+    // taxableIncome here = 1,540,000 <= 1,950,000, so 5% bracket
+    expect(belowBoundary.marginalRatePercent).toBe(5);
+
+    const aboveBoundary = calculateYearEndAdjustment({
+      annualGrossCompensation: 5_000_000,
+      annualSocialInsurancePremium: 0,
+      dependentCount: 0,
+      monthlyWithholdingTotal: 0,
+    });
+    // salaryIncomeDeduction = 5,000,000*20%+440,000 = 1,440,000; salaryIncome = 3,560,000;
+    // taxableIncome = 3,560,000 - 480,000 = 3,080,000 -> falls in the 10% bracket (up to 3,300,000)
+    expect(aboveBoundary.marginalRatePercent).toBe(10);
+  });
+
+  it("applies the top 45% income tax bracket for very high compensation", () => {
+    const result = calculateYearEndAdjustment({
+      annualGrossCompensation: 60_000_000,
+      annualSocialInsurancePremium: 0,
+      dependentCount: 0,
+      monthlyWithholdingTotal: 0,
+    });
+
+    expect(result.marginalRatePercent).toBe(45);
+  });
+
+  it("throws for a non-finite (NaN) annual gross compensation", () => {
+    expect(() =>
+      calculateYearEndAdjustment({
+        annualGrossCompensation: NaN,
+        annualSocialInsurancePremium: 0,
+        dependentCount: 0,
+        monthlyWithholdingTotal: 0,
+      })
+    ).toThrow();
+  });
+
+  it("does not throw when social insurance exactly equals gross compensation (zero taxable income)", () => {
+    const result = calculateYearEndAdjustment({
+      annualGrossCompensation: 1_000_000,
+      annualSocialInsurancePremium: 1_000_000,
+      dependentCount: 0,
+      monthlyWithholdingTotal: 0,
+    });
+
+    expect(result.taxableIncome).toBe(0);
+    expect(result.totalAnnualTaxDue).toBe(0);
+  });
+
   it("throws for negative annual gross compensation", () => {
     expect(() =>
       calculateYearEndAdjustment({
