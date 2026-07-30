@@ -189,5 +189,73 @@ describe("escalateWithAi", () => {
 
       expect(result.results[0].confidence).toBeGreaterThanOrEqual(0);
     });
+
+    // Regression: an uncategorized row escalated to the AI only ever had `account`/`taxCategory`
+    // copied from the AI response; `personalDeductionOnly`/`excludeFromIncome` were left as
+    // whatever the pre-escalation fallback row had, which is always undefined (DEFAULT_EXPENSE/
+    // DEFAULT_INCOME carry neither flag). If the AI classified a transaction whose description
+    // didn't literally match the dictionary's rule pattern (e.g. a bank description with an
+    // inserted space, "国民年金 保険料" split across the keyword boundary) under an account like
+    // "社会保険料(個人)"/"生命保険料(個人)", the resulting row silently lost the
+    // personalDeductionOnly flag that the same account gets via the rule-based path. Every
+    // consumer that filters business expenses by `!r.personalDeductionOnly` (estimate.ts,
+    // consumptionTaxForm.ts, individualForms.ts's blue-return statement) would then wrongly count
+    // the individual's personal insurance/tax payment as a deductible business expense - the same
+    // class of bug fixed for the rule dictionary in commit 9173c88, but reachable via the AI path.
+    it("flags an AI-classified 社会保険料(個人) row as personalDeductionOnly, even though the row had no flag before escalation", async () => {
+      const fetchMock = vi.fn().mockResolvedValue(
+        mockToolUseResponse({ account: "社会保険料(個人)", taxCategory: "非課税" })
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const row = tx({ id: "1", description: "国民年金 保険料" });
+      const result = await escalateWithAi([row]);
+
+      expect(result.results[0].account).toBe("社会保険料(個人)");
+      expect(result.results[0].personalDeductionOnly).toBe(true);
+    });
+
+    it("flags an AI-classified 生命保険料(個人) row as personalDeductionOnly", async () => {
+      const fetchMock = vi.fn().mockResolvedValue(
+        mockToolUseResponse({ account: "生命保険料(個人)", taxCategory: "非課税" })
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const result = await escalateWithAi([tx({ id: "1" })]);
+
+      expect(result.results[0].personalDeductionOnly).toBe(true);
+    });
+
+    it("flags an AI-classified 借入金 row as excludeFromIncome", async () => {
+      const fetchMock = vi.fn().mockResolvedValue(
+        mockToolUseResponse({ account: "借入金", taxCategory: "対象外" })
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const result = await escalateWithAi([tx({ id: "1", amount: 500_000 })]);
+
+      expect(result.results[0].excludeFromIncome).toBe(true);
+    });
+
+    it("does not set personalDeductionOnly/excludeFromIncome for an ordinary AI-classified business expense", async () => {
+      const fetchMock = vi.fn().mockResolvedValue(mockToolUseResponse());
+      vi.stubGlobal("fetch", fetchMock);
+
+      const result = await escalateWithAi([tx({ id: "1" })]);
+
+      expect(result.results[0].personalDeductionOnly).toBeUndefined();
+      expect(result.results[0].excludeFromIncome).toBeUndefined();
+    });
+
+    it("does not set personalDeductionOnly for an AI-classified 租税公課 row (ambiguous account shared with the non-personal 印紙/消費税 rule)", async () => {
+      const fetchMock = vi.fn().mockResolvedValue(
+        mockToolUseResponse({ account: "租税公課", taxCategory: "不課税" })
+      );
+      vi.stubGlobal("fetch", fetchMock);
+
+      const result = await escalateWithAi([tx({ id: "1" })]);
+
+      expect(result.results[0].personalDeductionOnly).toBeUndefined();
+    });
   });
 });
