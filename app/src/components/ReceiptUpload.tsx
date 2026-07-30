@@ -5,6 +5,7 @@ import { getCameraCaptureLabel, getFilePickerLabel, isCameraCaptureSupported } f
 import { hasRecommendedMinimumResolution, parseImageDimensions } from "@/lib/ocr/imageMeta";
 import { ReceiptJournalCandidate, recordCorrection } from "@/lib/ocr/receiptCandidate";
 import { TAX_CATEGORIES } from "@/lib/ocr/receiptOcr";
+import { evaluateScannerStorageCompliance } from "@/lib/ocr/scannerStorageCompliance";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // サーバー側(app/api/ocr/route.ts)の上限と揃える
 
@@ -28,6 +29,7 @@ export function ReceiptUpload({
   const [candidate, setCandidate] = useState<ReceiptJournalCandidate | null>(null);
   const [confirmedCount, setConfirmedCount] = useState(0);
   const [resolutionHint, setResolutionHint] = useState<string | null>(null);
+  const [scannerComplianceReasons, setScannerComplianceReasons] = useState<string[]>([]);
   // navigatorはサーバー側で参照できないため、SSR時は「未対応」扱いの既定値を返し、
   // クライアントでの実際の値とはuseSyncExternalStoreがハイドレーション不一致なく同期する。
   const cameraSupported = useSyncExternalStore(
@@ -62,12 +64,32 @@ export function ReceiptUpload({
     }
   }
 
+  // 紙のレシート原本を破棄する予定がある場合に関係する、電子帳簿保存法スキャナ保存要件
+  // （解像度200dpi相当以上・カラー画像）についてのベストエフォートな事前チェック。
+  // src/lib/ocr/scannerStorageCompliance.ts のヒューリスティックに基づく「参考情報」であり、
+  // 法的な充足保証ではない（詳細は同モジュールの免責コメントを参照）。あくまでアドバイザリー
+  // 表示のため、判定結果によってアップロード自体をブロックすることはしない（本人の判断で続行可能）。
+  async function updateScannerComplianceWarning(file: File) {
+    setScannerComplianceReasons([]);
+    try {
+      const buffer = await file.arrayBuffer();
+      const dims = parseImageDimensions(buffer, file.type);
+      const result = evaluateScannerStorageCompliance(dims);
+      if (!result.passed) {
+        setScannerComplianceReasons(result.reasons);
+      }
+    } catch {
+      // 事前チェックはあくまで補助的な注意喚起のため、失敗しても無視する
+    }
+  }
+
   async function handleFile(file: File) {
     if (loading) return; // 解析中の二重送信を防止
 
     setError(null);
     setCandidate(null);
     void updateResolutionHint(file);
+    void updateScannerComplianceWarning(file);
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       setError(`ファイルサイズが大きすぎます（上限 ${MAX_FILE_SIZE_BYTES / 1024 / 1024}MB）。`);
@@ -110,6 +132,7 @@ export function ReceiptUpload({
     setConfirmedCount((n) => n + 1);
     setCandidate(null);
     setResolutionHint(null);
+    setScannerComplianceReasons([]);
     setPreviewUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
@@ -178,6 +201,20 @@ export function ReceiptUpload({
 
       {error && <p className="text-sm text-red-700">{error}</p>}
       {!error && resolutionHint && <p className="text-xs text-amber-700">{resolutionHint}</p>}
+      {!error && scannerComplianceReasons.length > 0 && (
+        <div
+          role="status"
+          className="max-w-2xl border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 space-y-1"
+        >
+          <p className="font-semibold">
+            紙原本を破棄する場合の電子帳簿保存法スキャナ保存要件を満たさない可能性があります（参考情報・アップロードは継続できます）
+          </p>
+          {scannerComplianceReasons.map((reason, i) => (
+            <p key={i}>{reason}</p>
+          ))}
+          <p>最終的な要件充足の判断はご自身（必要に応じて税理士等の専門家）でご確認ください。紙原本を破棄しない場合はこの警告は無視して構いません。</p>
+        </div>
+      )}
       {!aiConfigured && (
         <p className="text-xs text-amber-700">
           ANTHROPIC_API_KEYが未設定のため、画像からの自動読み取りは行われていません（「要確認」のまま表示されています）。
