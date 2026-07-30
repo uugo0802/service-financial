@@ -10,6 +10,7 @@ import {
   formatInvoiceNumber,
 } from "@/lib/invoice/clientInvoice";
 import { InvoiceNumberBadge } from "@/components/InvoiceNumberBadge";
+import { InvoicePrintLayout } from "@/components/InvoicePrintLayout";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
@@ -56,6 +57,8 @@ export function ClientInvoiceForm() {
   // （番号はReactのkeyにも使っているため、削除対象の取り違えにもつながる）。
   // 削除しても採番済みの数字を再利用しないよう、単調増加のカウンタを別に持つ。
   const [nextInvoiceSequence, setNextInvoiceSequence] = useState(1);
+  // 印刷/PDF保存プレビュー中の請求書。nullの場合は通常のフォーム画面を表示する。
+  const [printingInvoice, setPrintingInvoice] = useState<ClientInvoice | null>(null);
 
   const parsedLineItems: ClientInvoiceLineItemInput[] = useMemo(
     () =>
@@ -116,6 +119,10 @@ export function ClientInvoiceForm() {
 
   function removeSavedInvoice(invoiceNumber: string) {
     setSavedInvoices((prev) => prev.filter((inv) => inv.invoiceNumber !== invoiceNumber));
+  }
+
+  if (printingInvoice) {
+    return <InvoicePrintLayout invoice={printingInvoice} onClose={() => setPrintingInvoice(null)} />;
   }
 
   return (
@@ -346,13 +353,22 @@ export function ClientInvoiceForm() {
                     </p>
                     <p className="text-xs text-stone-500">発行日 {invoice.issueDate}</p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeSavedInvoice(invoice.invoiceNumber)}
-                    className="text-xs text-red-700 hover:text-red-900 shrink-0"
-                  >
-                    削除
-                  </button>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPrintingInvoice(invoice)}
+                      className="text-xs text-stone-600 hover:text-stone-900"
+                    >
+                      印刷 / PDFで保存
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeSavedInvoice(invoice.invoiceNumber)}
+                      className="text-xs text-red-700 hover:text-red-900"
+                    >
+                      削除
+                    </button>
+                  </div>
                 </div>
                 <ClientInvoicePreview invoice={invoice} compact />
               </div>
@@ -361,7 +377,7 @@ export function ClientInvoiceForm() {
         )}
         <p className="mt-3 text-xs text-stone-400 leading-relaxed">
           この画面での保存はブラウザの表示中のみ有効な一時保存です（再読み込みで消えます）。データベースへの永続保存や、
-          PDF出力・メール送信機能は現時点では未対応です。
+          メール送信機能は現時点では未対応です。印刷／PDF保存は各請求書の「印刷 / PDFで保存」ボタンからご利用いただけます。
         </p>
       </section>
     </div>
