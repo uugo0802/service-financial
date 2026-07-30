@@ -17,10 +17,16 @@ function round100Down(n: number): number {
   return Math.floor(n / 100) * 100;
 }
 
-/** 税込金額から「税率のうち国税部分」「地方消費税部分」を分けて抜き出す */
+/**
+ * 税込金額から「税率のうち国税部分」「地方消費税部分」を分けて抜き出す。
+ * 消費税額の計算は円未満切り捨て（国税庁の税額計算における端数処理の原則）のため、
+ * Math.round ではなく Math.floor を用いる。四捨五入すると、切り捨てを前提とする
+ * round1000Down/round100Down との整合が取れず、①課税標準額や⑨差引税額といった
+ * 後続の欄が本来の額より過大に計算されてしまう。
+ */
 function splitTax(amountInclusive: number, combinedRate: number, nationalRate: number) {
-  const totalTax = Math.round((amountInclusive * combinedRate) / (100 + combinedRate));
-  const national = Math.round((totalTax * nationalRate) / combinedRate);
+  const totalTax = Math.floor((amountInclusive * combinedRate) / (100 + combinedRate));
+  const national = Math.floor((totalTax * nationalRate) / combinedRate);
   const local = totalTax - national;
   return { totalTax, national, local };
 }
@@ -54,8 +60,10 @@ interface SalesAndGeneralPurchaseTax {
 
 /** 売上に係る消費税額（②）と、原則課税の場合の実額仕入税額控除を集計する共通部分 */
 function computeSalesAndGeneralPurchaseTax(rows: CategorizedTransaction[]): SalesAndGeneralPurchaseTax {
-  // 借入金の実行・出資の払込等（nonRevenue）は入金でも売上ではないため除外する
-  const income = rows.filter((r) => r.amount > 0 && !r.nonRevenue);
+  // 借入金の実行・出資の払込み等（excludeFromIncome）は課税売上高ではないため、免税判定の
+  // 基準となる totalIncome から除外する（②消費税額・①課税標準額は taxCategory で別途絞り
+  // 込んでいるため、こちらは元々借入・出資の影響を受けない）。
+  const income = rows.filter((r) => r.amount > 0 && !r.excludeFromIncome);
   const expense = rows.filter((r) => r.amount < 0 && !r.personalDeductionOnly);
 
   let salesNational = 0;

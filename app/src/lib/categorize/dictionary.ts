@@ -37,20 +37,29 @@ export interface CategoryRule {
    */
   personalDeductionOnly?: boolean;
   /**
-   * true の場合、入金（プラス金額）であっても損益計算書上の収入・売上には一切含めない。
-   * 借入金の実行や出資・資本金の払込など、貸借対照表側（負債・純資産）の増減であって
-   * 所得税・法人税上の益金でも消費税の課税売上でもない資金移動が対象。
-   * これを立てないと、融資や増資の入金が売上高・事業所得・課税所得に混入してしまう。
+   * true の場合、収入（プラスの金額）であっても売上・事業収入として扱わない。
+   * 借入金の実行・出資（資本金）の払込みは貸借対照表項目（負債・純資産の増加）であり、
+   * 所得税・法人税上の収入金額には含まれないため、収入合計・免税判定・損益集計から除外する。
    */
-  nonRevenue?: boolean;
+  excludeFromIncome?: boolean;
 }
 
 export const EXPENSE_RULES: CategoryRule[] = [
   { pattern: /法定福利費|社会保険料.{0,4}(会社|法人)負担/, account: "法定福利費", taxCategory: "不課税" },
   { pattern: /家賃|賃貸|不動産管理/, account: "地代家賃", taxCategory: "課税仕入10%", note: "事業用と仮定。住居兼用の場合は家事按分が必要" },
-  { pattern: /NTT|ドコモ|docomo|au(?!.{0,3}損保)|ソフトバンク|softbank|光回線|インターネット|プロバイダ/i, account: "通信費", taxCategory: "課税仕入10%" },
-  { pattern: /電気|東京電力|関西電力|中部電力|水道局|ガス(?!ソリン)/, account: "水道光熱費", taxCategory: "課税仕入10%" },
-  { pattern: /JR|ANA|JAL|Suica|PASMO|タクシー|新幹線|航空券|高速道路|ETC/i, account: "旅費交通費", taxCategory: "課税仕入10%" },
+  { pattern: /NTT|ドコモ|docomo|\bau\b(?!.{0,3}損保)|ソフトバンク|softbank|光回線|インターネット|プロバイダ/i, account: "通信費", taxCategory: "課税仕入10%" },
+  // "ガス" 単体は「ガスト」（全国チェーンのファミリーレストラン）等の固有名詞の先頭2文字とも
+  // 一致してしまうため、ガソリン同様に否定先読みで除外する。「ガス代」「都市ガス」「プロパンガス」
+  // のように「ガス」の直後が単語の終わり・助詞・「代」「料金」等に続く場合のみマッチさせたい
+  // ところだが、簡易的に固有名詞「ガスト」だけを確実に除外している。
+  { pattern: /電気|東京電力|関西電力|中部電力|水道局|ガス(?!ソリン|ト)/, account: "水道光熱費", taxCategory: "課税仕入10%" },
+  // ETC（高速道路の電子料金収受システム）は常に大文字の固有名詞として表記されるため、
+  // 大文字小文字を区別するマッチにしている。ここに他の語（JR/ANA/JAL等）と同じ大小文字
+  // 無視の \bETC\b を含めると、日本語の摘要文でよく使われる英語の省略語
+  // "etc"（等）を末尾に含む文字列（例:「文房具・伝票用紙etc.」）まで
+  // 誤って旅費交通費（ETC利用料）と判定してしまうため。
+  { pattern: /\bJR\b|\bANA\b|\bJAL\b|Suica|PASMO|タクシー|新幹線|航空券|高速道路/i, account: "旅費交通費", taxCategory: "課税仕入10%" },
+  { pattern: /\bETC\b/, account: "旅費交通費", taxCategory: "課税仕入10%", note: "ETC（高速道路）利用料" },
   { pattern: /Amazon|ヨドバシ|文房具|事務用品|コクヨ/i, account: "消耗品費", taxCategory: "課税仕入10%" },
   { pattern: /AWS|Google\s?Workspace|GCP|Adobe|Slack|Zoom|GitHub|Notion|Dropbox|Microsoft|サブスクリプション/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "国外事業者のリバースチャージ対象の可能性あり、要確認" },
   { pattern: /振込手数料|送金手数料|PayPal|Stripe手数料|銀行手数料|口座維持手数料/i, account: "支払手数料", taxCategory: "課税仕入10%" },
@@ -106,15 +115,15 @@ export const INCOME_RULES: CategoryRule[] = [
     pattern: /借入|融資|ローン実行/,
     account: "借入金",
     taxCategory: "対象外",
-    note: "借入金の実行は負債の増加であり、所得税・法人税上の収入（益金）にも消費税の課税売上にも該当しません",
-    nonRevenue: true,
+    excludeFromIncome: true,
+    note: "借入金の実行は負債の増加であり事業の収入ではないため、収入金額・所得金額の計算に含めません",
   },
   {
     pattern: /出資|資本金/,
     account: "元入金",
     taxCategory: "対象外",
-    note: "出資・資本金の払込は純資産の増加であり、所得税・法人税上の収入（益金）にも消費税の課税売上にも該当しません",
-    nonRevenue: true,
+    excludeFromIncome: true,
+    note: "出資・資本金の払込みは純資産の増加であり事業の収入ではないため、収入金額・所得金額の計算に含めません",
   },
   { pattern: /利息|受取利子/, account: "受取利息", taxCategory: "非課税" },
 ];

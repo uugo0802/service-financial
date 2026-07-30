@@ -104,16 +104,37 @@ describe("buildConsumptionTaxForm", () => {
     expect(overThreshold.isLikelyExempt).toBe(false);
   });
 
-  it("excludes nonRevenue rows (loan disbursements) from isLikelyExempt's income threshold", () => {
+  // Regression: 免税判定に使う totalIncome（isLikelyExempt の基準）に、借入金の実行や
+  // 出資の払込みのような課税売上に該当しない資金調達を含めてはならない。含めてしまうと、
+  // 実際の課税売上高が1,000万円以下でも、借入・出資の分だけ合計が押し上げられて誤って
+  // 「免税事業者ではない」と判定されてしまう。
+  it("does not let loan proceeds or capital contributions push isLikelyExempt to false", () => {
     const rows = [
-      tx({ id: "1", amount: 9_500_000, taxCategory: "課税売上10%" }),
-      tx({ id: "2", amount: 5_000_000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+      tx({ id: "1", amount: 3_000_000, taxCategory: "課税売上10%", account: "売上高" }),
+      tx({
+        id: "2",
+        amount: 8_000_000,
+        taxCategory: "対象外",
+        account: "借入金",
+        excludeFromIncome: true,
+      }),
     ];
     const form = buildConsumptionTaxForm(rows);
-
-    // 借入金5,000,000円を合算すると1,000万円を超えてしまうが、事業収入ではないため
-    // isLikelyExemptの判定には影響しない
     expect(form.isLikelyExempt).toBe(true);
+  });
+
+  // Regression: the national/local consumption tax split extracted from a tax-inclusive amount
+  // must be truncated (円未満切り捨て), not rounded to the nearest yen. Math.round silently
+  // rounded .5-and-above fractional yen up, which both overstates ②消費税額/④控除対象仕入税額
+  // and is inconsistent with the truncating round1000Down/round100Down helpers used for
+  // ①課税標準額 and ⑨差引税額 in this same file.
+  it("truncates (does not round) the national tax split on an amount with a fractional yen remainder", () => {
+    const rows = [tx({ id: "1", amount: 1000, taxCategory: "課税売上10%", account: "売上高" })];
+    const form = buildConsumptionTaxForm(rows);
+
+    // 1,000 * 10/110 = 90.909...(totalTax) → truncated to 90
+    // 90 * 7.8/10 = 70.2(national) → truncated to 70 (Math.round would incorrectly give 71)
+    expect(form.taxOnSales).toBe(70);
   });
 
   it("returns all zeros for an empty input", () => {

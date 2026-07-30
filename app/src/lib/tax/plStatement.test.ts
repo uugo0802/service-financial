@@ -42,15 +42,24 @@ describe("buildProfitLossStatement", () => {
     expect(pl.expenseLines[0]).toEqual({ account: "通信費", amount: 30000 });
   });
 
-  it("excludes nonRevenue rows (loan disbursements, capital contributions) from income totals", () => {
+  // Regression: 損益計算書（マイクロ法人の決算報告書の元）の「収入」に、借入金の実行や
+  // 出資（資本金）の払込みのような貸借対照表項目を含めてはならない。含めると、法人の
+  // 営業利益・経常利益・当期純利益が資金調達の分だけ過大表示され、別表四の当期利益にも
+  // そのまま波及する。
+  it("excludes loan proceeds and capital contributions from income totals", () => {
     const rows = [
-      tx({ id: "1", amount: 500000, account: "売上高" }),
-      tx({ id: "2", amount: 2000000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+      tx({ id: "1", amount: 500000, account: "売上高", date: "2026-01-05" }),
+      tx({
+        id: "2",
+        amount: 3000000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+        date: "2026-01-10",
+      }),
     ];
     const pl = buildProfitLossStatement(rows);
-
     expect(pl.incomeTotal).toBe(500000);
-    expect(pl.incomeLines).toEqual([{ account: "売上高", amount: 500000 }]);
   });
 
   it("returns zeroed totals for an empty input", () => {

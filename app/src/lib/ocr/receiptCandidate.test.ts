@@ -85,6 +85,38 @@ describe("buildScanMetadata", () => {
     expect(meta.scannerStorageWarnings).toHaveLength(1);
   });
 
+  it("does not warn about resolution when the estimated dpi lands exactly on the 200dpi threshold", () => {
+    // 長辺591px, 基準15cm(=5.905...インチ) => ちょうど概算100dpi付近になるよう、
+    // 200dpi境界ちょうどになる長辺を逆算(200dpi * (15/2.54)インチ ≈ 1181px)して使用する
+    const longEdgeForExactly200Dpi = Math.round(200 * (15 / 2.54));
+    const buffer = buildPngBuffer(longEdgeForExactly200Dpi, 100, 2);
+    const meta = buildScanMetadata({
+      originalFileName: "receipt-boundary.png",
+      mimeType: "image/png",
+      sizeBytes: buffer.byteLength,
+      imageBuffer: buffer,
+    });
+
+    expect(meta.estimatedDpi).toBeGreaterThanOrEqual(200);
+    expect(meta.scannerStorageWarnings.some((w) => w.includes("解像度"))).toBe(false);
+    expect(meta.meetsScannerStorageRequirement).toBe(true);
+  });
+
+  it("reports both a low-resolution and a grayscale warning at once when both conditions apply", () => {
+    const buffer = buildPngBuffer(200, 300, 0); // small + grayscale (colorType 0)
+    const meta = buildScanMetadata({
+      originalFileName: "receipt-small-gray.png",
+      mimeType: "image/png",
+      sizeBytes: buffer.byteLength,
+      imageBuffer: buffer,
+    });
+
+    expect(meta.scannerStorageWarnings).toHaveLength(2);
+    expect(meta.scannerStorageWarnings.some((w) => w.includes("解像度"))).toBe(true);
+    expect(meta.scannerStorageWarnings.some((w) => w.includes("グレースケール"))).toBe(true);
+    expect(meta.meetsScannerStorageRequirement).toBe(false);
+  });
+
   it("uses the provided uploadedAt instead of the current time when given", () => {
     const buffer = buildPngBuffer(1500, 2000, 2);
     const meta = buildScanMetadata({

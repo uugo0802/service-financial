@@ -96,10 +96,10 @@ describe("estimateForMicroCorp", () => {
     expect(result.taxableIncome).toBe(500_000);
   });
 
-  it("excludes loan disbursements and capital contributions (nonRevenue) from revenue and taxable income", () => {
+  it("excludes loan disbursements and capital contributions (excludeFromIncome) from revenue and taxable income", () => {
     const rows = [
       tx({ id: "1", amount: 4_000_000, account: "売上高", taxCategory: "課税売上10%" }),
-      tx({ id: "2", amount: 10_000_000, account: "元入金", taxCategory: "対象外", nonRevenue: true }),
+      tx({ id: "2", amount: 10_000_000, account: "元入金", taxCategory: "対象外", excludeFromIncome: true }),
       tx({ id: "3", amount: -1_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
     ];
 
@@ -116,6 +116,17 @@ describe("estimateForMicroCorp", () => {
     const result = estimateForMicroCorp(rows);
 
     expect(result.consumptionTax.isLikelyExempt).toBe(false);
+  });
+
+  // Regression: consumption tax amounts extracted from a tax-inclusive total must be truncated
+  // (円未満切り捨て), not rounded to the nearest yen. Math.round silently rounded .5-and-above
+  // fractional yen up, overstating the estimated consumption tax collected on sales.
+  it("truncates (does not round) the extracted consumption tax on a sale with a fractional yen remainder", () => {
+    const rows = [tx({ id: "1", amount: 1000, account: "売上高", taxCategory: "課税売上10%" })];
+    const result = estimateForMicroCorp(rows);
+
+    // 1,000 * 10/110 = 90.909... → truncated to 90円 (Math.round would incorrectly give 91)
+    expect(result.consumptionTax.salesTax).toBe(90);
   });
 
   it("returns zeroed figures for an empty input", () => {

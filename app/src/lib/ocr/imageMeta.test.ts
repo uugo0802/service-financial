@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseImageDimensions } from "./imageMeta";
+import { hasRecommendedMinimumResolution, parseImageDimensions, RECOMMENDED_MIN_LONG_EDGE_PX } from "./imageMeta";
 
 function writeUint32BE(bytes: Uint8Array, offset: number, value: number) {
   bytes[offset] = (value >>> 24) & 0xff;
@@ -86,6 +86,12 @@ describe("parseImageDimensions", () => {
       const zeroHeight = buildPngBuffer(800, 0, 2);
       expect(parseImageDimensions(zeroHeight, "image/png")).toBeNull();
     });
+
+    it("treats an undefined/reserved PNG color type as color-indeterminate", () => {
+      const buffer = buildPngBuffer(800, 600, 1); // 1 is not a valid PNG color type
+      const result = parseImageDimensions(buffer, "image/png");
+      expect(result?.isColor).toBeNull();
+    });
   });
 
   describe("JPEG", () => {
@@ -153,6 +159,13 @@ describe("parseImageDimensions", () => {
       const result = parseImageDimensions(bytes.buffer, "image/jpeg");
       expect(result).toBeNull();
     });
+
+    it("returns null instead of looping forever on a segment with a corrupt (too-short) length", () => {
+      // SOI + a non-SOF marker (APP0) whose declared segment length is below the minimum of 2
+      const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x00]);
+      expect(() => parseImageDimensions(bytes.buffer, "image/jpeg")).not.toThrow();
+      expect(parseImageDimensions(bytes.buffer, "image/jpeg")).toBeNull();
+    });
   });
 
   describe("unsupported or invalid input", () => {
@@ -178,5 +191,24 @@ describe("parseImageDimensions", () => {
       const result = parseImageDimensions(new ArrayBuffer(0), "image/jpeg");
       expect(result).toBeNull();
     });
+  });
+});
+
+describe("hasRecommendedMinimumResolution", () => {
+  it("returns true for a typical modern smartphone camera photo", () => {
+    expect(hasRecommendedMinimumResolution({ width: 3024, height: 4032 })).toBe(true);
+  });
+
+  it("returns true when exactly at the threshold on the long edge", () => {
+    expect(hasRecommendedMinimumResolution({ width: 800, height: RECOMMENDED_MIN_LONG_EDGE_PX })).toBe(true);
+  });
+
+  it("returns false for a low-resolution thumbnail-sized image", () => {
+    expect(hasRecommendedMinimumResolution({ width: 320, height: 240 })).toBe(false);
+  });
+
+  it("uses the longer of width/height (portrait or landscape)", () => {
+    expect(hasRecommendedMinimumResolution({ width: 1600, height: 200 })).toBe(true);
+    expect(hasRecommendedMinimumResolution({ width: 200, height: 1600 })).toBe(true);
   });
 });

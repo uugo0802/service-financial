@@ -43,10 +43,19 @@ describe("buildMonthlySalesTrend", () => {
     expect(buildMonthlySalesTrend(rows)).toEqual([]);
   });
 
-  it("excludes nonRevenue rows (loan disbursements) from the sales trend", () => {
+  // Regression: 事業概況説明書の「売上高の月別推移」は事業の売上のみを対象とすべきで、
+  // 借入金の実行のような資金調達を売上として表示してはならない。
+  it("excludes loan proceeds and capital contributions from the monthly sales trend", () => {
     const rows = [
       tx({ id: "1", date: "2026-01-05", amount: 100000 }),
-      tx({ id: "2", date: "2026-01-10", amount: 5000000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+      tx({
+        id: "2",
+        date: "2026-01-10",
+        amount: 5000000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
     ];
     const result = buildMonthlySalesTrend(rows);
     expect(result).toEqual([{ month: "2026-01", amount: 100000, transactionCount: 1 }]);

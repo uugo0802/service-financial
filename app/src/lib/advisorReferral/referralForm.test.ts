@@ -44,6 +44,11 @@ describe("validateAdvisorReferralForm", () => {
     expect(errors.name).toMatch(/60文字以内/);
   });
 
+  it("accepts a name exactly at the 60-character limit (boundary, inclusive)", () => {
+    const errors = validateAdvisorReferralForm(values({ name: "あ".repeat(60) }));
+    expect(errors.name).toBeUndefined();
+  });
+
   it("requires a valid email format", () => {
     expect(validateAdvisorReferralForm(values({ email: "" })).email).toBe(
       "メールアドレスを入力してください。",
@@ -54,9 +59,39 @@ describe("validateAdvisorReferralForm", () => {
     expect(validateAdvisorReferralForm(values({ email: "ok@example.com" })).email).toBeUndefined();
   });
 
+  it("rejects an email with no domain suffix or with multiple @ symbols", () => {
+    expect(validateAdvisorReferralForm(values({ email: "taro@example" })).email).toMatch(/形式/);
+    expect(validateAdvisorReferralForm(values({ email: "ta@ro@example.com" })).email).toMatch(/形式/);
+  });
+
+  it("treats a whitespace-only email as missing rather than an invalid format", () => {
+    const errors = validateAdvisorReferralForm(values({ email: "   " }));
+    expect(errors.email).toBe("メールアドレスを入力してください。");
+  });
+
   it("rejects an invalid phone number when provided", () => {
     const errors = validateAdvisorReferralForm(values({ phone: "abc-defg" }));
     expect(errors.phone).toMatch(/電話番号/);
+  });
+
+  it("rejects a phone number just below the minimum length (8 digits)", () => {
+    const errors = validateAdvisorReferralForm(values({ phone: "1234-567" }));
+    expect(errors.phone).toMatch(/電話番号/);
+  });
+
+  it("accepts phone numbers at the boundary lengths (9 and 15 characters)", () => {
+    expect(validateAdvisorReferralForm(values({ phone: "123456789" })).phone).toBeUndefined();
+    expect(validateAdvisorReferralForm(values({ phone: "123456789012345" })).phone).toBeUndefined();
+  });
+
+  it("rejects a phone number that exceeds the maximum length (16 characters)", () => {
+    const errors = validateAdvisorReferralForm(values({ phone: "1234567890123456" }));
+    expect(errors.phone).toMatch(/電話番号/);
+  });
+
+  it("rejects a phone number containing spaces or full-width digits", () => {
+    expect(validateAdvisorReferralForm(values({ phone: "090 1234 5678" })).phone).toMatch(/電話番号/);
+    expect(validateAdvisorReferralForm(values({ phone: "０９０１２３４５６７８" })).phone).toMatch(/電話番号/);
   });
 
   it("requires a consultation topic", () => {
@@ -74,6 +109,21 @@ describe("validateAdvisorReferralForm", () => {
   it("rejects an overly long message", () => {
     const errors = validateAdvisorReferralForm(values({ message: "あ".repeat(2001) }));
     expect(errors.message).toMatch(/2000文字以内/);
+  });
+
+  it("accepts a message exactly at the min (20) and max (2000) length boundaries", () => {
+    expect(validateAdvisorReferralForm(values({ message: "あ".repeat(20) })).message).toBeUndefined();
+    expect(validateAdvisorReferralForm(values({ message: "あ".repeat(2000) })).message).toBeUndefined();
+  });
+
+  it("rejects a message that is one character short of the minimum length", () => {
+    const errors = validateAdvisorReferralForm(values({ message: "あ".repeat(19) }));
+    expect(errors.message).toMatch(/20文字以上/);
+  });
+
+  it("trims surrounding whitespace before evaluating the message length requirement", () => {
+    const errors = validateAdvisorReferralForm(values({ message: `  ${"あ".repeat(19)}  ` }));
+    expect(errors.message).toMatch(/20文字以上/);
   });
 
   it("requires consent to be checked", () => {

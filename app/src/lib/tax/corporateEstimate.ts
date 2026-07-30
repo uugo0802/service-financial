@@ -16,8 +16,9 @@ const LOCAL_CORPORATE_TAX_RATE = 0.103; // 地方法人税 = 法人税額 × 10.
 // 自治体・資本金・従業者数により実際の金額は変わるため、あくまで参考表示。
 const PER_CAPITA_TAX_REFERENCE = 70_000;
 
+// 消費税額の端数処理は円未満切り捨てが原則のため、Math.round ではなく Math.floor を用いる。
 function extractTax(amountInclusive: number, ratePercent: number): number {
-  return Math.round((amountInclusive * ratePercent) / (100 + ratePercent));
+  return Math.floor((amountInclusive * ratePercent) / (100 + ratePercent));
 }
 
 export interface CorporateEstimate {
@@ -38,11 +39,13 @@ export interface CorporateEstimate {
 }
 
 export function estimateForMicroCorp(rows: CategorizedTransaction[]): CorporateEstimate {
-  // 借入金の実行・出資の払込等（nonRevenue）は入金でも益金ではないため除外する
-  const income = rows.filter((r) => r.amount > 0 && !r.nonRevenue);
+  const income = rows.filter((r) => r.amount > 0);
   const expense = rows.filter((r) => r.amount < 0);
 
-  const revenue = income.reduce((sum, r) => sum + r.amount, 0);
+  // 借入金の実行・出資の払込み等（excludeFromIncome）は負債・純資産の増加であり、法人の
+  // 収益（益金）ではないため、益金・所得金額・免税判定のいずれからも除外する。
+  const businessIncome = income.filter((r) => !r.excludeFromIncome);
+  const revenue = businessIncome.reduce((sum, r) => sum + r.amount, 0);
   const expenses = expense.reduce((sum, r) => sum + Math.abs(r.amount), 0);
   const taxableIncome = Math.max(0, Math.floor((revenue - expenses) / 1000) * 1000);
 

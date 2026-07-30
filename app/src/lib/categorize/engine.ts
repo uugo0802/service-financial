@@ -25,8 +25,8 @@ export interface CategorizedTransaction extends Transaction {
   note?: string;
   /** 個人事業主の場合、事業の必要経費ではなく所得控除・参考情報として扱うべき項目 */
   personalDeductionOnly?: boolean;
-  /** 入金でも損益計算書上の収入・売上には含めない項目（借入金の実行・出資の払込等） */
-  nonRevenue?: boolean;
+  /** 借入金の実行・出資の払込み等、プラスの金額でも売上・事業収入として扱うべきではない項目 */
+  excludeFromIncome?: boolean;
 }
 
 const CONFIDENCE_THRESHOLD = 0.75;
@@ -62,7 +62,7 @@ export function ruleBasedCategorize(tx: Transaction): CategorizedTransaction {
     source: isConfirmed ? "rule" : "uncategorized",
     note: rule.note,
     personalDeductionOnly: rule.personalDeductionOnly,
-    nonRevenue: rule.nonRevenue,
+    excludeFromIncome: rule.excludeFromIncome,
   };
 }
 

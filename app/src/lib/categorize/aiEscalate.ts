@@ -87,10 +87,20 @@ async function classifyOne(tx: Transaction): Promise<AiResult | null> {
   const input = toolUse.input as Partial<AiResult>;
   if (!input.account || !input.taxCategory) return null;
 
+  // cto-tech-architecture.md 3.3: 税区分判定はルール優先。LLMの構造化出力は json_schema の
+  // enum指定はあくまでモデルへのヒントであり、実行時に値が保証されるわけではない。ここで
+  // 既知の税区分（TAX_CATEGORIES）に含まれるかを検証せずに受け入れると、幻覚・表記ゆれの
+  // 値がそのまま台帳に書き込まれ、他の計算箇所の taxCategory 文字列完全一致判定（例:
+  // "課税仕入10%"）に一致しないまま静かに仕入税額控除等の対象から漏れてしまう。
+  if (!TAX_CATEGORIES.includes(input.taxCategory)) return null;
+
+  const rawConfidence = typeof input.confidence === "number" && Number.isFinite(input.confidence) ? input.confidence : 0.5;
+  const confidence = Math.min(1, Math.max(0, rawConfidence));
+
   return {
     account: input.account,
     taxCategory: input.taxCategory,
-    confidence: typeof input.confidence === "number" ? input.confidence : 0.5,
+    confidence,
     reasoning: input.reasoning ?? "",
   };
 }

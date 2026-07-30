@@ -58,6 +58,13 @@ describe("completeStep", () => {
     expect(attemptNegative).toEqual(state);
   });
 
+  it("throws when totalSteps is not a positive integer", () => {
+    const state = createWizardState(5);
+    expect(() => completeStep(state, 0, 1)).toThrow();
+    expect(() => completeStep(state, -3, 1)).toThrow();
+    expect(() => completeStep(state, 2.5, 1)).toThrow();
+  });
+
   it("does not advance past the last step when completing the final step", () => {
     let state = createWizardState(3);
     state = completeStep(state, 3, 1);
@@ -105,7 +112,12 @@ describe("goToStep", () => {
     const state = createWizardState(5);
 
     expect(goToStep(state, 0)).toEqual(state);
-    expect(goToStep(state, -1)).toEqual(state);
+    expect(goToStep(state, -2)).toEqual(state);
+  });
+
+  it("is a no-op (returns an equal state) when navigating to the already-displayed step", () => {
+    const state = createWizardState(5);
+    expect(goToStep(state, 1)).toEqual(state);
   });
 });
 
@@ -115,6 +127,14 @@ describe("isStepUnlocked", () => {
     expect(isStepUnlocked(state, 0)).toBe(false);
     expect(isStepUnlocked(state, -1)).toBe(false);
     expect(isStepUnlocked(state, 1)).toBe(true);
+  });
+
+  it("unlocks exactly through maxUnlockedStep and no further", () => {
+    let state = createWizardState(5);
+    state = completeStep(state, 5, 1);
+    // maxUnlockedStep is now 2.
+    expect(isStepUnlocked(state, 2)).toBe(true);
+    expect(isStepUnlocked(state, 3)).toBe(false);
   });
 });
 
@@ -130,6 +150,19 @@ describe("getProgressPercent", () => {
     state = completeStep(state, 4, 3);
     state = completeStep(state, 4, 4);
     expect(getProgressPercent(state, 4)).toBe(100);
+  });
+
+  it("returns 0 defensively for a non-positive totalSteps instead of dividing by zero/negative", () => {
+    const state = createWizardState(3);
+    expect(getProgressPercent(state, 0)).toBe(0);
+    expect(getProgressPercent(state, -1)).toBe(0);
+  });
+
+  it("rounds to the nearest percent for a step count that doesn't divide evenly", () => {
+    let state = createWizardState(3);
+    state = completeStep(state, 3, 1);
+    // 1/3 = 33.33...% -> rounds to 33
+    expect(getProgressPercent(state, 3)).toBe(33);
   });
 });
 

@@ -52,4 +52,34 @@ describe("decodeCsvBuffer", () => {
     expect(result.encoding).toBe("utf-8");
     expect(result.text).toBe(text);
   });
+
+  it("decodes an empty buffer as utf-8 with empty text", () => {
+    const result = decodeCsvBuffer(new ArrayBuffer(0));
+
+    expect(result.encoding).toBe("utf-8");
+    expect(result.text).toBe("");
+  });
+
+  it("falls back to shift_jis for a lone byte that is not valid UTF-8 (0xa4, hiragana range in CP932)", () => {
+    // 0xa4 alone is an invalid UTF-8 continuation byte, so the strict utf-8
+    // decoder throws and decodeCsvBuffer falls back to shift_jis, which maps
+    // single bytes in this range without raising an error (never fatal).
+    const bytes = new Uint8Array([0xa4]);
+
+    const result = decodeCsvBuffer(bytes.buffer);
+
+    expect(result.encoding).toBe("shift_jis");
+    expect(result.text.length).toBe(1);
+  });
+
+  it("decodes truncated/invalid byte sequences as shift_jis without throwing", () => {
+    // Bytes that are invalid as UTF-8 (lone continuation/start bytes) must not
+    // propagate an exception out of decodeCsvBuffer even though shift_jis
+    // decoding of garbage input may itself contain replacement characters.
+    const bytes = new Uint8Array([0xff, 0xfe, 0x00, 0x81]);
+
+    expect(() => decodeCsvBuffer(bytes.buffer)).not.toThrow();
+    const result = decodeCsvBuffer(bytes.buffer);
+    expect(result.encoding).toBe("shift_jis");
+  });
 });

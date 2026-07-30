@@ -24,6 +24,7 @@ function estimate(overrides: Partial<IndividualEstimate>): IndividualEstimate {
     businessProfit: 5_000_000,
     socialInsuranceDeduction: 400_000,
     lifeInsurancePaidInfo: 100_000,
+    blueReturnDeduction: 650_000,
     taxableIncome: 3_470_000,
     incomeTax: { tax: 249_500, marginalRate: 20 },
     reconstructionSurtax: 5_239,
@@ -41,7 +42,9 @@ function estimate(overrides: Partial<IndividualEstimate>): IndividualEstimate {
 
 describe("buildIndividualReturnForm", () => {
   it("applies the 650,000 blue-return deduction to business income when profit exceeds it", () => {
-    const form = buildIndividualReturnForm(estimate({ businessProfit: 5_000_000, totalIncome: 8_000_000 }));
+    const form = buildIndividualReturnForm(
+      estimate({ businessProfit: 5_000_000, totalIncome: 8_000_000, blueReturnDeduction: 650_000 })
+    );
 
     expect(form.incomeSection).toEqual([{ label: "事業（営業等）", symbol: "ア", amount: 8_000_000 }]);
     expect(form.incomeAmountSection).toEqual([
@@ -50,8 +53,32 @@ describe("buildIndividualReturnForm", () => {
     ]);
   });
 
+  it("applies the estimate's 550,000 blue-return deduction (double-entry, paper filing) rather than a hardcoded max", () => {
+    const form = buildIndividualReturnForm(
+      estimate({ businessProfit: 5_000_000, totalIncome: 8_000_000, blueReturnDeduction: 550_000 })
+    );
+
+    expect(form.incomeAmountSection).toEqual([
+      { label: "事業（営業等）", symbol: "①", amount: 4_450_000 },
+      { label: "合計", symbol: "⑫", amount: 4_450_000 },
+    ]);
+  });
+
+  it("applies the estimate's 100,000 blue-return deduction (simple bookkeeping)", () => {
+    const form = buildIndividualReturnForm(
+      estimate({ businessProfit: 5_000_000, totalIncome: 8_000_000, blueReturnDeduction: 100_000 })
+    );
+
+    expect(form.incomeAmountSection).toEqual([
+      { label: "事業（営業等）", symbol: "①", amount: 4_900_000 },
+      { label: "合計", symbol: "⑫", amount: 4_900_000 },
+    ]);
+  });
+
   it("clamps business income after blue-return deduction to 0 when profit is below the deduction", () => {
-    const form = buildIndividualReturnForm(estimate({ businessProfit: 400_000, totalIncome: 400_000 }));
+    const form = buildIndividualReturnForm(
+      estimate({ businessProfit: 400_000, totalIncome: 400_000, blueReturnDeduction: 650_000 })
+    );
 
     expect(form.incomeAmountSection[0].amount).toBe(0);
     expect(form.incomeAmountSection[1].amount).toBe(0);
@@ -188,7 +215,7 @@ describe("buildBlueReturnStatement", () => {
     expect(statement.expenseTotal).toBe(50_000);
   });
 
-  it("caps the blue-return deduction at 650,000 when income before deduction exceeds it", () => {
+  it("defaults to capping the blue-return deduction at 550,000 (double-entry, paper filing) when no options are given", () => {
     const rows = [
       tx({ id: "1", amount: 5_000_000, account: "売上高" }),
       tx({ id: "2", amount: -1_000_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
@@ -197,8 +224,34 @@ describe("buildBlueReturnStatement", () => {
     const statement = buildBlueReturnStatement(rows);
 
     expect(statement.incomeBeforeBlueDeduction).toBe(4_000_000);
+    expect(statement.blueReturnDeduction).toBe(550_000);
+    expect(statement.incomeAfterBlueDeduction).toBe(3_450_000);
+  });
+
+  it("caps the blue-return deduction at 650,000 when double-entry bookkeeping is filed via e-Tax", () => {
+    const rows = [
+      tx({ id: "1", amount: 5_000_000, account: "売上高" }),
+      tx({ id: "2", amount: -1_000_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
+    ];
+
+    const statement = buildBlueReturnStatement(rows, { bookkeepingMethod: "double", filingMethod: "eTax" });
+
+    expect(statement.incomeBeforeBlueDeduction).toBe(4_000_000);
     expect(statement.blueReturnDeduction).toBe(650_000);
     expect(statement.incomeAfterBlueDeduction).toBe(3_350_000);
+  });
+
+  it("caps the blue-return deduction at 100,000 for simple bookkeeping, even when income exceeds it", () => {
+    const rows = [
+      tx({ id: "1", amount: 5_000_000, account: "売上高" }),
+      tx({ id: "2", amount: -1_000_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
+    ];
+
+    const statement = buildBlueReturnStatement(rows, { bookkeepingMethod: "simple", filingMethod: "eTax" });
+
+    expect(statement.incomeBeforeBlueDeduction).toBe(4_000_000);
+    expect(statement.blueReturnDeduction).toBe(100_000);
+    expect(statement.incomeAfterBlueDeduction).toBe(3_900_000);
   });
 
   it("reduces the blue-return deduction to match income when income is below 650,000", () => {
@@ -227,15 +280,25 @@ describe("buildBlueReturnStatement", () => {
     expect(statement.incomeAfterBlueDeduction).toBe(-200_000);
   });
 
-  it("excludes nonRevenue rows (loan disbursements, capital contributions) from sales", () => {
+  // Regression: 青色申告決算書の「収入金額」は事業の売上のみを指し、借入金の実行や
+  // 出資（元入金）の払込みのような貸借対照表項目は含まない。
+  it("excludes loan proceeds and capital contributions from the 収入 (sales) total", () => {
     const rows = [
       tx({ id: "1", amount: 1_000_000, account: "売上高" }),
-      tx({ id: "2", amount: 5_000_000, account: "借入金", taxCategory: "対象外", nonRevenue: true }),
+      tx({
+        id: "2",
+        amount: 4_000_000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({ id: "3", amount: -100_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
     ];
 
     const statement = buildBlueReturnStatement(rows);
 
     expect(statement.salesTotal).toBe(1_000_000);
+    expect(statement.incomeBeforeBlueDeduction).toBe(900_000);
   });
 
   it("returns zeroed totals for an empty input", () => {
