@@ -51,6 +51,11 @@ export function ClientInvoiceForm() {
   const [lineItems, setLineItems] = useState<DraftLineItem[]>([emptyLineItem()]);
 
   const [savedInvoices, setSavedInvoices] = useState<ClientInvoice[]>([]);
+  // 発行済み件数（savedInvoices.length）から採番すると、途中の請求書を削除した後に
+  // 新規作成した際、残っている請求書と同じ番号が再び採番されてしまう
+  // （番号はReactのkeyにも使っているため、削除対象の取り違えにもつながる）。
+  // 削除しても採番済みの数字を再利用しないよう、単調増加のカウンタを別に持つ。
+  const [nextInvoiceSequence, setNextInvoiceSequence] = useState(1);
 
   const parsedLineItems: ClientInvoiceLineItemInput[] = useMemo(
     () =>
@@ -66,7 +71,7 @@ export function ClientInvoiceForm() {
   const result = useMemo(
     () =>
       buildClientInvoice({
-        invoiceNumber: formatInvoiceNumber(issueDate || todayISO(), savedInvoices.length + 1),
+        invoiceNumber: formatInvoiceNumber(issueDate || todayISO(), nextInvoiceSequence),
         issuerName,
         issuerRegistrationNumber: issuerRegistrationNumber || null,
         issueDate,
@@ -86,7 +91,7 @@ export function ClientInvoiceForm() {
       transactionPeriodEnd,
       clientName,
       parsedLineItems,
-      savedInvoices.length,
+      nextInvoiceSequence,
     ]
   );
 
@@ -106,6 +111,7 @@ export function ClientInvoiceForm() {
     e.preventDefault();
     if (!result.isValid) return;
     setSavedInvoices((prev) => [...prev, result.invoice]);
+    setNextInvoiceSequence((n) => n + 1);
   }
 
   function removeSavedInvoice(invoiceNumber: string) {
