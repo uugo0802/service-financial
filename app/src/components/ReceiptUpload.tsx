@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { getCameraCaptureLabel, getFilePickerLabel, isCameraCaptureSupported } from "@/lib/ocr/cameraCapture";
 import { hasRecommendedMinimumResolution, parseImageDimensions } from "@/lib/ocr/imageMeta";
 import { ReceiptJournalCandidate, recordCorrection } from "@/lib/ocr/receiptCandidate";
+import { findReceiptDuplicate } from "@/lib/ocr/receiptDuplicateDetection";
 import { TAX_CATEGORIES } from "@/lib/ocr/receiptOcr";
 import { evaluateScannerStorageCompliance } from "@/lib/ocr/scannerStorageCompliance";
 
@@ -30,6 +31,10 @@ export function ReceiptUpload({
   const [confirmedCount, setConfirmedCount] = useState(0);
   const [resolutionHint, setResolutionHint] = useState<string | null>(null);
   const [scannerComplianceReasons, setScannerComplianceReasons] = useState<string[]>([]);
+  // このセッション内で既に「確定する」ボタンを押したレシート候補（重複検出用）。
+  // CSV側(duplicateDetection.ts)と同様、DB非永続化のプロトタイプのためセッション内限定の検出。
+  const [confirmedReceipts, setConfirmedReceipts] = useState<ReceiptJournalCandidate[]>([]);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ matchedExistingId: string } | null>(null);
   // navigatorはサーバー側で参照できないため、SSR時は「未対応」扱いの既定値を返し、
   // クライアントでの実際の値とはuseSyncExternalStoreがハイドレーション不一致なく同期する。
   const cameraSupported = useSyncExternalStore(
@@ -88,6 +93,7 @@ export function ReceiptUpload({
 
     setError(null);
     setCandidate(null);
+    setDuplicateWarning(null);
     void updateResolutionHint(file);
     void updateScannerComplianceWarning(file);
 
@@ -111,6 +117,7 @@ export function ReceiptUpload({
       }
       setCandidate(data.candidate);
       setAiConfigured(data.aiConfigured);
+      setDuplicateWarning(findReceiptDuplicate(confirmedReceipts, data.candidate));
     } catch {
       setError("通信エラーが発生しました");
     } finally {
@@ -129,8 +136,10 @@ export function ReceiptUpload({
   function handleConfirm() {
     if (!candidate) return;
     onConfirm?.(candidate);
+    setConfirmedReceipts((prev) => [...prev, candidate]);
     setConfirmedCount((n) => n + 1);
     setCandidate(null);
+    setDuplicateWarning(null);
     setResolutionHint(null);
     setScannerComplianceReasons([]);
     setPreviewUrl((prev) => {
@@ -228,6 +237,12 @@ export function ReceiptUpload({
 
           {candidate && (
             <div className="flex-1 flex flex-col gap-3 border border-stone-300 bg-white p-4">
+              {duplicateWarning && (
+                <div role="status" className="border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  <p className="font-semibold">同じ日付・金額・取引先のレシートを既にこのセッションで確定済みです（重複の可能性）</p>
+                  <p className="mt-1">二重に経費計上していないか、内容をご確認のうえ確定してください。</p>
+                </div>
+              )}
               <div className="text-sm font-semibold">
                 読み取り結果{" "}
                 {candidate.source === "ai" ? (
