@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { WithholdingCalculator } from "@/components/WithholdingCalculator";
 import { BonusWithholdingCalculator } from "@/components/BonusWithholdingCalculator";
 import { YearEndAdjustmentCalculator } from "@/components/YearEndAdjustmentCalculator";
@@ -85,6 +86,17 @@ export default function PayrollPage() {
             ください。
           </p>
           <YearEndAdjustmentCalculator />
+        </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-2">4. 給与所得の源泉徴収票（下書き）の作成</h2>
+          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+            上記の年末調整の結果をもとに、会社が役員・従業員へ交付しなければならない「給与所得の源泉徴収票」の
+            下書きを作成し、印刷／PDF保存できる画面を別途用意しています。
+            <Link href="/withholding-slip" className="ml-1 underline hover:text-stone-900">
+              源泉徴収票（下書き）の作成へ →
+            </Link>
+          </p>
         </section>
       </main>
     </div>
