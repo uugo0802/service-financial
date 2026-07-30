@@ -141,6 +141,46 @@ describe("parseMigrationCsvWithFormat", () => {
       detectedColumns: { date: "?", debitAccount: "?", creditAccount: "?", amount: "?", description: "?" },
     });
   });
+
+  it("applies collapse rule (c): a 借方 BS account paired with a 貸方 account that is neither BS nor an income keyword is treated as income (documented heuristic limitation)", () => {
+    // 借方=普通預金 (BS) so rule (b) does not fire; 貸方=旅費交通費 is neither a BS account nor
+    // an income keyword, so rule (c) collapses it as an income leg on the credit side even though
+    // 旅費交通費 is ordinarily an expense account. This is the documented fallback in case neither
+    // side looks like income/BS, and it is currently completely untested.
+    const csv = "日付,借方勘定科目,貸方勘定科目,金額,摘要\n" + "2026-04-10,普通預金,旅費交通費,5000,経費の取消し\n";
+    const result = parseMigrationCsvWithFormat(csv, "freee");
+    expect(result.transactions[0]).toMatchObject({
+      account: "旅費交通費",
+      amount: 5000,
+      taxCategory: "要確認",
+      confidence: 0,
+      source: "uncategorized",
+    });
+  });
+
+  it("falls back to '要確認(未分類)' as a pure transfer when neither debit nor credit account columns are detected at all", () => {
+    // Neither format's debit/credit headers are present, so both accounts resolve to "" and
+    // isBsAccount("") short-circuits to true via the ternary default, landing in branch (d) with
+    // bothSidesKnown=false.
+    const csv = "日付,摘要,金額\n" + "2026-01-05,家賃,120000\n";
+    const result = parseMigrationCsvWithFormat(csv, "freee");
+    expect(result.transactions[0]).toMatchObject({
+      account: "要確認(未分類)",
+      amount: -120000,
+      taxCategory: "要確認",
+      confidence: 0,
+      source: "uncategorized",
+    });
+  });
+
+  it("ignores the original sign of the 金額 column: the debit/credit heuristic alone determines the resulting sign", () => {
+    // Even though the raw CSV value is negative, absAmount is taken via Math.abs before the
+    // debit/credit heuristic assigns the sign, so an expense row stays negative regardless of
+    // whether the source system exported a positive or negative number.
+    const csv = "日付,借方勘定科目,貸方勘定科目,金額,摘要\n" + "2026-01-12,消耗品費,普通預金,-6400,文房具\n";
+    const result = parseMigrationCsvWithFormat(csv, "freee");
+    expect(result.transactions[0].amount).toBe(-6400);
+  });
 });
 
 describe("detectMigrationFormat", () => {

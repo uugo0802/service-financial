@@ -83,6 +83,32 @@ describe("reconcileBankBalance - tolerance", () => {
   });
 });
 
+describe("reconcileBankBalance - negative/zero balances", () => {
+  it("handles a negative opening balance (e.g. an overdrawn account) in the expected balance calculation", () => {
+    const result = reconcileBankBalance({
+      transactions: [{ amount: 50000 }],
+      openingBalance: -20000,
+      actualClosingBalance: 30000,
+    });
+
+    expect(result.expectedClosingBalance).toBe(30000);
+    expect(result.isReconciled).toBe(true);
+  });
+
+  it("flags a discrepancy hint when there are no transactions but the actual balance doesn't match the opening balance", () => {
+    const result = reconcileBankBalance({
+      transactions: [],
+      openingBalance: 100000,
+      actualClosingBalance: 90000,
+    });
+
+    expect(result.netTransactionAmount).toBe(0);
+    expect(result.isReconciled).toBe(false);
+    expect(result.discrepancy).toBe(-10000);
+    expect(result.hint?.direction).toBe("surplus");
+  });
+});
+
 describe("reconcileBankBalance - hints when not reconciled", () => {
   it("suggests a possible missing import (取込漏れ) when the actual balance is higher than expected", () => {
     // 実際の残高の方が多い＝取込データだけでは実際の入金額に届いていない（不足）

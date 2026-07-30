@@ -230,6 +230,42 @@ describe("getInterimPaymentObligations - combined obligations and sorting", () =
   });
 });
 
+describe("getInterimPaymentObligations - malformed date inputs", () => {
+  it("throws on a fiscalYearStartDate string that doesn't match YYYY-MM-DD", () => {
+    expect(() =>
+      getInterimPaymentObligations({
+        priorYearCorporateTax: 500_000,
+        priorYearConsumptionTax: 0,
+        fiscalYearStartDate: "not-a-date",
+      })
+    ).toThrow(/Invalid date string/);
+  });
+
+  it("throws on a malformed referenceDate string even when fiscalYearStartDate is valid", () => {
+    expect(() =>
+      getInterimPaymentObligations({
+        priorYearCorporateTax: 500_000,
+        priorYearConsumptionTax: 0,
+        fiscalYearStartDate: "2026-04-01",
+        referenceDate: "2026/04/01", // slashes, not the expected YYYY-MM-DD hyphenated format
+      })
+    ).toThrow(/Invalid date string/);
+  });
+
+  it("defaults referenceDate to the current date when omitted, still returning a well-formed obligation", () => {
+    const result = getInterimPaymentObligations({
+      priorYearCorporateTax: 500_000,
+      priorYearConsumptionTax: 0,
+      fiscalYearStartDate: "2026-04-01",
+    });
+
+    const obligation = result.obligations.find((o) => o.kind === "corporateTax");
+    expect(obligation?.dueDate).toBe("2026-11-30");
+    expect(typeof obligation?.daysRemaining).toBe("number");
+    expect(["urgent", "warning", "normal"]).toContain(obligation?.urgency);
+  });
+});
+
 describe("getInterimPaymentObligations - assumptions disclosure", () => {
   it("always discloses the halving simplification, the out-of-scope consumption tax tiers, and the non-advice disclaimer", () => {
     const result = getInterimPaymentObligations({

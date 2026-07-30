@@ -109,6 +109,41 @@ describe("getCorporateFilingDeadline (マイクロ法人: 法人税等の申告�
   });
 });
 
+describe("getCorporateFilingDeadline - calendar year rollover", () => {
+  it("rolls the deadline into the following calendar year for a December fiscal year end", () => {
+    // fiscal year end 2027-12-31 -> +2 months keeping end-of-month -> 2028-02-29 (2028 is a leap year)
+    const fiscalYearEnd = getCorporateFiscalYearEndDate(12, 2027);
+    expect(fiscalYearEnd).toBe("2027-12-31");
+    expect(getCorporateFilingDeadline(fiscalYearEnd)).toBe("2028-02-29");
+  });
+});
+
+describe("getDeadlineReminder - malformed date input", () => {
+  it("throws when the task's dueDate is not a valid YYYY-MM-DD string", () => {
+    const badTask: DeadlineTask = {
+      id: "bad",
+      category: "income-tax",
+      title: "テスト",
+      description: "テスト",
+      basis: "テスト",
+      dueDate: "2027/03/15", // slashes instead of hyphens
+    };
+    expect(() => getDeadlineReminder(badTask, "2027-01-01")).toThrow(/invalid ISO date/);
+  });
+
+  it("throws when asOf is not a valid YYYY-MM-DD string", () => {
+    const task: DeadlineTask = {
+      id: "t1",
+      category: "income-tax",
+      title: "テスト",
+      description: "テスト",
+      basis: "テスト",
+      dueDate: "2027-03-15",
+    };
+    expect(() => getDeadlineReminder(task, "not-a-date")).toThrow(/invalid ISO date/);
+  });
+});
+
 describe("getMicroCorporationDeadlineTasks", () => {
   it("returns corporate tax and corporate consumption tax tasks sharing the same due date", () => {
     const tasks = getMicroCorporationDeadlineTasks({ fiscalYearEndMonth: 3, fiscalYearEndCalendarYear: 2027 });

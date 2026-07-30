@@ -158,4 +158,47 @@ describe("detectDuplicates", () => {
     // 閾値を極端に高く指定すればマッチしなくなることを確認する
     expect(detectDuplicates(existing, incoming, 0.99)).toEqual([]);
   });
+
+  it("still flags a match when amounts differ only by a sub-yen floating point rounding error within AMOUNT_EPSILON", () => {
+    const existing = [tx({ id: "existing-1", amount: -6400 })];
+    const incoming = [tx({ id: "new-1", amount: -6400.005 })];
+
+    const matches = detectDuplicates(existing, incoming);
+
+    expect(matches).toEqual([{ newRowId: "new-1", matchedExistingId: "existing-1", descriptionSimilarity: 1 }]);
+  });
+
+  it("does not flag a match when the amount difference exceeds AMOUNT_EPSILON even by a tiny margin", () => {
+    const existing = [tx({ id: "existing-1", amount: -6400 })];
+    const incoming = [tx({ id: "new-1", amount: -6400.02 })];
+
+    expect(detectDuplicates(existing, incoming)).toEqual([]);
+  });
+
+  it("includes a description whose similarity is exactly at the threshold (inclusive boundary)", () => {
+    const existing = [tx({ id: "existing-1", date: "2026-01-05", amount: -3000, description: "abcdefghij" })];
+    // Levenshtein distance 4 out of length 10 -> similarity exactly 0.6 (the default threshold)
+    const incoming = [tx({ id: "new-1", date: "2026-01-05", amount: -3000, description: "abcdefwxyz" })];
+
+    expect(descriptionSimilarity("abcdefghij", "abcdefwxyz")).toBe(0.6);
+
+    const matches = detectDuplicates(existing, incoming);
+    expect(matches).toEqual([{ newRowId: "new-1", matchedExistingId: "existing-1", descriptionSimilarity: 0.6 }]);
+  });
+
+  it("allows a single existing row to be matched independently by more than one new row (no dedup across newRows)", () => {
+    // detectDuplicates does not remove a candidate from the pool once matched, so two
+    // unrelated new rows that both happen to match the same existing row will both be
+    // reported. This documents that current (non-exclusive) matching behavior.
+    const existing = [tx({ id: "existing-1", date: "2026-01-05", amount: -6400, description: "Amazon.co.jp" })];
+    const incoming = [
+      tx({ id: "new-1", date: "2026-01-05", amount: -6400, description: "Amazon.co.jp" }),
+      tx({ id: "new-2", date: "2026-01-05", amount: -6400, description: "Amazon.co.jp" }),
+    ];
+
+    const matches = detectDuplicates(existing, incoming);
+
+    expect(matches).toHaveLength(2);
+    expect(matches.every((m) => m.matchedExistingId === "existing-1")).toBe(true);
+  });
 });
