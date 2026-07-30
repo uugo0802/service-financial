@@ -241,6 +241,40 @@ describe("buildClientInvoice - registration number handling", () => {
   });
 });
 
+describe("buildClientInvoice - optional payment tracking fields (未収入金)", () => {
+  it("defaults dueDate, paidAt, and paidAmount to null when not provided", () => {
+    const result = buildClientInvoice(baseInput());
+    expect(result.invoice.dueDate).toBeNull();
+    expect(result.invoice.paidAt).toBeNull();
+    expect(result.invoice.paidAmount).toBeNull();
+  });
+
+  it("carries through dueDate, paidAt, and paidAmount when provided", () => {
+    const result = buildClientInvoice(
+      baseInput({ dueDate: "2026-08-31", paidAt: "2026-08-20", paidAmount: 50_000 })
+    );
+    expect(result.invoice.dueDate).toBe("2026-08-31");
+    expect(result.invoice.paidAt).toBe("2026-08-20");
+    expect(result.invoice.paidAmount).toBe(50_000);
+  });
+
+  it("treats a blank string dueDate/paidAt the same as omitted (normalizes to null)", () => {
+    const result = buildClientInvoice(baseInput({ dueDate: "   ", paidAt: "" }));
+    expect(result.invoice.dueDate).toBeNull();
+    expect(result.invoice.paidAt).toBeNull();
+  });
+
+  it("does not affect validation, tax totals, or isValid when payment fields are provided", () => {
+    const withoutPayment = buildClientInvoice(baseInput());
+    const withPayment = buildClientInvoice(baseInput({ dueDate: "2026-08-31", paidAt: "2026-08-01", paidAmount: 100_000 }));
+
+    expect(withPayment.errors).toEqual(withoutPayment.errors);
+    expect(withPayment.warnings).toEqual(withoutPayment.warnings);
+    expect(withPayment.invoice.grandTotal).toBe(withoutPayment.invoice.grandTotal);
+    expect(withPayment.invoice.taxRateSubtotals).toEqual(withoutPayment.invoice.taxRateSubtotals);
+  });
+});
+
 describe("buildClientInvoice - zero line item edge case", () => {
   it("does not throw and reports an error when there are no line items", () => {
     expect(() => buildClientInvoice(baseInput({ lineItems: [] }))).not.toThrow();

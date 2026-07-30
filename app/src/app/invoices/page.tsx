@@ -1,12 +1,78 @@
 import type { Metadata } from "next";
 import { ClientInvoiceForm } from "@/components/ClientInvoiceForm";
+import { ReceivablesAgingTable } from "@/components/ReceivablesAgingTable";
+import { ReceivableInvoiceInput, computeReceivablesSummary } from "@/lib/invoice/receivables";
 
 export const metadata: Metadata = {
   title: "請求書（適格請求書）発行｜税務申告AI（ジャービス）",
   description: "フリーランス・マイクロ法人が取引先に発行する請求書（インボイス制度対応）の下書きを作成するツール（開発中プロトタイプ）。",
 };
 
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * 未収入金セクションの表示例データ。
+ *
+ * 現時点では請求書フォーム（ClientInvoiceForm）はブラウザ表示中のみ有効な一時データを扱っており、
+ * 発行済み請求書の永続保存・支払期日・入金状況の記録機能はまだ実装されていない。そのため、
+ * このセクションでは集計ロジック（src/lib/invoice/receivables.ts）の動作を確認できるよう、
+ * 実際のユーザーデータではないことが明確な「（表示例）」ラベル付きのサンプル請求書を用いている。
+ * 請求書データの永続化・支払記録が実装された段階で、実データに置き換える想定。
+ */
+function buildSampleReceivableInvoices(asOfDate: string): ReceivableInvoiceInput[] {
+  const asOfMs = Date.parse(`${asOfDate}T00:00:00Z`);
+  const dayMs = 24 * 60 * 60 * 1000;
+  const isoDaysAgo = (days: number) => new Date(asOfMs - days * dayMs).toISOString().slice(0, 10);
+
+  return [
+    {
+      invoiceNumber: "（例）INV-SAMPLE-0001",
+      clientName: "（表示例）株式会社サンプルA",
+      issueDate: isoDaysAgo(50),
+      dueDate: isoDaysAgo(20),
+      grandTotal: 220_000,
+      paidAt: isoDaysAgo(18),
+      paidAmount: 220_000,
+    },
+    {
+      invoiceNumber: "（例）INV-SAMPLE-0002",
+      clientName: "（表示例）株式会社サンプルB",
+      issueDate: isoDaysAgo(45),
+      dueDate: isoDaysAgo(15),
+      grandTotal: 165_000,
+    },
+    {
+      invoiceNumber: "（例）INV-SAMPLE-0003",
+      clientName: "（表示例）合同会社サンプルC",
+      issueDate: isoDaysAgo(75),
+      dueDate: isoDaysAgo(45),
+      grandTotal: 88_000,
+    },
+    {
+      invoiceNumber: "（例）INV-SAMPLE-0004",
+      clientName: "（表示例）株式会社サンプルD",
+      issueDate: isoDaysAgo(120),
+      dueDate: isoDaysAgo(95),
+      grandTotal: 330_000,
+      paidAt: isoDaysAgo(30),
+      paidAmount: 100_000,
+    },
+    {
+      invoiceNumber: "（例）INV-SAMPLE-0005",
+      clientName: "（表示例）株式会社サンプルE",
+      issueDate: isoDaysAgo(10),
+      dueDate: isoDaysAgo(-20),
+      grandTotal: 55_000,
+    },
+  ];
+}
+
 export default function InvoicesPage() {
+  const asOfDate = todayISO();
+  const receivablesSummary = computeReceivablesSummary(buildSampleReceivableInvoices(asOfDate), asOfDate);
+
   return (
     <div className="bg-stone-50 text-stone-900 min-h-screen">
       <header className="border-b border-stone-300 bg-white">
@@ -34,6 +100,21 @@ export default function InvoicesPage() {
         </section>
 
         <ClientInvoiceForm />
+
+        <section>
+          <h2 className="text-2xl font-semibold mb-2">未収入金（発行済み請求書の入金状況）</h2>
+          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+            発行済みの請求書のうち、まだ入金が確認できていない金額（未収入金）を支払期日からの経過日数別に集計します。
+            期日を超過している請求書は超過日数が長い順に一覧表示されます。
+          </p>
+          <p className="text-xs text-amber-700 max-w-2xl leading-relaxed mb-4">
+            現時点では請求書フォーム（上部）はブラウザ表示中のみの一時データを扱っており、発行済み請求書の永続保存・
+            支払期日・入金記録の機能は未対応です。そのため、以下は集計機能の動作を確認するための表示例（サンプルデータ、
+            実際の取引先・金額ではありません）です。入金確認や督促は税務代理・税務相談に該当しないよう、
+            必ずご自身の実際の入金記録（銀行口座等）に基づいて行ってください。
+          </p>
+          <ReceivablesAgingTable summary={receivablesSummary} />
+        </section>
       </main>
     </div>
   );

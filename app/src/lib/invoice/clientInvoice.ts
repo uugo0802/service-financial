@@ -64,6 +64,22 @@ export interface ClientInvoiceInput {
   /** 請求先（交付を受ける者）の氏名または名称 */
   clientName: string;
   lineItems: ClientInvoiceLineItemInput[];
+  /**
+   * 支払期日（未収入金/AR管理用、任意）。ISO日付文字列（"YYYY-MM-DD"）。
+   * 省略した場合、未収入金の集計（src/lib/invoice/receivables.ts）では issueDate を基準に扱う。
+   * これは記帳・入金管理を補助する項目であり、税務代理や個別具体の税務相談には関与しない。
+   */
+  dueDate?: string | null;
+  /**
+   * 入金があった日（ISO日付文字列、任意）。未収の場合は省略する。
+   * 支払管理（未収入金トラッキング）のための項目であり、既存の請求書計算ロジックには影響しない。
+   */
+  paidAt?: string | null;
+  /**
+   * 入金済み金額（円、任意）。paidAt はあるが本項目を省略した場合、
+   * 集計側では請求金額合計（grandTotal）が全額入金されたものとして扱う。
+   */
+  paidAmount?: number | null;
 }
 
 export interface ClientInvoiceLineItemComputed extends ClientInvoiceLineItemInput {
@@ -105,6 +121,12 @@ export interface ClientInvoice {
   totalTax: number;
   /** 請求金額合計（税込） */
   grandTotal: number;
+  /** 支払期日（未入力の場合は null）。receivables.ts の未収入金集計で使用する */
+  dueDate?: string | null;
+  /** 入金日（未収の場合は null）。receivables.ts の未収入金集計で使用する */
+  paidAt?: string | null;
+  /** 入金済み金額（円、未収の場合は null）。receivables.ts の未収入金集計で使用する */
+  paidAmount?: number | null;
 }
 
 export interface BuildClientInvoiceResult {
@@ -260,6 +282,9 @@ export function buildClientInvoice(input: ClientInvoiceInput): BuildClientInvoic
     subtotalExcludingTax,
     totalTax,
     grandTotal: subtotalExcludingTax + totalTax,
+    dueDate: isBlank(input.dueDate) ? null : input.dueDate!,
+    paidAt: isBlank(input.paidAt) ? null : input.paidAt!,
+    paidAmount: typeof input.paidAmount === "number" && Number.isFinite(input.paidAmount) ? input.paidAmount : null,
   };
 
   return {
