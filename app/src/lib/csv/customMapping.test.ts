@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyCustomMapping, validateCustomMapping } from "./customMapping";
+import { applyCustomMapping, applyCustomMappingToBuffer, validateCustomMapping } from "./customMapping";
 import { parseCsvText } from "./parse";
 
 describe("applyCustomMapping", () => {
@@ -216,6 +216,41 @@ describe("applyCustomMapping - split mode edge cases", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.transactions[0].amount).toBe(-8000);
+  });
+});
+
+describe("applyCustomMappingToBuffer", () => {
+  it("decodes a UTF-8 buffer, applies the mapping, and reports the detected encoding", () => {
+    const csv = "日付,摘要,金額\n2026-01-05,家賃引落,-120000\n";
+    const buffer = new TextEncoder().encode(csv).buffer;
+
+    const result = applyCustomMappingToBuffer(buffer, { mode: "signed", date: "日付", description: "摘要", amount: "金額" });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.encoding).toBe("utf-8");
+    expect(result.transactions).toEqual([
+      { id: "custom-row-1", date: "2026-01-05", description: "家賃引落", amount: -120000 },
+    ]);
+  });
+
+  it("propagates a validation failure (missing header) without an encoding field", () => {
+    const csv = "日付,摘要,金額\n2026-01-05,家賃,-120000\n";
+    const buffer = new TextEncoder().encode(csv).buffer;
+
+    const result = applyCustomMappingToBuffer(buffer, {
+      mode: "signed",
+      date: "日付",
+      description: "摘要",
+      amount: "存在しない列",
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors).toEqual([
+      { field: "amount", message: "「金額」に指定された列「存在しない列」がCSVのヘッダー行に見つかりません。" },
+    ]);
+    expect((result as { encoding?: unknown }).encoding).toBeUndefined();
   });
 });
 

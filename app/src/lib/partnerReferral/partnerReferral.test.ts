@@ -127,6 +127,22 @@ describe("recommendPartnerCategories", () => {
     expect(result).toEqual(["investment", "insurance", "loan", "realestate"]);
   });
 
+  it("does not recommend insurance/investment/realestate after only a single profitable year (needs 2 consecutive)", () => {
+    const result = recommendPartnerCategories(trend([{ key: "2025", income: 3_000_000, profit: 500_000 }]));
+    expect(result).toEqual([]);
+  });
+
+  it("does not recommend loan when the previous year's income was zero (avoids division by zero)", () => {
+    const result = recommendPartnerCategories(
+      trend([
+        { key: "2024", income: 0, profit: 0 },
+        { key: "2025", income: 1_000_000, profit: 100_000 },
+      ]),
+    );
+    expect(result.includes("loan")).toBe(false);
+    expect(() => result).not.toThrow();
+  });
+
   it("sorts unsorted input by key before evaluating", () => {
     const ascending = recommendPartnerCategories(
       trend([

@@ -5,6 +5,7 @@ import {
   completeOnboardingStep,
   createOnboardingWizardState,
   getOnboardingProgressPercent,
+  getOnboardingStepDefinition,
   getOnboardingStepFieldErrors,
   goToOnboardingStep,
   isOnboardingComplete,
@@ -34,6 +35,22 @@ describe("ONBOARDING_STEPS", () => {
   it("defines 4 steps in the expected order", () => {
     expect(ONBOARDING_TOTAL_STEPS).toBe(4);
     expect(ONBOARDING_STEPS.map((s) => s.id)).toEqual(["entityType", "fiscalYear", "blueReturn", "review"]);
+  });
+});
+
+describe("getOnboardingStepDefinition", () => {
+  it("returns the matching step definition for a valid 1-indexed step number", () => {
+    expect(getOnboardingStepDefinition(1)).toEqual(ONBOARDING_STEPS[0]);
+    expect(getOnboardingStepDefinition(4)).toEqual(ONBOARDING_STEPS[3]);
+  });
+
+  it("returns undefined for step 0 and negative step numbers", () => {
+    expect(getOnboardingStepDefinition(0)).toBeUndefined();
+    expect(getOnboardingStepDefinition(-1)).toBeUndefined();
+  });
+
+  it("returns undefined for a step number beyond the last step", () => {
+    expect(getOnboardingStepDefinition(ONBOARDING_TOTAL_STEPS + 1)).toBeUndefined();
   });
 });
 
