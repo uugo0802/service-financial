@@ -36,6 +36,21 @@ describe("isDateInFiscalYear", () => {
   it("returns false for a malformed date", () => {
     expect(isDateInFiscalYear(2025, "2025/06/15")).toBe(false);
   });
+
+  it("returns false for an empty date string", () => {
+    expect(isDateInFiscalYear(2025, "")).toBe(false);
+  });
+
+  it("returns false for a full ISO timestamp (not a bare date-only string)", () => {
+    expect(isDateInFiscalYear(2025, "2025-06-15T00:00:00Z")).toBe(false);
+  });
+
+  it("treats an unvalidated month/day as within the year when the format matches (the check is format-only, not calendar-valid)", () => {
+    // isDateInFiscalYear only validates the \d{4}-\d{2}-\d{2} shape and reads the year prefix;
+    // it does not validate that the month/day form a real calendar date. Documented here so a
+    // future tightening of the regex is a deliberate choice, not an accidental behavior change.
+    expect(isDateInFiscalYear(2025, "2025-13-99")).toBe(true);
+  });
 });
 
 describe("isJournalEditAllowed", () => {
@@ -65,7 +80,21 @@ describe("isJournalEditAllowed", () => {
   });
 });
 
+describe("createOpenFiscalYearState", () => {
+  it("creates an open, unlocked state with no reopen history", () => {
+    const state = createOpenFiscalYearState(2024);
+    expect(state).toEqual({ fiscalYear: 2024, closed: false, closedAt: null, reopenHistory: [] });
+  });
+});
+
 describe("closeFiscalYear", () => {
+  it("defaults closedAt to the current time (ISO string) when not provided", () => {
+    const result = closeFiscalYear(openState());
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok result");
+    expect(result.state.closedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  });
+
   it("closes an open fiscal year and returns an audit entry", () => {
     const state = openState();
     const result = closeFiscalYear(state, { closedAt: "2026-03-15T00:00:00Z" });
@@ -154,5 +183,12 @@ describe("reopenFiscalYear", () => {
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected error result");
     expect(result.error).toMatch(/確定されていない/);
+  });
+
+  it("trims surrounding whitespace from the reason before storing it in the reopen history", () => {
+    const result = reopenFiscalYear(closedState, "  誤入力の訂正のため  ", { reopenedAt: "2026-04-01T00:00:00Z" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok result");
+    expect(result.state.reopenHistory[0].reason).toBe("誤入力の訂正のため");
   });
 });

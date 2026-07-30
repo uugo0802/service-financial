@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Asset, FiscalPeriod, summarizeDepreciation } from "@/lib/tax/depreciation";
+import { AssetDisposalResult, calculateAssetDisposal } from "@/lib/tax/assetDisposal";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
@@ -31,6 +32,12 @@ export function AssetLedgerForm() {
   const [usefulLifeYears, setUsefulLifeYears] = useState("");
   const [immediateExpensing, setImmediateExpensing] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  const [disposalAssetId, setDisposalAssetId] = useState("");
+  const [disposalDate, setDisposalDate] = useState("");
+  const [disposalProceeds, setDisposalProceeds] = useState("");
+  const [disposalError, setDisposalError] = useState<string | null>(null);
+  const [disposalResult, setDisposalResult] = useState<AssetDisposalResult | null>(null);
 
   const summary = useMemo(() => summarizeDepreciation(assets, period), [assets, period]);
 
@@ -80,6 +87,38 @@ export function AssetLedgerForm() {
 
   function removeAsset(id: string) {
     setAssets((prev) => prev.filter((a) => a.id !== id));
+    if (disposalAssetId === id) {
+      setDisposalAssetId("");
+      setDisposalResult(null);
+    }
+  }
+
+  function handleCalculateDisposal(e: React.FormEvent) {
+    e.preventDefault();
+    setDisposalError(null);
+    setDisposalResult(null);
+
+    const targetAsset = assets.find((a) => a.id === disposalAssetId);
+    if (!targetAsset) {
+      setDisposalError("除却・売却する資産を選択してください。");
+      return;
+    }
+    if (!disposalDate) {
+      setDisposalError("除却・売却年月日を入力してください。");
+      return;
+    }
+    const proceeds = disposalProceeds.trim() === "" ? 0 : Number(disposalProceeds);
+    if (!Number.isFinite(proceeds)) {
+      setDisposalError("受取額（売却代金）は数値で入力してください。スクラップ・廃棄の場合は0円のままで構いません。");
+      return;
+    }
+
+    const result = calculateAssetDisposal({
+      asset: targetAsset,
+      disposalDate,
+      disposalProceeds: proceeds,
+    });
+    setDisposalResult(result);
   }
 
   return (
@@ -248,6 +287,131 @@ export function AssetLedgerForm() {
         <p className="mt-3 text-xs text-stone-400 leading-relaxed">
           少額減価償却資産の特例（取得価額30万円未満の全額即時償却）には、青色申告者について年間合計300万円までという上限があります。
           このアプリは資産ごとの判定のみを行い、資産横断の年間合計はチェックしていないため、対象資産が多い場合はご自身で合計額をご確認ください。
+        </p>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-semibold mb-3">資産を除却・売却する</h2>
+        <p className="text-xs text-stone-500 mb-3 max-w-2xl leading-relaxed">
+          資産を廃棄・スクラップした場合や売却した場合の未償却残高と、固定資産除却損／売却損益の概算を計算します。
+          受取額（売却代金）が0円の場合は「除却」、1円以上の場合は「売却」として扱います。
+        </p>
+        {assets.length === 0 ? (
+          <p className="text-sm text-stone-500">除却・売却するには、まず上の台帳に資産を登録してください。</p>
+        ) : (
+          <form
+            onSubmit={handleCalculateDisposal}
+            className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4"
+          >
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div>
+                <label className={labelClass}>対象資産</label>
+                <select
+                  value={disposalAssetId}
+                  onChange={(e) => setDisposalAssetId(e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">選択してください</option>
+                  {assets.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}（取得日 {a.acquisitionDate}）
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className={labelClass}>除却・売却年月日</label>
+                <input
+                  type="date"
+                  value={disposalDate}
+                  onChange={(e) => setDisposalDate(e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>受取額・売却代金（円）</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={disposalProceeds}
+                  onChange={(e) => setDisposalProceeds(e.target.value)}
+                  placeholder="例：0（スクラップの場合）"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {disposalError && <p className="text-sm text-red-700">{disposalError}</p>}
+
+            <div>
+              <button
+                type="submit"
+                className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+              >
+                除却・売却損益を計算
+              </button>
+            </div>
+          </form>
+        )}
+
+        {disposalResult && (
+          <div className="mt-4 border border-stone-300 bg-white p-5">
+            <div className="text-sm font-medium mb-3">
+              {disposalResult.asset.name} — {disposalResult.disposalCase === "retirement" ? "除却" : "売却"}
+            </div>
+            <dl className="text-sm space-y-2 max-w-md">
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-stone-500">未償却残高の算定基準日</dt>
+                <dd className="tabular-nums">{disposalResult.cutoffDate}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-stone-500">算定基準日までの償却月数</dt>
+                <dd className="tabular-nums">{disposalResult.monthsDepreciatedBeforeDisposal}ヶ月</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-stone-500">減価償却累計額（算定基準日時点）</dt>
+                <dd className="tabular-nums">{yen.format(disposalResult.accumulatedDepreciationBeforeDisposal)}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-stone-500">未償却残高</dt>
+                <dd className="tabular-nums font-medium">{yen.format(disposalResult.bookValueAtDisposal)}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4">
+                <dt className="text-stone-500">受取額（売却代金）</dt>
+                <dd className="tabular-nums">{yen.format(disposalResult.disposalProceeds)}</dd>
+              </div>
+              <div className="flex items-baseline justify-between gap-4 pt-2 border-t border-stone-200">
+                <dt className={disposalResult.isGain ? "text-emerald-700" : disposalResult.isLoss ? "text-red-700" : "text-stone-500"}>
+                  {disposalResult.disposalCase === "retirement"
+                    ? "固定資産除却損"
+                    : disposalResult.isGain
+                    ? "固定資産売却益"
+                    : disposalResult.isLoss
+                    ? "固定資産売却損"
+                    : "売却損益"}
+                </dt>
+                <dd
+                  className={`tabular-nums font-semibold text-base ${
+                    disposalResult.isGain ? "text-emerald-700" : disposalResult.isLoss ? "text-red-700" : ""
+                  }`}
+                >
+                  {yen.format(Math.abs(disposalResult.gainOrLoss))}
+                </dd>
+              </div>
+            </dl>
+            {disposalResult.notes.length > 0 && (
+              <ul className="mt-4 text-xs text-stone-500 list-disc list-inside space-y-1">
+                {disposalResult.notes.map((n, i) => (
+                  <li key={i}>{n}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <p className="mt-3 text-xs text-stone-400 leading-relaxed">
+          未償却残高は、除却・売却の属する月自体の減価償却費は計上せず、その前月末までの月割り償却額をもって概算しています（簡便法）。
+          正式な決算・申告への反映は、必ずご自身（または税理士等の専門家）でご確認ください。税務代理・個別具体的な税務相談は行っておりません。
         </p>
       </section>
     </div>

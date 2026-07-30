@@ -144,6 +144,32 @@ describe("userCategoryRuleToCategoryRule", () => {
     const rule = userCategoryRuleToCategoryRule(userRule);
     expect(rule.note).toContain("2026-07-29");
   });
+
+  it("matches case-insensitively for ASCII keywords", () => {
+    const userRule = createUserCategoryRule({ pattern: "ClientCorp", account: "売上高", taxCategory: "課税売上10%" });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.pattern.test("clientcorp からの入金")).toBe(true);
+    expect(rule.pattern.test("CLIENTCORP invoice")).toBe(true);
+  });
+
+  it("escapes a broad set of regex metacharacters so a keyword like '1+1=2?' is matched literally", () => {
+    const userRule = createUserCategoryRule({ pattern: "1+1=2?", account: "雑収入", taxCategory: "課税売上10%" });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.pattern.test("計算式 1+1=2? のメモ")).toBe(true);
+    // If unescaped, "+" and "?" would be interpreted as quantifiers and "1=2" alone might match.
+    expect(rule.pattern.test("1=2")).toBe(false);
+  });
+
+  it("escapes a literal dot so it does not act as a regex wildcard", () => {
+    const userRule = createUserCategoryRule({ pattern: "v2.5plan", account: "売上高", taxCategory: "課税売上10%" });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.pattern.test("v2.5plan 契約")).toBe(true);
+    // An unescaped "." would also match any single character in place of the literal dot.
+    expect(rule.pattern.test("v2X5plan 契約")).toBe(false);
+  });
 });
 
 describe("TAX_CATEGORY_OPTIONS", () => {
@@ -152,6 +178,16 @@ describe("TAX_CATEGORY_OPTIONS", () => {
     for (const option of TAX_CATEGORY_OPTIONS) {
       expect(option).toBeTruthy();
     }
+  });
+});
+
+describe("findMatchingRule", () => {
+  it("returns null for an empty rules array regardless of the description", () => {
+    expect(findMatchingRule("何か", [])).toBeNull();
+  });
+
+  it("returns null when the description is an empty string and no rule matches it", () => {
+    expect(findMatchingRule("", sampleGlobalRules)).toBeNull();
   });
 });
 
@@ -192,6 +228,19 @@ describe("mergeCategoryRules", () => {
   it("returns null when neither user rules nor global rules match", () => {
     const merged = mergeCategoryRules(sampleGlobalRules, []);
     expect(findMatchingRule("謎の支出XYZ123", merged)).toBeNull();
+  });
+
+  it("lets the first-registered user rule win when multiple user rules match the same description", () => {
+    // Comment in userRules.ts: "ユーザールール同士は配列内の順序（登録順）で先勝ちとする。"
+    const userRules: UserCategoryRule[] = [
+      createUserCategoryRule({ pattern: "クライアントA社", account: "先勝ちルール", taxCategory: "課税売上10%" }),
+      createUserCategoryRule({ pattern: "クライアントA社", account: "後勝ちルール(採用されないはず)", taxCategory: "課税売上10%" }),
+    ];
+
+    const merged = mergeCategoryRules(sampleGlobalRules, userRules);
+    const matched = findMatchingRule("クライアントA社 業務委託料", merged);
+
+    expect(matched?.account).toBe("先勝ちルール");
   });
 
   it("does not mutate the input arrays", () => {

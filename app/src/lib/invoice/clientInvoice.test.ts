@@ -28,6 +28,18 @@ describe("formatInvoiceNumber", () => {
   it("falls back to a safe default for malformed dates or sequences", () => {
     expect(formatInvoiceNumber("not-a-date", 0)).toBe("INV-00000000-0001");
   });
+
+  it("falls back to sequence 1 for a negative sequence", () => {
+    expect(formatInvoiceNumber("2026-07-29", -5)).toBe("INV-20260729-0001");
+  });
+
+  it("falls back to sequence 1 for a NaN sequence", () => {
+    expect(formatInvoiceNumber("2026-07-29", NaN)).toBe("INV-20260729-0001");
+  });
+
+  it("truncates a fractional sequence down to the whole number", () => {
+    expect(formatInvoiceNumber("2026-07-29", 3.9)).toBe("INV-20260729-0003");
+  });
 });
 
 describe("buildClientInvoice - mixed tax rate calculation", () => {
@@ -158,6 +170,45 @@ describe("buildClientInvoice - required field validation", () => {
     expect(errors.some((e) => e.includes("品目・内容"))).toBe(true);
     expect(errors.some((e) => e.includes("数量"))).toBe(true);
     expect(errors.some((e) => e.includes("単価"))).toBe(true);
+  });
+
+  it("accepts a unit price of exactly zero (e.g. a free line item) without an error", () => {
+    const { errors } = validateClientInvoiceInput(
+      baseInput({ lineItems: [{ description: "サービス初回無料枠", quantity: 1, unitPrice: 0, taxRate: 10 }] })
+    );
+    expect(errors.some((e) => e.includes("単価"))).toBe(false);
+  });
+
+  it("rejects an invalid tax rate that is not one of 0/8/10", () => {
+    const { errors } = validateClientInvoiceInput(
+      baseInput({ lineItems: [{ description: "テスト", quantity: 1, unitPrice: 100, taxRate: 5 as never }] })
+    );
+    expect(errors.some((e) => e.includes("税率"))).toBe(true);
+  });
+
+  it("allows a transaction period whose start and end date are the same day", () => {
+    const { errors } = validateClientInvoiceInput(
+      baseInput({ transactionDate: null, transactionPeriodStart: "2026-07-15", transactionPeriodEnd: "2026-07-15" })
+    );
+    expect(errors.some((e) => e.includes("開始日が終了日より後"))).toBe(false);
+  });
+});
+
+describe("buildClientInvoice - invoice number and name trimming", () => {
+  it("uses an explicitly provided invoice number instead of auto-generating one", () => {
+    const result = buildClientInvoice(baseInput({ invoiceNumber: "CUSTOM-0001" }));
+    expect(result.invoice.invoiceNumber).toBe("CUSTOM-0001");
+  });
+
+  it("falls back to an auto-generated invoice number when the provided one is whitespace-only", () => {
+    const result = buildClientInvoice(baseInput({ invoiceNumber: "   ", issueDate: "2026-07-29" }));
+    expect(result.invoice.invoiceNumber).toBe("INV-20260729-0001");
+  });
+
+  it("trims whitespace from the issuer name and client name in the built invoice", () => {
+    const result = buildClientInvoice(baseInput({ issuerName: "  山田太郎  ", clientName: "  株式会社サンプル  " }));
+    expect(result.invoice.issuerName).toBe("山田太郎");
+    expect(result.invoice.clientName).toBe("株式会社サンプル");
   });
 });
 

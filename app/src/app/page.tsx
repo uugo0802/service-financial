@@ -11,6 +11,7 @@ import { ReceiptJournalCandidate } from "@/lib/ocr/receiptCandidate";
 import { TaxSavingChecklistSection } from "@/components/TaxSavingChecklistSection";
 import { SubmissionGuide } from "@/components/SubmissionGuide";
 import { AdvisorReferralBanner } from "@/components/AdvisorReferralBanner";
+import { detectDuplicates, DuplicateMatch } from "@/lib/csv/duplicateDetection";
 
 type EntityMode = "individual" | "corp";
 
@@ -24,6 +25,13 @@ interface ApiMeta {
   cappedAt: number | null;
   autoConfirmedCount: number;
   needsReviewCount: number;
+}
+
+/** 2回目以降のアップロードで、直前までの取込結果と重複している疑いがある行が見つかった場合に保持する内容 */
+interface PendingDuplicateUpload {
+  matches: DuplicateMatch[];
+  pendingRows: CategorizedTransaction[];
+  pendingMeta: ApiMeta;
 }
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
@@ -41,6 +49,8 @@ export default function Home() {
   const [openingCash, setOpeningCash] = useState("1000000");
   const [shareCount, setShareCount] = useState("");
   const [receiptCandidates, setReceiptCandidates] = useState<ReceiptJournalCandidate[]>([]);
+  const [pendingDuplicateUpload, setPendingDuplicateUpload] = useState<PendingDuplicateUpload | null>(null);
+  const [flaggedDuplicateIds, setFlaggedDuplicateIds] = useState<Set<string>>(new Set());
 
   const individualEstimate = useMemo(() => (rows ? estimateForIndividual(rows) : null), [rows]);
   const corpEstimate = useMemo(() => (rows ? estimateForMicroCorp(rows) : null), [rows]);
@@ -64,6 +74,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setFileName(file.name);
+    setPendingDuplicateUpload(null); // 前回の警告が残っていれば、新しいアップロードの結果でクリアする
     try {
       const fd = new FormData();
       fd.append("file", file);
@@ -73,15 +84,44 @@ export default function Home() {
         setError(data.error ?? "解析に失敗しました");
         setRows(null);
         setMeta(null);
+        setFlaggedDuplicateIds(new Set());
         return;
       }
-      setRows(data.transactions);
+
+      const newRows: CategorizedTransaction[] = data.transactions;
+      // このプロトタイプはアップロード内容をDBに永続化していないため、重複検出は「今セッションで
+      // 直前まで画面に表示していた rows」との突き合わせに限定される（詳細は duplicateDetection.ts）。
+      const matches = rows && rows.length > 0 ? detectDuplicates(rows, newRows) : [];
+      if (matches.length > 0) {
+        // 重複の疑いがある行が見つかった場合は即座に反映せず、ユーザーが除外するかどうかを
+        // 選べるように一旦保留する。
+        setPendingDuplicateUpload({ matches, pendingRows: newRows, pendingMeta: data.meta });
+        return;
+      }
+
+      setRows(newRows);
       setMeta(data.meta);
+      setFlaggedDuplicateIds(new Set());
     } catch {
       setError("通信エラーが発生しました");
     } finally {
       setLoading(false);
     }
+  }
+
+  /** 重複警告バナーでのユーザーの選択を確定し、保留中のアップロード内容を反映する */
+  function resolvePendingDuplicateUpload(excludeDuplicates: boolean) {
+    if (!pendingDuplicateUpload) return;
+    const duplicateIds = new Set(pendingDuplicateUpload.matches.map((m) => m.newRowId));
+    if (excludeDuplicates) {
+      setRows(pendingDuplicateUpload.pendingRows.filter((r) => !duplicateIds.has(r.id)));
+      setFlaggedDuplicateIds(new Set());
+    } else {
+      setRows(pendingDuplicateUpload.pendingRows);
+      setFlaggedDuplicateIds(duplicateIds);
+    }
+    setMeta(pendingDuplicateUpload.pendingMeta);
+    setPendingDuplicateUpload(null);
   }
 
   function updateRow(id: string, patch: Partial<CategorizedTransaction>) {
@@ -236,6 +276,49 @@ export default function Home() {
               </span>
             </div>
           )}
+
+          {pendingDuplicateUpload && (
+            <div className="mt-4 border border-red-300 bg-red-50 p-4 text-sm">
+              <p className="font-semibold text-red-700">
+                重複の可能性がある取引が{pendingDuplicateUpload.matches.length}件見つかりました
+              </p>
+              <p className="mt-1 text-xs text-stone-600 leading-relaxed max-w-2xl">
+                今回アップロードした明細の一部が、直前まで取り込んでいた明細と「同じ日付・同じ金額・よく似た摘要」でした。
+                銀行・カードの明細エクスポートの対象期間が前回と重なっている可能性があります。重複を含めたまま反映すると
+                収入・経費が二重に計上され、税額の概算がずれるおそれがあります。内容をご確認のうえ、反映方法をお選びください。
+              </p>
+              <ul className="mt-3 max-h-40 overflow-y-auto text-xs text-stone-600 space-y-1 border-t border-red-200 pt-2">
+                {pendingDuplicateUpload.matches.slice(0, 20).map((m) => {
+                  const row = pendingDuplicateUpload.pendingRows.find((r) => r.id === m.newRowId);
+                  if (!row) return null;
+                  return (
+                    <li key={m.newRowId} className="tabular-nums">
+                      {row.date} ／ {row.description} ／ {yen.format(row.amount)}
+                    </li>
+                  );
+                })}
+                {pendingDuplicateUpload.matches.length > 20 && (
+                  <li>…ほか{pendingDuplicateUpload.matches.length - 20}件</li>
+                )}
+              </ul>
+              <div className="mt-3 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => resolvePendingDuplicateUpload(true)}
+                  className="text-sm px-4 py-2 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+                >
+                  重複を除外して反映する（推奨）
+                </button>
+                <button
+                  type="button"
+                  onClick={() => resolvePendingDuplicateUpload(false)}
+                  className="text-sm px-4 py-2 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+                >
+                  そのまま全件反映する
+                </button>
+              </div>
+            </div>
+          )}
         </section>
 
         <section>
@@ -291,7 +374,14 @@ export default function Home() {
                     return (
                       <tr key={r.id} className={`border-b border-stone-100 last:border-0 ${needsReview ? "bg-red-50" : ""}`}>
                         <td className="px-3 py-2 whitespace-nowrap tabular-nums">{r.date}</td>
-                        <td className="px-3 py-2 max-w-[10rem] sm:max-w-xs truncate" title={r.description}>{r.description}</td>
+                        <td className="px-3 py-2 max-w-[10rem] sm:max-w-xs truncate" title={r.description}>
+                          {r.description}
+                          {flaggedDuplicateIds.has(r.id) && (
+                            <span className="ml-2 inline-block whitespace-nowrap rounded-sm bg-amber-100 px-1.5 py-0.5 align-middle text-[10px] text-amber-800">
+                              重複の可能性
+                            </span>
+                          )}
+                        </td>
                         <td className={`px-3 py-2 text-right whitespace-nowrap tabular-nums ${r.amount < 0 ? "text-stone-700" : "text-emerald-700"}`}>
                           {yen.format(r.amount)}
                         </td>
