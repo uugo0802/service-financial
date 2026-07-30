@@ -133,6 +133,48 @@ describe("ruleBasedCategorize", () => {
     ).toBe("水道光熱費");
   });
 
+  // Regression: 所得税・住民税 are the sole proprietor's personal tax payments (家事費), never
+  // a deductible business expense (青色申告決算書の必要経費「租税公課」には算入できない).
+  // The combined "所得税|住民税|印紙|租税公課|消費税" rule previously mapped all of these to
+  // 租税公課 without personalDeductionOnly, so a bank withdrawal for the owner's own income
+  // tax or resident tax was counted as a business expense - inflating deductible expenses and
+  // understating business profit/taxable income. 印紙(stamp duty)・消費税(the business's own
+  // consumption tax payments) remain legitimate business expenses and must stay non-personal.
+  it("flags 所得税/住民税 payments as personal (not a deductible business expense)", () => {
+    const incomeTax = ruleBasedCategorize({
+      id: "20",
+      date: "2026-01-05",
+      description: "所得税及び復興特別所得税 振替納税",
+      amount: -120000,
+    });
+    expect(incomeTax.account).toBe("租税公課");
+    expect(incomeTax.personalDeductionOnly).toBe(true);
+
+    const residentTax = ruleBasedCategorize({
+      id: "21",
+      date: "2026-01-05",
+      description: "住民税 第1期分",
+      amount: -30000,
+    });
+    expect(residentTax.account).toBe("租税公課");
+    expect(residentTax.personalDeductionOnly).toBe(true);
+  });
+
+  it("still treats stamp duty and the business's own consumption tax payments as a deductible business expense", () => {
+    const stampDuty = ruleBasedCategorize({ id: "22", date: "2026-01-05", description: "収入印紙購入", amount: -2000 });
+    expect(stampDuty.account).toBe("租税公課");
+    expect(stampDuty.personalDeductionOnly).toBeUndefined();
+
+    const consumptionTaxPayment = ruleBasedCategorize({
+      id: "23",
+      date: "2026-01-05",
+      description: "消費税及び地方消費税 中間納付",
+      amount: -80000,
+    });
+    expect(consumptionTaxPayment.account).toBe("租税公課");
+    expect(consumptionTaxPayment.personalDeductionOnly).toBeUndefined();
+  });
+
   it("still matches ANA/JR/ETC/au as whole-word brand references", () => {
     expect(ruleBasedCategorize({ id: "9", date: "2026-01-05", description: "ANA航空券購入", amount: -30000 }).account).toBe(
       "旅費交通費"
