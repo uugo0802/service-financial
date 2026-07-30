@@ -158,6 +158,57 @@ describe("computeReceivablesSummary - exact boundary days", () => {
   });
 });
 
+describe("computeReceivablesSummary - malformed dates", () => {
+  it("includes an unpaid invoice with an invalid issueDate in totals but excludes it from aging buckets and the overdue list", () => {
+    const invoices = [invoice({ issueDate: "not-a-date", dueDate: null, grandTotal: 15_000 })];
+    const summary = computeReceivablesSummary(invoices, AS_OF);
+
+    expect(summary.totalOutstanding).toBe(15_000);
+    expect(summary.totalOutstandingCount).toBe(1);
+    expect(summary.overdueInvoices).toEqual([]);
+    summary.agingBuckets.forEach((bucket) => expect(bucket.count).toBe(0));
+  });
+
+  it("includes an unpaid invoice with an invalid dueDate in totals but excludes it from aging buckets and the overdue list", () => {
+    const invoices = [invoice({ dueDate: "2026/07/01", grandTotal: 25_000 })]; // wrong separator, not YYYY-MM-DD
+    const summary = computeReceivablesSummary(invoices, AS_OF);
+
+    expect(summary.totalOutstanding).toBe(25_000);
+    expect(summary.totalOutstandingCount).toBe(1);
+    expect(summary.overdueInvoices).toEqual([]);
+  });
+
+  it("excludes all invoices from totals/aging when asOfDate itself is malformed", () => {
+    const invoices = [invoice({ dueDate: daysBeforeAsOf(40), grandTotal: 10_000 })];
+    const summary = computeReceivablesSummary(invoices, "not-a-date");
+
+    // Still outstanding overall (unpaid), just not aged.
+    expect(summary.totalOutstanding).toBe(10_000);
+    expect(summary.overdueInvoices).toEqual([]);
+  });
+});
+
+describe("outstandingAmountOf - negative/zero grandTotal", () => {
+  it("treats a negative grandTotal (with no payment recorded) as zero outstanding rather than negative", () => {
+    expect(outstandingAmountOf(invoice({ grandTotal: -1000 }))).toBe(0);
+  });
+
+  it("treats a zero grandTotal as zero outstanding", () => {
+    expect(outstandingAmountOf(invoice({ grandTotal: 0 }))).toBe(0);
+  });
+});
+
+describe("computeReceivablesSummary - invoices excluded via zero/negative outstanding", () => {
+  it("excludes an invoice with a negative grandTotal from totals, buckets, and the overdue list", () => {
+    const invoices = [invoice({ dueDate: daysBeforeAsOf(40), grandTotal: -5_000 })];
+    const summary = computeReceivablesSummary(invoices, AS_OF);
+
+    expect(summary.totalOutstanding).toBe(0);
+    expect(summary.totalOutstandingCount).toBe(0);
+    expect(summary.overdueInvoices).toEqual([]);
+  });
+});
+
 describe("computeReceivablesSummary - mixed paid, partially paid, and unpaid invoices", () => {
   it("only reflects the remaining unpaid balance for partially paid overdue invoices", () => {
     const invoices = [

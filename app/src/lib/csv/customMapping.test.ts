@@ -143,6 +143,82 @@ describe("applyCustomMapping", () => {
   });
 });
 
+describe("applyCustomMapping - split mode edge cases", () => {
+  it("returns an error when only the withdraw column is mapped but its header doesn't exist", () => {
+    const csv = "日付,内容,出金\n2026-01-05,家賃,120000\n";
+    const result = applyCustomMapping(csv, {
+      mode: "split",
+      date: "日付",
+      description: "内容",
+      withdraw: "存在しない出金列",
+      deposit: "",
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors).toEqual([
+      { field: "withdraw", message: "「出金」に指定された列「存在しない出金列」がCSVのヘッダー行に見つかりません。" },
+    ]);
+  });
+
+  it("returns an error when only the deposit column is mapped but its header doesn't exist", () => {
+    const csv = "日付,内容,入金\n2026-01-05,売上,200000\n";
+    const result = applyCustomMapping(csv, {
+      mode: "split",
+      date: "日付",
+      description: "内容",
+      withdraw: "",
+      deposit: "存在しない入金列",
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors).toEqual([
+      { field: "deposit", message: "「入金」に指定された列「存在しない入金列」がCSVのヘッダー行に見つかりません。" },
+    ]);
+  });
+
+  it("reports both withdraw and deposit errors at once when both are mapped to non-existent headers", () => {
+    const csv = "日付,内容\n2026-01-05,家賃\n";
+    const result = applyCustomMapping(csv, {
+      mode: "split",
+      date: "日付",
+      description: "内容",
+      withdraw: "出金なし",
+      deposit: "入金なし",
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.errors.map((e) => e.field).sort()).toEqual(["deposit", "withdraw"]);
+  });
+
+  it("nets deposit minus withdraw when both columns have a non-zero value on the same row", () => {
+    const csv = "日付,内容,出金,入金\n2026-01-05,相殺取引,3000,5000\n";
+    const result = applyCustomMapping(csv, {
+      mode: "split",
+      date: "日付",
+      description: "内容",
+      withdraw: "出金",
+      deposit: "入金",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.transactions[0].amount).toBe(2000); // 5000 - 3000
+  });
+
+  it("treats a negative value already present in the withdraw column as an outflow via Math.abs", () => {
+    const csv = "日付,内容,出金,入金\n2026-01-05,取引,-8000,\n";
+    const result = applyCustomMapping(csv, {
+      mode: "split",
+      date: "日付",
+      description: "内容",
+      withdraw: "出金",
+      deposit: "入金",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.transactions[0].amount).toBe(-8000);
+  });
+});
+
 describe("validateCustomMapping", () => {
   it("returns no errors for a complete, valid signed-mode mapping", () => {
     const header = parseCsvText("日付,摘要,金額\n")[0];

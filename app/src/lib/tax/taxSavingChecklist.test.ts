@@ -5,9 +5,42 @@ import {
   TAX_SAVING_DISCLAIMER,
   TaxSavingChecklistItem,
 } from "./taxSavingChecklist";
-import { estimateForIndividual } from "./estimate";
-import { estimateForMicroCorp } from "./corporateEstimate";
+import { estimateForIndividual, IndividualEstimate } from "./estimate";
+import { estimateForMicroCorp, CorporateEstimate } from "./corporateEstimate";
 import { CategorizedTransaction } from "../categorize/engine";
+
+function fakeIndividualEstimate(overrides: Partial<IndividualEstimate> = {}): IndividualEstimate {
+  return {
+    totalIncome: 0,
+    totalExpense: 0,
+    businessProfit: 0,
+    socialInsuranceDeduction: 0,
+    lifeInsurancePaidInfo: 0,
+    blueReturnDeduction: 0,
+    taxableIncome: 0,
+    incomeTax: { tax: 0, marginalRate: 5 },
+    reconstructionSurtax: 0,
+    totalIncomeTax: 0,
+    consumptionTax: { isLikelyExempt: true, salesTax: 0, purchaseTax: 0, payable: 0 },
+    assumptions: [],
+    ...overrides,
+  };
+}
+
+function fakeCorporateEstimate(overrides: Partial<CorporateEstimate> = {}): CorporateEstimate {
+  return {
+    revenue: 0,
+    expenses: 0,
+    taxableIncome: 0,
+    corporateTax: 0,
+    localCorporateTax: 0,
+    perCapitaTaxReference: 0,
+    totalNationalTax: 0,
+    consumptionTax: { isLikelyExempt: true, salesTax: 0, purchaseTax: 0, payable: 0 },
+    assumptions: [],
+    ...overrides,
+  };
+}
 
 function tx(overrides: Partial<CategorizedTransaction>): CategorizedTransaction {
   return {
@@ -117,6 +150,58 @@ describe("buildIndividualTaxSavingChecklist", () => {
   });
 });
 
+describe("buildIndividualTaxSavingChecklist - exact boundary values", () => {
+  it("does not flag underused blue-return deduction when business profit is exactly at 650,000 (not below)", () => {
+    const estimate = fakeIndividualEstimate({ businessProfit: 650_000 });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "blueReturnDeductionUsage").highlight).toBe(false);
+  });
+
+  it("flags underused blue-return deduction at 649,999 (just below the boundary)", () => {
+    const estimate = fakeIndividualEstimate({ businessProfit: 649_999 });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "blueReturnDeductionUsage").highlight).toBe(true);
+  });
+
+  it("does not highlight iDeCo when the marginal rate is just below the 20% threshold", () => {
+    const estimate = fakeIndividualEstimate({ incomeTax: { tax: 0, marginalRate: 10 } });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "ideco").highlight).toBe(false);
+  });
+
+  it("highlights iDeCo exactly at the 20% marginal rate boundary", () => {
+    const estimate = fakeIndividualEstimate({ incomeTax: { tax: 0, marginalRate: 20 } });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "ideco").highlight).toBe(true);
+  });
+
+  it("does not highlight the incorporation threshold just below 8,000,000 business profit", () => {
+    const estimate = fakeIndividualEstimate({ businessProfit: 7_999_999 });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "incorporationThreshold").highlight).toBe(false);
+  });
+
+  it("highlights the incorporation threshold exactly at 8,000,000 business profit", () => {
+    const estimate = fakeIndividualEstimate({ businessProfit: 8_000_000 });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "incorporationThreshold").highlight).toBe(true);
+  });
+
+  it("does not highlight small business mutual aid or blue-return usage for exactly zero business profit", () => {
+    const estimate = fakeIndividualEstimate({ businessProfit: 0 });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "smallBusinessMutualAid").highlight).toBe(false);
+    expect(findItem(result.items, "blueReturnDeductionUsage").highlight).toBe(false);
+  });
+
+  it("highlights small business mutual aid but not underused blue-return deduction for a tiny positive profit", () => {
+    const estimate = fakeIndividualEstimate({ businessProfit: 1 });
+    const result = buildIndividualTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "smallBusinessMutualAid").highlight).toBe(true);
+    expect(findItem(result.items, "blueReturnDeductionUsage").highlight).toBe(true); // 1 < 650,000
+  });
+});
+
 describe("buildCorporateTaxSavingChecklist", () => {
   it("always includes the disclaimer", () => {
     const result = buildCorporateTaxSavingChecklist(estimateForMicroCorp([]));
@@ -174,5 +259,32 @@ describe("buildCorporateTaxSavingChecklist", () => {
 
     const taxable = estimateForMicroCorp([tx({ id: "1", amount: 11_000_000 })]);
     expect(findItem(buildCorporateTaxSavingChecklist(taxable).items, "corpInvoiceRegistration").highlight).toBe(false);
+  });
+});
+
+describe("buildCorporateTaxSavingChecklist - exact boundary values", () => {
+  it("does not highlight the safety mutual aid item just below 8,000,000 taxable income", () => {
+    const estimate = fakeCorporateEstimate({ taxableIncome: 7_999_999, revenue: 10_000_000, expenses: 1_000_000 });
+    const result = buildCorporateTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "safetyMutualAid").highlight).toBe(false);
+  });
+
+  it("highlights the safety mutual aid item exactly at 8,000,000 taxable income", () => {
+    const estimate = fakeCorporateEstimate({ taxableIncome: 8_000_000, revenue: 10_000_000, expenses: 1_000_000 });
+    const result = buildCorporateTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "safetyMutualAid").highlight).toBe(true);
+  });
+
+  it("treats revenue exactly equal to expenses as neither profitable nor a loss (isLoss requires expenses > revenue)", () => {
+    const estimate = fakeCorporateEstimate({ taxableIncome: 0, revenue: 5_000_000, expenses: 5_000_000 });
+    const result = buildCorporateTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "corpSmallBusinessMutualAid").highlight).toBe(false); // taxableIncome not > 0
+    expect(findItem(result.items, "corpBlueReturnLossCarryforward").highlight).toBe(false); // expenses not > revenue
+  });
+
+  it("flags the loss-carryforward item once expenses exceed revenue by even 1 yen", () => {
+    const estimate = fakeCorporateEstimate({ taxableIncome: 0, revenue: 5_000_000, expenses: 5_000_001 });
+    const result = buildCorporateTaxSavingChecklist(estimate, []);
+    expect(findItem(result.items, "corpBlueReturnLossCarryforward").highlight).toBe(true);
   });
 });
