@@ -83,6 +83,17 @@ describe("buildGeneralLedger", () => {
     expect(ledger.rows).toHaveLength(3);
   });
 
+  it("records a zero-amount entry as both zero debit and zero credit without affecting the running balance", () => {
+    const zeroEntries: CategorizedTransaction[] = [
+      tx({ id: "z1", date: "2026-03-01", amount: 0 }),
+    ];
+    const ledger = buildGeneralLedger(zeroEntries, "消耗品費", { openingBalance: 5000 });
+    expect(ledger.rows).toEqual([expect.objectContaining({ id: "z1", debit: 0, credit: 0, balance: 5000 })]);
+    expect(ledger.totalDebit).toBe(0);
+    expect(ledger.totalCredit).toBe(0);
+    expect(ledger.closingBalance).toBe(5000);
+  });
+
   it("carries through taxCategory, source and note for each row", () => {
     const withNote: CategorizedTransaction[] = [
       tx({ id: "5", date: "2026-02-01", amount: -800, note: "備考メモ", source: "ai", confidence: 0.9 }),
