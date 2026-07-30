@@ -1,0 +1,242 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { CategorizedTransaction } from "@/lib/categorize/engine";
+import { estimateForMicroCorp } from "@/lib/tax/corporateEstimate";
+import { buildProfitLossStatement } from "@/lib/tax/plStatement";
+import { buildConsumptionTaxForm } from "@/lib/tax/consumptionTaxForm";
+import { buildCorporateTaxForm, buildFinancialStatements } from "@/lib/tax/corporateForms";
+import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
+import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
+import { buildEquityChangeForm } from "@/lib/tax/equityChangeForm";
+import { buildNotesForm } from "@/lib/tax/notesForm";
+import { EquityChangeStatement } from "@/components/EquityChangeStatement";
+import { NotesToFinancialStatements } from "@/components/NotesToFinancialStatements";
+
+export const metadata: Metadata = {
+  title: "決算書類（貸借対照表・株主資本等変動計算書・個別注記表）｜税務申告AI（ジャービス）",
+  description:
+    "記帳データから貸借対照表・株主資本等変動計算書・個別注記表の概算下書きをまとめて確認できる画面（開発中プロトタイプ）。",
+};
+
+// このページ専用のサンプルデータ。実データ（Supabase）との連携は別トラックのため、
+// ここでは決算書類3点セットの見え方を確認できるダミーの仕訳・資本情報を用意する。
+// history/page.tsx・export/page.tsxと同じ「今ごえん合同会社」を想定した小規模法人のデータ（金額はサンプル）。
+const SAMPLE_ENTITY_NAME = "今ごえん合同会社";
+const SAMPLE_CAPITAL_STOCK = 1_000_000; // 資本金
+const SAMPLE_OPENING_CASH = 3_000_000; // 期首現金残高
+const SAMPLE_SHARE_COUNT = 100; // 発行済株式数（任意）
+
+const SAMPLE_ENTRIES: CategorizedTransaction[] = [
+  {
+    id: "sample-1",
+    date: "2026-04-10",
+    description: "コンサルティングフィー入金（A社）",
+    amount: 550_000,
+    account: "売上高",
+    taxCategory: "課税売上10%",
+    confidence: 1,
+    source: "rule",
+  },
+  {
+    id: "sample-2",
+    date: "2026-04-15",
+    description: "コワーキングスペース利用料",
+    amount: -32_000,
+    account: "地代家賃",
+    taxCategory: "課税仕入10%",
+    confidence: 1,
+    source: "rule",
+    note: "WeWork月額利用料",
+  },
+  {
+    id: "sample-3",
+    date: "2026-05-02",
+    description: "取引先との会食, 打ち合わせ費用",
+    amount: -8_800,
+    account: "接待交際費",
+    taxCategory: "課税仕入10%",
+    confidence: 0.82,
+    source: "ai",
+    note: "領収書に \"接待\" の記載あり",
+  },
+  {
+    id: "sample-4",
+    date: "2026-05-20",
+    description: "会計ソフト・クラウドサービス利用料",
+    amount: -12_400,
+    account: "支払手数料(ソフトウェア利用料)",
+    taxCategory: "課税仕入10%",
+    confidence: 1,
+    source: "rule",
+  },
+  {
+    id: "sample-5",
+    date: "2026-06-01",
+    description: "資産管理コンサルティングフィー入金（B社）",
+    amount: 780_000,
+    account: "売上高",
+    taxCategory: "課税売上10%",
+    confidence: 1,
+    source: "manual",
+  },
+];
+
+const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
+
+export default function FinancialStatementsPage() {
+  const estimate = estimateForMicroCorp(SAMPLE_ENTRIES);
+  const pl = buildProfitLossStatement(SAMPLE_ENTRIES);
+  const consumptionForm = buildConsumptionTaxForm(SAMPLE_ENTRIES);
+  const taxForm = buildCorporateTaxForm(estimate);
+  const localTaxForm = buildLocalCorporateTaxForm(estimate, taxForm);
+  const fs = buildFinancialStatements(pl, taxForm, SAMPLE_ENTITY_NAME, localTaxForm.grandTotal);
+
+  // 貸借対照表・株主資本等変動計算書は、税込経理の慣行に合わせ
+  // 未払消費税等も反映した「調整後・当期純利益」で繰越利益剰余金を計算する
+  // （DocumentPreview.tsxの決算報告書タブと同じ考え方）。
+  const bsNetIncome = fs.incomeBeforeTax - fs.taxes - consumptionForm.totalDue;
+
+  const balanceSheet = buildBalanceSheetForm(
+    { capitalStock: SAMPLE_CAPITAL_STOCK, openingCash: SAMPLE_OPENING_CASH, shareCount: SAMPLE_SHARE_COUNT },
+    pl.incomeTotal,
+    pl.expenseTotal,
+    fs.taxes,
+    consumptionForm.totalDue,
+    bsNetIncome
+  );
+
+  const equityChange = buildEquityChangeForm({
+    capitalStock: SAMPLE_CAPITAL_STOCK,
+    openingCash: SAMPLE_OPENING_CASH,
+    netIncome: bsNetIncome,
+  });
+
+  const notes = buildNotesForm({
+    unpaidCorporateTaxes: balanceSheet.unpaidCorporateTaxes,
+    unpaidConsumptionTax: balanceSheet.unpaidConsumptionTax,
+    equityChange,
+    shareCount: SAMPLE_SHARE_COUNT,
+  });
+
+  return (
+    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
+      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
+          <Link href="/" className="font-serif text-lg tracking-wide">
+            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+          </Link>
+          <div className="text-xs text-stone-500 dark:text-stone-400">決算書類（貸借対照表・株主資本等変動計算書・個別注記表）</div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-4xl px-6 py-12 flex flex-col gap-10">
+        <section className="flex flex-col gap-4">
+          <h1 className="text-2xl font-semibold">決算書類（貸借対照表・株主資本等変動計算書・個別注記表）</h1>
+          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+            記帳された取引明細と資本金・期首現金残高の入力から、貸借対照表・株主資本等変動計算書・個別注記表の
+            <b className="font-medium">概算の下書き</b>をまとめて表示します。
+            正式な決算書の作成・確定は、ご自身または税理士等の専門家が行ってください。
+          </p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
+            本サービスがこれらの書類をもって申告・決算の確定を代行することはありません。
+            本ページは開発中のプロトタイプであり、簡易試算であり正式な決算書ではありません。
+            {SAMPLE_ENTITY_NAME}を想定したサンプルデータで表示しています。
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-3">貸借対照表</h2>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">
+            固定資産・売掛金・借入金等、現金以外の資産負債はこのアプリでは反映されません。
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                    <th className="px-3 py-2 font-normal" colSpan={2}>資産の部</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-stone-100 dark:border-stone-800">
+                    <td className="px-3 py-2">現金及び預金</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.endingCash)}</td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 font-semibold">資産の部合計</td>
+                    <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.assetsTotal)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                      <th className="px-3 py-2 font-normal" colSpan={2}>負債の部</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-stone-100 dark:border-stone-800">
+                      <td className="px-3 py-2">未払法人税等</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidCorporateTaxes)}</td>
+                    </tr>
+                    <tr className="border-b border-stone-100 dark:border-stone-800">
+                      <td className="px-3 py-2">未払消費税等</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidConsumptionTax)}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 font-semibold">負債の部合計</td>
+                      <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.liabilitiesTotal)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                      <th className="px-3 py-2 font-normal" colSpan={2}>純資産の部</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b border-stone-100 dark:border-stone-800">
+                      <td className="px-3 py-2">資本金</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.capitalStock)}</td>
+                    </tr>
+                    <tr className="border-b border-stone-100 dark:border-stone-800">
+                      <td className="px-3 py-2">繰越利益剰余金</td>
+                      <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.retainedEarningsEnding)}</td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2 font-semibold">純資産の部合計</td>
+                      <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.netAssetsTotal)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <p className={`text-xs mt-3 ${balanceSheet.balanced ? "text-stone-400" : "text-red-700"}`}>
+            {balanceSheet.balanced
+              ? "検算: 資産合計＝負債＋純資産合計（一致）"
+              : "検算エラー: 資産合計と負債＋純資産合計が一致していません。入力値をご確認ください。"}
+          </p>
+        </section>
+
+        <EquityChangeStatement form={equityChange} />
+
+        <NotesToFinancialStatements form={notes} />
+      </main>
+
+      <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4">
+        <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+          本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
+          表示される貸借対照表・株主資本等変動計算書・個別注記表は記帳内容に基づく簡易試算であり、正式な決算書ではありません。
+          個別具体的な税務・会計上の相談が必要な場合は、税理士等の専門家にご相談ください。
+        </div>
+      </footer>
+    </div>
+  );
+}
