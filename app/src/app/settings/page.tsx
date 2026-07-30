@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { TenantSettingsForm } from "@/components/TenantSettingsForm";
 import { TenantProfile, TenantProfileDraft, draftToTenantProfilePatch, tenantProfileToDraft } from "@/lib/db/tenants";
 
@@ -49,6 +50,10 @@ export default function SettingsPage() {
         </section>
 
         <TenantSettingsForm initialDraft={tenantProfileToDraft(profile)} onSubmit={handleSubmit} />
+
+        <Link href="/settings/security" className="text-sm text-stone-700 underline underline-offset-2 self-start">
+          二要素認証（2FA）の設定はこちら →
+        </Link>
 
         {savedNotice && (
           <p className="text-xs text-stone-400">
