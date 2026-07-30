@@ -3,9 +3,11 @@
 import { useMemo } from "react";
 import { buildMonthlyTrend, buildYearlyTrend, TrendPoint } from "@/lib/tax/salesTrend";
 import { buildExpenseBreakdown } from "@/lib/tax/expenseBreakdown";
+import { buildKpiTrend } from "@/lib/tax/kpiTrend";
 import { TrendLineChart } from "@/components/dashboard/TrendLineChart";
 import { TrendBarChart } from "@/components/dashboard/TrendBarChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/ExpenseBreakdownChart";
+import { KpiTrendPanel } from "@/components/dashboard/KpiTrendPanel";
 import { StatTile } from "@/components/dashboard/StatTile";
 import { PartnerReferralBanner } from "@/components/PartnerReferralBanner";
 import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferral";
@@ -47,6 +49,7 @@ export default function DashboardPage() {
     () => buildExpenseBreakdown([...transactions, ...SAMPLE_EXPENSE_CATEGORY_ROWS]),
     [transactions]
   );
+  const kpiTrend = useMemo(() => buildKpiTrend(yearlyTrend), [yearlyTrend]);
 
   if (yearlyTrend.length === 0) {
     return (
@@ -134,6 +137,10 @@ export default function DashboardPage() {
 
         <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
           <TrendBarChart points={yearlyTrend} title="年度別 売上・経費・損益" />
+        </section>
+
+        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+          <KpiTrendPanel points={kpiTrend} title="年度別 経営指標（売上・経費率・前年比成長率）" />
         </section>
 
         <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
