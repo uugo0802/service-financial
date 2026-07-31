@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { Fragment, ReactNode, useMemo } from "react";
 import { buildMonthlyTrend, buildYearlyTrend, TrendPoint } from "@/lib/tax/salesTrend";
 import { buildExpenseBreakdown } from "@/lib/tax/expenseBreakdown";
 import { buildKpiTrend } from "@/lib/tax/kpiTrend";
@@ -10,6 +10,8 @@ import { ExpenseBreakdownChart } from "@/components/dashboard/ExpenseBreakdownCh
 import { KpiTrendPanel } from "@/components/dashboard/KpiTrendPanel";
 import { BenchmarkPanel } from "@/components/dashboard/BenchmarkPanel";
 import { StatTile } from "@/components/dashboard/StatTile";
+import { WidgetLayoutControls, useDashboardWidgetLayout } from "@/components/dashboard/WidgetLayoutControls";
+import { DashboardWidgetId } from "@/lib/dashboard/widgetLayout";
 import { PartnerReferralBanner } from "@/components/PartnerReferralBanner";
 import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferral";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
@@ -55,6 +57,7 @@ export default function DashboardPage() {
     [transactionsWithExpenseCategories]
   );
   const kpiTrend = useMemo(() => buildKpiTrend(yearlyTrend), [yearlyTrend]);
+  const { layout: widgetLayout } = useDashboardWidgetLayout();
 
   if (yearlyTrend.length === 0) {
     return (
@@ -88,6 +91,64 @@ export default function DashboardPage() {
   const samePeriodIncome = sumOf(samePeriodPriorYear, "income");
   const samePeriodProfit = sumOf(samePeriodPriorYear, "profit");
 
+  // 各ウィジェットIDに対応する実際の描画内容。並び順・表示/非表示は
+  // widgetLayout（useDashboardWidgetLayout、localStorageに永続化）が決める。
+  const widgetSections: Record<DashboardWidgetId, ReactNode> = {
+    statTiles: (
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatTile
+          label={`今期の売上（${currentYear.key}年 1〜${monthsInCurrentYear}月）`}
+          value={sumOf(monthlyTrend.filter((p) => p.key.startsWith(currentYear.key)), "income")}
+          deltaPercent={percentDelta(currentYear.income, samePeriodIncome)}
+        />
+        <StatTile
+          label={`今期の損益（${currentYear.key}年 1〜${monthsInCurrentYear}月）`}
+          value={currentYear.profit}
+          deltaPercent={percentDelta(currentYear.profit, samePeriodProfit)}
+        />
+        {priorFullYear && (
+          <StatTile
+            label={`${priorFullYear.key}年 年間売上`}
+            value={priorFullYear.income}
+            deltaPercent={twoYearsAgo ? percentDelta(priorFullYear.income, twoYearsAgo.income) : undefined}
+          />
+        )}
+        {priorFullYear && (
+          <StatTile
+            label={`${priorFullYear.key}年 年間損益`}
+            value={priorFullYear.profit}
+            deltaPercent={twoYearsAgo ? percentDelta(priorFullYear.profit, twoYearsAgo.profit) : undefined}
+          />
+        )}
+      </section>
+    ),
+    trendLine: (
+      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+        <TrendLineChart points={monthlyTrend} title="月次 売上・経費・損益の推移" />
+      </section>
+    ),
+    trendBar: (
+      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+        <TrendBarChart points={yearlyTrend} title="年度別 売上・経費・損益" />
+      </section>
+    ),
+    kpiTrend: (
+      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+        <KpiTrendPanel points={kpiTrend} title="年度別 経営指標（売上・経費率・前年比成長率）" />
+      </section>
+    ),
+    expenseBreakdown: (
+      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+        <ExpenseBreakdownChart breakdown={expenseBreakdown} title="経費内訳（勘定科目別）" />
+      </section>
+    ),
+    benchmark: (
+      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+        <BenchmarkPanel rows={transactionsWithExpenseCategories} title="経費構成の参考比較（対売上比）" />
+      </section>
+    ),
+  };
+
   return (
     <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
@@ -109,52 +170,13 @@ export default function DashboardPage() {
           </p>
         </section>
 
-        <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatTile
-            label={`今期の売上（${currentYear.key}年 1〜${monthsInCurrentYear}月）`}
-            value={sumOf(monthlyTrend.filter((p) => p.key.startsWith(currentYear.key)), "income")}
-            deltaPercent={percentDelta(currentYear.income, samePeriodIncome)}
-          />
-          <StatTile
-            label={`今期の損益（${currentYear.key}年 1〜${monthsInCurrentYear}月）`}
-            value={currentYear.profit}
-            deltaPercent={percentDelta(currentYear.profit, samePeriodProfit)}
-          />
-          {priorFullYear && (
-            <StatTile
-              label={`${priorFullYear.key}年 年間売上`}
-              value={priorFullYear.income}
-              deltaPercent={twoYearsAgo ? percentDelta(priorFullYear.income, twoYearsAgo.income) : undefined}
-            />
-          )}
-          {priorFullYear && (
-            <StatTile
-              label={`${priorFullYear.key}年 年間損益`}
-              value={priorFullYear.profit}
-              deltaPercent={twoYearsAgo ? percentDelta(priorFullYear.profit, twoYearsAgo.profit) : undefined}
-            />
-          )}
-        </section>
+        <WidgetLayoutControls />
 
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
-          <TrendLineChart points={monthlyTrend} title="月次 売上・経費・損益の推移" />
-        </section>
-
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
-          <TrendBarChart points={yearlyTrend} title="年度別 売上・経費・損益" />
-        </section>
-
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
-          <KpiTrendPanel points={kpiTrend} title="年度別 経営指標（売上・経費率・前年比成長率）" />
-        </section>
-
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
-          <ExpenseBreakdownChart breakdown={expenseBreakdown} title="経費内訳（勘定科目別）" />
-        </section>
-
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
-          <BenchmarkPanel rows={transactionsWithExpenseCategories} title="経費構成の参考比較（対売上比）" />
-        </section>
+        {widgetLayout
+          .filter((entry) => entry.visible)
+          .map((entry) => (
+            <Fragment key={entry.id}>{widgetSections[entry.id]}</Fragment>
+          ))}
 
         <PartnerReferralBanner categories={partnerCategories} />
 
