@@ -3,7 +3,8 @@ import { normalizeCsv, parseCsvText, ParseResult } from "./parse";
 
 /**
  * 銀行・カード会社ごとのCSV列マッピング（住信SBIネット銀行・楽天銀行・
- * GMOあおぞらネット銀行・三井住友カード・楽天カード）。
+ * GMOあおぞらネット銀行・ゆうちょ銀行・みずほ銀行・三菱UFJ銀行・
+ * 三井住友カード・楽天カード・JCBカード・PayPayカード）。
  *
  * 重要: 実際の各社CSVサンプルは入手できていないため、以下は公知情報・一般的な
  * ネット銀行/カード会社CSVエクスポートの慣例から推測した列名である。
@@ -16,17 +17,41 @@ import { normalizeCsv, parseCsvText, ParseResult } from "./parse";
  *   単一符号付き金額列（入出金）を持つ形式。
  * - GMOあおぞらネット銀行: 列は「日付,摘要,出金金額,入金金額,残高」を想定
  *   （出金/入金分離型。住信SBIとは「内容」/「摘要」の違いで区別）。
+ * - ゆうちょ銀行: 列は「取扱日,お取り扱い内容,お引出し,お預入れ,残高」を想定
+ *   （出金/入金分離型。「取扱日」「お取り扱い内容」という他行にない独自の
+ *   列名で区別している）。
+ * - みずほ銀行: 列は「年月日,取引内容,出金,入金,残高」を想定（出金/入金分離型。
+ *   「年月日」という他行にない日付列名、および「出金」「入金」という
+ *   「〜金額」の付かない短い列名で区別している）。
+ * - 三菱UFJ銀行: 列は「取引日,入出金先内容,お支払金額,お預入れ,残高」を想定
+ *   （出金/入金分離型。「入出金先内容」という独自の摘要列名で楽天銀行
+ *   （同じ「取引日」列名だが単一符号金額型）と区別している）。
  * - 三井住友カード: 列は「ご利用日,ご利用店名,ご利用金額」を想定。カード利用額は
  *   明細上は正の数で記載されるため、支出として負値に変換する。丁寧表現の
  *   「ご利用日」列名で楽天カードと区別している。
  * - 楽天カード: 列は「利用日,利用店名,利用金額」を想定（三井住友カードと同様に
  *   利用額を負値へ変換）。「ご」が付かない列名で三井住友カードと区別している。
+ * - JCBカード: 列は「ご利用日,ご利用先,ご利用金額」を想定（カード利用額を負値へ
+ *   変換）。「ご利用先」という店名列名で三井住友カードの「ご利用店名」と
+ *   区別している。
+ * - PayPayカード: 列は「ご利用日,利用店名・商品名,ご利用金額」を想定（カード利用額を
+ *   負値へ変換）。「利用店名・商品名」という店名列名で他カードと区別している。
  *
  * これらの列名・区別方法はいずれも未検証の仮説であり、実データ次第で
  * detectHeaders・列候補の調整が必要になる可能性が高い。
  */
 
-export type BankFormatId = "sbi_sumishin" | "rakuten_bank" | "gmo_aozora" | "smcc" | "rakuten_card";
+export type BankFormatId =
+  | "sbi_sumishin"
+  | "rakuten_bank"
+  | "gmo_aozora"
+  | "yucho"
+  | "mizuho"
+  | "mufg"
+  | "smcc"
+  | "rakuten_card"
+  | "jcb_card"
+  | "paypay_card";
 
 interface SignedAmountConfig {
   mode: "signed";
@@ -81,6 +106,30 @@ export const BANK_FORMATS: Record<BankFormatId, BankFormatDefinition> = {
     amount: { mode: "split", withdrawHeaders: ["出金金額"], depositHeaders: ["入金金額"] },
     detectHeaders: ["日付", "摘要", "出金金額", "入金金額"],
   },
+  yucho: {
+    id: "yucho",
+    label: "ゆうちょ銀行",
+    dateHeaders: ["取扱日"],
+    descHeaders: ["お取り扱い内容"],
+    amount: { mode: "split", withdrawHeaders: ["お引出し"], depositHeaders: ["お預入れ"] },
+    detectHeaders: ["取扱日", "お取り扱い内容", "お引出し", "お預入れ"],
+  },
+  mizuho: {
+    id: "mizuho",
+    label: "みずほ銀行",
+    dateHeaders: ["年月日"],
+    descHeaders: ["取引内容"],
+    amount: { mode: "split", withdrawHeaders: ["出金"], depositHeaders: ["入金"] },
+    detectHeaders: ["年月日", "取引内容", "出金", "入金"],
+  },
+  mufg: {
+    id: "mufg",
+    label: "三菱UFJ銀行",
+    dateHeaders: ["取引日"],
+    descHeaders: ["入出金先内容"],
+    amount: { mode: "split", withdrawHeaders: ["お支払金額"], depositHeaders: ["お預入れ"] },
+    detectHeaders: ["取引日", "入出金先内容", "お支払金額", "お預入れ"],
+  },
   smcc: {
     id: "smcc",
     label: "三井住友カード",
@@ -96,6 +145,22 @@ export const BANK_FORMATS: Record<BankFormatId, BankFormatDefinition> = {
     descHeaders: ["利用店名"],
     amount: { mode: "expense", headers: ["利用金額"] },
     detectHeaders: ["利用日", "利用店名", "利用金額"],
+  },
+  jcb_card: {
+    id: "jcb_card",
+    label: "JCBカード",
+    dateHeaders: ["ご利用日"],
+    descHeaders: ["ご利用先"],
+    amount: { mode: "expense", headers: ["ご利用金額"] },
+    detectHeaders: ["ご利用日", "ご利用先", "ご利用金額"],
+  },
+  paypay_card: {
+    id: "paypay_card",
+    label: "PayPayカード",
+    dateHeaders: ["ご利用日"],
+    descHeaders: ["利用店名・商品名"],
+    amount: { mode: "expense", headers: ["ご利用金額"] },
+    detectHeaders: ["ご利用日", "利用店名・商品名", "ご利用金額"],
   },
 };
 
