@@ -159,6 +159,28 @@ describe("normalizeCsvWithBankFormat", () => {
     expect(result.transactions[0].amount).toBe(-12800);
   });
 
+  // Regression: full-width (全角) digits/comma/yen sign are used by some legacy bank exports
+  // and by users hand-editing CSVs on a Japanese IME. Before NFKC normalization was added,
+  // Number("１２，８００") was NaN and toNumber() silently fell back to 0, making a real
+  // expense vanish from the ledger instead of surfacing a parse error.
+  it("parses a full-width (全角) amount with a full-width thousands comma, not silently treating it as zero", () => {
+    const csv = "ご利用日,ご利用店名,ご利用金額\n2026-01-12,家電量販店,１２，８００\n";
+    const result = normalizeCsvWithBankFormat(csv, "smcc");
+    expect(result.transactions[0].amount).toBe(-12800);
+  });
+
+  it("parses a full-width amount combined with a full-width yen sign", () => {
+    const csv = "ご利用日,ご利用店名,ご利用金額\n2026-01-12,家電量販店,￥１２８００\n";
+    const result = normalizeCsvWithBankFormat(csv, "smcc");
+    expect(result.transactions[0].amount).toBe(-12800);
+  });
+
+  it("parses a full-width negative amount in a split withdraw/deposit column", () => {
+    const csv = "日付,内容,出金金額,入金金額,残高\n2026-01-05,家賃引落,１２０，０００,,880000\n";
+    const result = normalizeCsvWithBankFormat(csv, "sbi_sumishin");
+    expect(result.transactions[0].amount).toBe(-120000);
+  });
+
   it("treats a lone '-' amount value as zero (not NaN) while still emitting the row, since date/description are present", () => {
     const csv = "ご利用日,ご利用店名,ご利用金額\n2026-01-12,不明,-\n";
     const result = normalizeCsvWithBankFormat(csv, "smcc");

@@ -114,6 +114,21 @@ describe("estimateForIndividual", () => {
     expect(result.consumptionTax.purchaseTax).toBe(20);
   });
 
+  // Regression guard: the 10% and 8%(軽減) purchase buckets must each be truncated
+  // independently before being summed, never combined into one pool and truncated once — the
+  // two rates are legally distinct tax bases and cannot be netted together pre-truncation.
+  it("truncates the 10% and 8%(軽減) purchase buckets independently rather than combining them before truncation", () => {
+    const rows = [
+      tx({ id: "1", amount: -105, account: "外注費", taxCategory: "課税仕入10%" }), // floor(105*10/110) = 9
+      tx({ id: "2", amount: -105, account: "会議費", taxCategory: "課税仕入8%(軽減)" }), // floor(105*8/108) = 7
+    ];
+    const result = estimateForIndividual(rows);
+
+    // If the two rate buckets were incorrectly pooled together before truncation, the result
+    // would differ from the sum of their independently-truncated values (9 + 7 = 16).
+    expect(result.consumptionTax.purchaseTax).toBe(16);
+  });
+
   it("floors taxable income and tax at zero when expenses exceed income", () => {
     const rows = [tx({ id: "1", amount: -300_000, account: "外注費", taxCategory: "課税仕入10%" })];
 

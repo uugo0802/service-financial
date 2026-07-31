@@ -74,6 +74,19 @@ describe("estimateForMicroCorp", () => {
     expect(result.consumptionTax.purchaseTax).toBe(20);
   });
 
+  // Regression guard: the 10% and 8%(軽減) purchase buckets must each be truncated
+  // independently before being summed, never combined into one pool and truncated once — the
+  // two rates are legally distinct tax bases and cannot be netted together pre-truncation.
+  it("truncates the 10% and 8%(軽減) purchase buckets independently rather than combining them before truncation", () => {
+    const rows = [
+      tx({ id: "1", amount: -105, account: "外注費", taxCategory: "課税仕入10%" }), // floor(105*10/110) = 9
+      tx({ id: "2", amount: -105, account: "会議費", taxCategory: "課税仕入8%(軽減)" }), // floor(105*8/108) = 7
+    ];
+    const result = estimateForMicroCorp(rows);
+
+    expect(result.consumptionTax.purchaseTax).toBe(16);
+  });
+
   it("splits taxable income across the reduced-rate and standard-rate brackets once it exceeds 8,000,000", () => {
     const rows = [
       tx({ id: "1", amount: 9_500_000, taxCategory: "課税売上10%" }),

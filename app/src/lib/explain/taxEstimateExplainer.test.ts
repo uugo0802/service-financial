@@ -142,6 +142,63 @@ describe("explainIndividualEstimateCalculation", () => {
     const steps = explainIndividualEstimateCalculation(estimate);
     expect(steps[steps.length - 1].amount).toBe(estimate.totalIncomeTax);
   });
+
+  // Regression: when a loss-carryforward deduction is applied, the trail must surface it as its
+  // own step (in the correct position, right after the blue-return deduction and before the
+  // social-insurance/basic deductions, matching the subtraction order in tax/estimate.ts). Without
+  // this step, the preceding steps' amounts no longer sum to estimate.taxableIncome, silently
+  // breaking the explainer's core promise that it narrates exactly how the final number was reached.
+  it("includes a 純損失の繰越控除 step, in the correct position, when a loss-carryforward deduction is applied", () => {
+    const rows = [
+      tx({ id: "1", amount: 8_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: -2_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+    const estimate = estimateForIndividual(
+      rows,
+      { bookkeepingMethod: "double", filingMethod: "eTax" },
+      { currentFiscalYear: 2026, priorLosses: [{ fiscalYear: 2025, remainingLoss: 1_000_000 }] }
+    );
+    expect(estimate.lossCarryforward?.totalDeduction).toBe(1_000_000);
+
+    const steps = explainIndividualEstimateCalculation(estimate);
+
+    expect(steps.map((s) => s.label)).toEqual([
+      "収入金額",
+      "必要経費",
+      "事業所得",
+      "青色申告特別控除",
+      "純損失の繰越控除",
+      "基礎控除",
+      "課税所得金額",
+      "税率区分ごとの所得税額",
+      "復興特別所得税",
+      "所得税及び復興特別所得税の合計額",
+    ]);
+
+    const lossStep = steps.find((s) => s.label === "純損失の繰越控除")!;
+    expect(lossStep.amount).toBe(1_000_000);
+    expect(lossStep.detail).toContain("1,000,000円");
+
+    // The trail's math must reconcile with the actual taxableIncome: businessProfit - blueReturn -
+    // lossCarryforward - basicDeduction (千円未満切り捨て), i.e. no deduction silently unaccounted for.
+    const taxableStep = steps.find((s) => s.label === "課税所得金額")!;
+    expect(taxableStep.amount).toBe(estimate.taxableIncome);
+  });
+
+  it("omits the 純損失の繰越控除 step when lossCarryforward is present but fully expired (zero deduction)", () => {
+    const rows = [
+      tx({ id: "1", amount: 8_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: -2_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+    const estimate = estimateForIndividual(rows, undefined, {
+      currentFiscalYear: 2026,
+      priorLosses: [{ fiscalYear: 2021, remainingLoss: 500_000 }], // age = 5, past the 3-year window
+    });
+    expect(estimate.lossCarryforward?.totalDeduction).toBe(0);
+
+    const steps = explainIndividualEstimateCalculation(estimate);
+    expect(steps.map((s) => s.label)).not.toContain("純損失の繰越控除");
+  });
 });
 
 describe("explainCorporateEstimateCalculation", () => {
@@ -238,5 +295,62 @@ describe("explainCorporateEstimateCalculation", () => {
     const estimate = estimateForMicroCorp(rows);
     const steps = explainCorporateEstimateCalculation(estimate);
     expect(steps[steps.length - 1].amount).toBe(estimate.totalNationalTax);
+  });
+
+  // Regression: same issue as the individual explainer above (see that describe block's comment) —
+  // without a dedicated step, "収益－費用" no longer explains estimate.taxableIncome once a
+  // carryforward deduction has been applied, and the final tax figure would appear to come out of
+  // nowhere relative to the narrated steps.
+  it("includes 所得金額（繰越控除前） and 繰越欠損金の控除 steps, in order, when a loss-carryforward deduction is applied", () => {
+    const rows = [
+      tx({ id: "1", amount: 5_500_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 2_200_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "3", amount: -1_100_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
+    ];
+    const estimate = estimateForMicroCorp(rows, {
+      currentFiscalYear: 2026,
+      priorLosses: [{ fiscalYear: 2025, remainingLoss: 2_000_000 }],
+    });
+    expect(estimate.lossCarryforward?.totalDeduction).toBe(2_000_000);
+
+    const steps = explainCorporateEstimateCalculation(estimate);
+
+    expect(steps.map((s) => s.label)).toEqual([
+      "収益（益金）",
+      "費用（損金）",
+      "所得金額（繰越控除前）",
+      "繰越欠損金の控除",
+      "所得金額",
+      "軽減税率の対象部分（年800万円以下）",
+      "法人税額",
+      "地方法人税",
+      "法人税・地方法人税の合計額",
+    ]);
+
+    const beforeStep = steps.find((s) => s.label === "所得金額（繰越控除前）")!;
+    expect(beforeStep.amount).toBe(estimate.lossCarryforward?.incomeBeforeCarryforward);
+
+    const deductionStep = steps.find((s) => s.label === "繰越欠損金の控除")!;
+    expect(deductionStep.amount).toBe(2_000_000);
+
+    const afterStep = steps.find((s) => s.label === "所得金額")!;
+    expect(afterStep.amount).toBe(estimate.taxableIncome);
+  });
+
+  it("omits the loss-carryforward steps when lossCarryforward is present but fully expired (zero deduction)", () => {
+    const rows = [
+      tx({ id: "1", amount: 5_500_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 2_200_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "3", amount: -1_100_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
+    ];
+    const estimate = estimateForMicroCorp(rows, {
+      currentFiscalYear: 2026,
+      priorLosses: [{ fiscalYear: 2015, remainingLoss: 1_000_000 }], // age = 11, past the 10-year window
+    });
+    expect(estimate.lossCarryforward?.totalDeduction).toBe(0);
+
+    const steps = explainCorporateEstimateCalculation(estimate);
+    expect(steps.map((s) => s.label)).not.toContain("所得金額（繰越控除前）");
+    expect(steps.map((s) => s.label)).not.toContain("繰越欠損金の控除");
   });
 });

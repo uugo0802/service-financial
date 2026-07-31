@@ -95,6 +95,28 @@ describe("applyIndividualLossCarryforward", () => {
   it("uses the exported 3-year window constant", () => {
     expect(INDIVIDUAL_LOSS_CARRYFORWARD_WINDOW_YEARS).toBe(3);
   });
+
+  it("ignores a non-positive remainingLoss entry (zero or negative) instead of treating it as usable", () => {
+    const zero = applyIndividualLossCarryforward(2026, 1_000_000, [{ fiscalYear: 2025, remainingLoss: 0 }]);
+    expect(zero.usage).toEqual([]);
+    expect(zero.totalDeduction).toBe(0);
+
+    const negative = applyIndividualLossCarryforward(2026, 1_000_000, [{ fiscalYear: 2025, remainingLoss: -500 }]);
+    expect(negative.usage).toEqual([]);
+    expect(negative.totalDeduction).toBe(0);
+  });
+
+  it("does not mutate the input priorLosses array (sorts internally on a copy)", () => {
+    const priorLosses: PriorYearLoss[] = [
+      { fiscalYear: 2025, remainingLoss: 500_000 },
+      { fiscalYear: 2024, remainingLoss: 300_000 },
+    ];
+    const snapshot = priorLosses.map((l) => ({ ...l }));
+
+    applyIndividualLossCarryforward(2026, 2_000_000, priorLosses);
+
+    expect(priorLosses).toEqual(snapshot);
+  });
 });
 
 describe("applyCorporateLossCarryforward", () => {
@@ -227,5 +249,38 @@ describe("deriveUnusedPriorLosses", () => {
       INDIVIDUAL_LOSS_CARRYFORWARD_WINDOW_YEARS
     );
     expect(result).toEqual([{ fiscalYear: 2025, remainingLoss: 100_000 }]);
+  });
+
+  it("carries an existing loss through a break-even (exactly zero income) year unabsorbed", () => {
+    // A zero-income year is neither a loss-making year (no new loss recorded) nor a profitable
+    // year (nothing to absorb the outstanding loss with), so the prior loss should pass through
+    // unchanged rather than being silently dropped or partially consumed.
+    const result = deriveUnusedPriorLosses(
+      [
+        { fiscalYear: 2024, income: -1_000_000 },
+        { fiscalYear: 2025, income: 0 },
+      ],
+      2026,
+      INDIVIDUAL_LOSS_CARRYFORWARD_WINDOW_YEARS
+    );
+    expect(result).toEqual([{ fiscalYear: 2024, remainingLoss: 1_000_000 }]);
+  });
+
+  it("accepts unsorted history input and still nets losses against later profitable years correctly", () => {
+    // Same scenario as the "nets out a loss year" test above, but with history rows deliberately
+    // supplied out of fiscalYear order to guard the documented "history need not be sorted" contract.
+    const result = deriveUnusedPriorLosses(
+      [
+        { fiscalYear: 2024, income: 600_000 },
+        { fiscalYear: 2023, income: -1_000_000 },
+      ],
+      2026,
+      INDIVIDUAL_LOSS_CARRYFORWARD_WINDOW_YEARS
+    );
+    expect(result).toEqual([{ fiscalYear: 2023, remainingLoss: 400_000 }]);
+  });
+
+  it("returns an empty array (no crash) for an empty history", () => {
+    expect(deriveUnusedPriorLosses([], 2026, INDIVIDUAL_LOSS_CARRYFORWARD_WINDOW_YEARS)).toEqual([]);
   });
 });

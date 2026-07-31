@@ -99,6 +99,19 @@ export function explainIndividualEstimateCalculation(estimate: IndividualEstimat
     });
   }
 
+  // 繰越控除の適用結果（lib/tax/lossCarryforward.ts）が付与されている場合、実際に差し引かれた
+  // 金額をトレイルに反映する。このステップを省くと、後続の「課税所得金額」ステップの文言
+  // （「上記の控除をすべて差し引き」）が estimate.taxableIncome と整合しなくなってしまう。
+  if (estimate.lossCarryforward && estimate.lossCarryforward.totalDeduction > 0) {
+    steps.push({
+      label: "純損失の繰越控除",
+      detail: `青色申告の純損失の繰越控除（前年以前3年以内の繰越損失のうち今年使用できる分）として ${yen(
+        estimate.lossCarryforward.totalDeduction
+      )} を差し引きます。`,
+      amount: estimate.lossCarryforward.totalDeduction,
+    });
+  }
+
   if (estimate.socialInsuranceDeduction > 0) {
     steps.push({
       label: "社会保険料控除",
@@ -173,11 +186,34 @@ export function explainCorporateEstimateCalculation(estimate: CorporateEstimate)
     amount: estimate.expenses,
   });
 
+  // 繰越欠損金の控除（lib/tax/lossCarryforward.ts）が適用されている場合、「収益－費用」だけでは
+  // 最終的な所得金額（estimate.taxableIncome）に一致しなくなるため、控除前の所得金額を明示した
+  // うえで、控除額を独立したステップとして挟む。これを省くと直後の「所得金額」ステップの文言
+  // （「収益－費用を…した金額が所得金額」）が estimate.taxableIncome と整合しなくなってしまう。
+  if (estimate.lossCarryforward && estimate.lossCarryforward.totalDeduction > 0) {
+    steps.push({
+      label: "所得金額（繰越控除前）",
+      detail: `収益 ${yen(estimate.revenue)} － 費用 ${yen(estimate.expenses)} = 繰越控除前の所得金額 ${yen(
+        estimate.lossCarryforward.incomeBeforeCarryforward
+      )} です（別表調整は考慮していません）。`,
+      amount: estimate.lossCarryforward.incomeBeforeCarryforward,
+    });
+    steps.push({
+      label: "繰越欠損金の控除",
+      detail: `青色申告の欠損金の繰越控除（前期以前の欠損金のうち今期使用できる分）として ${yen(
+        estimate.lossCarryforward.totalDeduction
+      )} を差し引きます。`,
+      amount: estimate.lossCarryforward.totalDeduction,
+    });
+  }
+
   steps.push({
     label: "所得金額",
-    detail: `収益 ${yen(estimate.revenue)} － 費用 ${yen(estimate.expenses)} を千円未満切り捨て（マイナスの場合は0円）した金額が所得金額 ${yen(
-      estimate.taxableIncome
-    )} です（別表調整は考慮していません）。`,
+    detail: estimate.lossCarryforward && estimate.lossCarryforward.totalDeduction > 0
+      ? `繰越控除後の所得金額を千円未満切り捨て（マイナスの場合は0円）した金額が所得金額 ${yen(estimate.taxableIncome)} です。`
+      : `収益 ${yen(estimate.revenue)} － 費用 ${yen(estimate.expenses)} を千円未満切り捨て（マイナスの場合は0円）した金額が所得金額 ${yen(
+          estimate.taxableIncome
+        )} です（別表調整は考慮していません）。`,
     amount: estimate.taxableIncome,
   });
 
