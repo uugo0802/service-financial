@@ -8,6 +8,7 @@ import { TrendLineChart } from "@/components/dashboard/TrendLineChart";
 import { TrendBarChart } from "@/components/dashboard/TrendBarChart";
 import { ExpenseBreakdownChart } from "@/components/dashboard/ExpenseBreakdownChart";
 import { KpiTrendPanel } from "@/components/dashboard/KpiTrendPanel";
+import { BenchmarkPanel } from "@/components/dashboard/BenchmarkPanel";
 import { StatTile } from "@/components/dashboard/StatTile";
 import { PartnerReferralBanner } from "@/components/PartnerReferralBanner";
 import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferral";
@@ -45,9 +46,13 @@ export default function DashboardPage() {
   const monthlyTrend = useMemo(() => buildMonthlyTrend(transactions), [transactions]);
   const yearlyTrend = useMemo(() => buildYearlyTrend(transactions), [transactions]);
   const partnerCategories = useMemo(() => recommendPartnerCategories(yearlyTrend), [yearlyTrend]);
-  const expenseBreakdown = useMemo(
-    () => buildExpenseBreakdown([...transactions, ...SAMPLE_EXPENSE_CATEGORY_ROWS]),
+  const transactionsWithExpenseCategories = useMemo(
+    () => [...transactions, ...SAMPLE_EXPENSE_CATEGORY_ROWS],
     [transactions]
+  );
+  const expenseBreakdown = useMemo(
+    () => buildExpenseBreakdown(transactionsWithExpenseCategories),
+    [transactionsWithExpenseCategories]
   );
   const kpiTrend = useMemo(() => buildKpiTrend(yearlyTrend), [yearlyTrend]);
 
@@ -145,6 +150,10 @@ export default function DashboardPage() {
 
         <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
           <ExpenseBreakdownChart breakdown={expenseBreakdown} title="経費内訳（勘定科目別）" />
+        </section>
+
+        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+          <BenchmarkPanel rows={transactionsWithExpenseCategories} title="経費構成の参考比較（対売上比）" />
         </section>
 
         <PartnerReferralBanner categories={partnerCategories} />
