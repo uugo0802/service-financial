@@ -105,8 +105,9 @@ export function ApportionmentCalculator() {
 
       <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className={labelClass}>家事関連費の総額（円）</label>
+          <label className={labelClass} htmlFor="apportionment-total-amount">家事関連費の総額（円）</label>
           <input
+            id="apportionment-total-amount"
             type="number"
             min="0"
             value={totalAmount}
@@ -119,8 +120,9 @@ export function ApportionmentCalculator() {
         {basis === "floorArea" ? (
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>事業使用部分の床面積（m²）</label>
+              <label className={labelClass} htmlFor="apportionment-business-area-sqm">事業使用部分の床面積（m²）</label>
               <input
+                id="apportionment-business-area-sqm"
                 type="number"
                 min="0"
                 step="any"
@@ -131,8 +133,9 @@ export function ApportionmentCalculator() {
               />
             </div>
             <div>
-              <label className={labelClass}>住居全体の床面積（m²）</label>
+              <label className={labelClass} htmlFor="apportionment-total-area-sqm">住居全体の床面積（m²）</label>
               <input
+                id="apportionment-total-area-sqm"
                 type="number"
                 min="0"
                 step="any"
@@ -146,8 +149,9 @@ export function ApportionmentCalculator() {
         ) : (
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>1週間あたりの事業使用時間（時間）</label>
+              <label className={labelClass} htmlFor="apportionment-business-hours-per-week">1週間あたりの事業使用時間（時間）</label>
               <input
+                id="apportionment-business-hours-per-week"
                 type="number"
                 min="0"
                 step="any"
@@ -158,10 +162,11 @@ export function ApportionmentCalculator() {
               />
             </div>
             <div>
-              <label className={labelClass}>
+              <label className={labelClass} htmlFor="apportionment-total-hours-per-week">
                 1週間の総時間（未入力の場合は{DEFAULT_TOTAL_HOURS_PER_WEEK}時間＝24時間×7日）
               </label>
               <input
+                id="apportionment-total-hours-per-week"
                 type="number"
                 min="0"
                 step="any"

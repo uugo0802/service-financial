@@ -81,8 +81,9 @@ export function SimplifiedTaxationSimulator() {
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className={labelClass}>基準期間（原則2年前）の課税売上高（円）</label>
+          <label className={labelClass} htmlFor="simplified-base-year-taxable-sales">基準期間（原則2年前）の課税売上高（円）</label>
           <input
+            id="simplified-base-year-taxable-sales"
             type="number"
             min="0"
             value={baseYearTaxableSales}
@@ -110,8 +111,9 @@ export function SimplifiedTaxationSimulator() {
             {rows.map((row) => (
               <div key={row.key} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2 items-end">
                 <div>
-                  <label className={labelClass}>事業区分</label>
+                  <label className={labelClass} htmlFor={`simplified-row-category-${row.key}`}>事業区分</label>
                   <select
+                    id={`simplified-row-category-${row.key}`}
                     value={row.category}
                     onChange={(e) => updateRow(row.key, { category: Number(e.target.value) as SimplifiedBusinessCategory })}
                     className={inputClass}
@@ -124,8 +126,9 @@ export function SimplifiedTaxationSimulator() {
                   </select>
                 </div>
                 <div>
-                  <label className={labelClass}>課税売上高（円）</label>
+                  <label className={labelClass} htmlFor={`simplified-row-sales-${row.key}`}>課税売上高（円）</label>
                   <input
+                    id={`simplified-row-sales-${row.key}`}
                     type="number"
                     min="0"
                     value={row.taxableSales}
@@ -148,8 +151,9 @@ export function SimplifiedTaxationSimulator() {
         </div>
 
         <div className="border-t border-stone-200 pt-4">
-          <label className={labelClass}>原則課税を選んだ場合の当期の課税仕入高・実額（税抜、円）</label>
+          <label className={labelClass} htmlFor="simplified-actual-taxable-purchases">原則課税を選んだ場合の当期の課税仕入高・実額（税抜、円）</label>
           <input
+            id="simplified-actual-taxable-purchases"
             type="number"
             min="0"
             value={actualTaxablePurchases}
