@@ -53,8 +53,11 @@ export function BonusWithholdingCalculator() {
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className={labelClass}>賞与（ボーナス）の総支給額（円）</label>
+          <label className={labelClass} htmlFor="bonus-gross-amount">
+            賞与（ボーナス）の総支給額（円）
+          </label>
           <input
+            id="bonus-gross-amount"
             type="number"
             min="0"
             value={bonusGrossAmount}
@@ -66,8 +69,11 @@ export function BonusWithholdingCalculator() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>その賞与にかかる社会保険料（健康保険・厚生年金等、円）</label>
+            <label className={labelClass} htmlFor="bonus-insurance-premium">
+              その賞与にかかる社会保険料（健康保険・厚生年金等、円）
+            </label>
             <input
+              id="bonus-insurance-premium"
               type="number"
               min="0"
               value={bonusInsurancePremium}
@@ -77,8 +83,11 @@ export function BonusWithholdingCalculator() {
             />
           </div>
           <div>
-            <label className={labelClass}>前月の給与等の金額（社会保険料等控除後、円）</label>
+            <label className={labelClass} htmlFor="bonus-previous-month-salary">
+              前月の給与等の金額（社会保険料等控除後、円）
+            </label>
             <input
+              id="bonus-previous-month-salary"
               type="number"
               min="0"
               value={previousMonthSalaryAfterInsurance}
@@ -91,8 +100,11 @@ export function BonusWithholdingCalculator() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>扶養親族等の数（甲欄、0〜7人以上）</label>
+            <label className={labelClass} htmlFor="bonus-dependent-count">
+              扶養親族等の数（甲欄、0〜7人以上）
+            </label>
             <input
+              id="bonus-dependent-count"
               type="number"
               min="0"
               step="1"

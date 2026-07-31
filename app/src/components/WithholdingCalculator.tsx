@@ -49,8 +49,11 @@ export function WithholdingCalculator() {
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className={labelClass}>月額の役員報酬・給与（総支給額、円）</label>
+          <label className={labelClass} htmlFor="monthly-gross-compensation">
+            月額の役員報酬・給与（総支給額、円）
+          </label>
           <input
+            id="monthly-gross-compensation"
             type="number"
             min="0"
             value={monthlyGrossCompensation}
@@ -62,8 +65,11 @@ export function WithholdingCalculator() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>扶養親族等の数（甲欄、0〜7人以上）</label>
+            <label className={labelClass} htmlFor="withholding-dependent-count">
+              扶養親族等の数（甲欄、0〜7人以上）
+            </label>
             <input
+              id="withholding-dependent-count"
               type="number"
               min="0"
               step="1"
@@ -74,8 +80,11 @@ export function WithholdingCalculator() {
             />
           </div>
           <div>
-            <label className={labelClass}>その月の社会保険料（健康保険・厚生年金等、円）</label>
+            <label className={labelClass} htmlFor="withholding-insurance-premium">
+              その月の社会保険料（健康保険・厚生年金等、円）
+            </label>
             <input
+              id="withholding-insurance-premium"
               type="number"
               min="0"
               value={insurancePremium}

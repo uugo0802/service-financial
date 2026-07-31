@@ -59,8 +59,11 @@ export function YearEndAdjustmentCalculator() {
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className={labelClass}>年間の給与等の総支給額（月々の役員報酬・給与＋賞与の合計、円）</label>
+          <label className={labelClass} htmlFor="year-end-annual-gross-compensation">
+            年間の給与等の総支給額（月々の役員報酬・給与＋賞与の合計、円）
+          </label>
           <input
+            id="year-end-annual-gross-compensation"
             type="number"
             min="0"
             value={annualGrossCompensation}
@@ -72,8 +75,11 @@ export function YearEndAdjustmentCalculator() {
 
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>年間の社会保険料（健康保険・厚生年金等の合計、円）</label>
+            <label className={labelClass} htmlFor="year-end-annual-social-insurance">
+              年間の社会保険料（健康保険・厚生年金等の合計、円）
+            </label>
             <input
+              id="year-end-annual-social-insurance"
               type="number"
               min="0"
               value={annualSocialInsurancePremium}
@@ -83,8 +89,11 @@ export function YearEndAdjustmentCalculator() {
             />
           </div>
           <div>
-            <label className={labelClass}>扶養親族等の数（0〜7人以上）</label>
+            <label className={labelClass} htmlFor="year-end-dependent-count">
+              扶養親族等の数（0〜7人以上）
+            </label>
             <input
+              id="year-end-dependent-count"
               type="number"
               min="0"
               step="1"
@@ -97,10 +106,11 @@ export function YearEndAdjustmentCalculator() {
         </div>
 
         <div>
-          <label className={labelClass}>
+          <label className={labelClass} htmlFor="year-end-monthly-withholding-total">
             その年にすでに源泉徴収した所得税額の合計（月々の給与・賞与分、円）
           </label>
           <input
+            id="year-end-monthly-withholding-total"
             type="number"
             min="0"
             value={monthlyWithholdingTotal}
