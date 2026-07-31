@@ -17,6 +17,11 @@ export const TAX_CATEGORIES: TaxCategory[] = [
 
 const SUPPORTED_IMAGE_MEDIA_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
 
+// スキャンデータ読み込み対応（docs/business-plan.md 12章「csvファイル、手入力、カメラ入力からの画像認識、
+// スキャンデータ読み込み」）。PDFはClaude APIの document コンテンツブロックとして画像と同様に
+// vision処理へ渡せるため、別建てのPDF→画像変換は行わない（下記 classifyReceiptImage 参照）。
+const SUPPORTED_PDF_MEDIA_TYPES = ["application/pdf"];
+
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export interface OcrClassificationResult {
@@ -43,6 +48,15 @@ interface RawToolInput {
 
 export function isSupportedImageMediaType(mimeType: string): boolean {
   return SUPPORTED_IMAGE_MEDIA_TYPES.includes(mimeType);
+}
+
+export function isSupportedPdfMediaType(mimeType: string): boolean {
+  return SUPPORTED_PDF_MEDIA_TYPES.includes(mimeType);
+}
+
+/** 画像・PDF（スキャンデータ）のどちらかとしてレシートOCRアップロードに対応しているメディアタイプかどうか */
+export function isSupportedReceiptMediaType(mimeType: string): boolean {
+  return isSupportedImageMediaType(mimeType) || isSupportedPdfMediaType(mimeType);
 }
 
 /**
@@ -72,13 +86,22 @@ export function validateOcrToolInput(input: unknown): OcrClassificationResult | 
 }
 
 /**
- * レシート/請求書画像を Claude の vision 機能に直接渡し、OCR＋仕訳分類を1回のAPI呼び出しで完結させる
+ * レシート/請求書画像またはPDF（スキャンデータ、docs/business-plan.md 12章）を Claude の vision 機能に
+ * 直接渡し、OCR＋仕訳分類を1回のAPI呼び出しで完結させる
  * (docs/cto-tech-architecture.md 3.2章「レシート/請求書OCR」: 別建てのOCRサービスを挟まない方針)。
+ * PDFは事前にラスタ画像へ変換せず、Anthropic API の document コンテンツブロックとしてそのまま渡す
+ * （複数ページPDFの1ページ目のみを渡す想定。ページ数の事前検証は呼び出し側 (app/api/ocr/route.ts) が
+ * `imageMeta.ts` の `getPdfPageCount` を使って行う）。
  * ANTHROPIC_API_KEY が未設定、またはAPI呼び出しが失敗した場合は null を返す。
  */
 export async function classifyReceiptImage(image: { base64: string; mimeType: string }): Promise<OcrClassificationResult | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
+
+  const isPdf = isSupportedPdfMediaType(image.mimeType);
+  const documentContentBlock = isPdf
+    ? { type: "document" as const, source: { type: "base64" as const, media_type: image.mimeType, data: image.base64 } }
+    : { type: "image" as const, source: { type: "base64" as const, media_type: image.mimeType, data: image.base64 } };
 
   const body = {
     model: MODEL,
@@ -87,15 +110,12 @@ export async function classifyReceiptImage(image: { base64: string; mimeType: st
       {
         role: "user" as const,
         content: [
-          {
-            type: "image" as const,
-            source: { type: "base64" as const, media_type: image.mimeType, data: image.base64 },
-          },
+          documentContentBlock,
           {
             type: "text" as const,
             text:
               `あなたは日本の個人事業主・フリーランス・マイクロ法人の記帳を支援する会計アシスタントです。\n` +
-              `このレシート/請求書画像をOCRで読み取り、日付・取引先・金額を抽出したうえで、` +
+              `このレシート/請求書の${isPdf ? "PDF（スキャンデータ）" : "画像"}をOCRで読み取り、日付・取引先・金額を抽出したうえで、` +
               `青色申告決算書の勘定科目と消費税の税区分を判定してください。\n` +
               `日付は西暦のYYYY-MM-DD形式にしてください。読み取れない項目はnullとし、断定できない場合はconfidenceを低くしてください。\n`,
           },

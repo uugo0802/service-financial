@@ -1,5 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { hasRecommendedMinimumResolution, parseImageDimensions, RECOMMENDED_MIN_LONG_EDGE_PX } from "./imageMeta";
+import {
+  getPdfPageCount,
+  hasPdfSignature,
+  hasRecommendedMinimumResolution,
+  parseImageDimensions,
+  RECOMMENDED_MIN_LONG_EDGE_PX,
+} from "./imageMeta";
+
+/** 指定ページ数分の "/Type /Page" オブジェクトを含む最小限のPDFバイト列を組み立てる(CamScanner等の単純なスキャンPDF構造を模した簡易版) */
+function buildPdfBuffer(pageCount: number): ArrayBuffer {
+  const pageObjects = Array.from({ length: pageCount }, (_, i) => `${i + 3} 0 obj\n<< /Type /Page /Parent 2 0 R >>\nendobj\n`).join("");
+  const text =
+    `%PDF-1.4\n` +
+    `1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n` +
+    `2 0 obj\n<< /Type /Pages /Kids [] /Count ${pageCount} >>\nendobj\n` +
+    pageObjects +
+    `trailer\n<< /Root 1 0 R >>\n%%EOF`;
+  const bytes = new Uint8Array(text.length);
+  for (let i = 0; i < text.length; i++) bytes[i] = text.charCodeAt(i);
+  return bytes.buffer;
+}
 
 function writeUint32BE(bytes: Uint8Array, offset: number, value: number) {
   bytes[offset] = (value >>> 24) & 0xff;
@@ -191,6 +211,57 @@ describe("parseImageDimensions", () => {
       const result = parseImageDimensions(new ArrayBuffer(0), "image/jpeg");
       expect(result).toBeNull();
     });
+
+    it("returns null for a PDF (pixel dimensions/color are not determinable without rendering)", () => {
+      const result = parseImageDimensions(buildPdfBuffer(1), "application/pdf");
+      expect(result).toBeNull();
+    });
+  });
+});
+
+describe("hasPdfSignature", () => {
+  it("recognizes the %PDF- signature", () => {
+    expect(hasPdfSignature(new Uint8Array(buildPdfBuffer(1)))).toBe(true);
+  });
+
+  it("returns false for non-PDF bytes", () => {
+    expect(hasPdfSignature(new Uint8Array([0xff, 0xd8, 0xff, 0xd9]))).toBe(false);
+  });
+
+  it("returns false for an empty buffer", () => {
+    expect(hasPdfSignature(new Uint8Array(0))).toBe(false);
+  });
+});
+
+describe("getPdfPageCount", () => {
+  it("counts a single-page PDF as 1", () => {
+    expect(getPdfPageCount(buildPdfBuffer(1))).toBe(1);
+  });
+
+  it("counts a multi-page PDF correctly", () => {
+    expect(getPdfPageCount(buildPdfBuffer(5))).toBe(5);
+  });
+
+  it("returns null for a non-PDF buffer", () => {
+    const bytes = new Uint8Array([0xff, 0xd8, 0xff, 0xd9]);
+    expect(getPdfPageCount(bytes.buffer)).toBeNull();
+  });
+
+  it("returns null for an empty buffer", () => {
+    expect(getPdfPageCount(new ArrayBuffer(0))).toBeNull();
+  });
+
+  it("returns null (indeterminate) when no /Type /Page object can be found (e.g. compressed object streams)", () => {
+    const text = "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF";
+    const bytes = new Uint8Array(text.length);
+    for (let i = 0; i < text.length; i++) bytes[i] = text.charCodeAt(i);
+    expect(getPdfPageCount(bytes.buffer)).toBeNull();
+  });
+
+  it("does not miscount the /Type /Pages tree-root object as a page", () => {
+    // buildPdfBuffer already includes exactly one "/Type /Pages" object alongside the page objects;
+    // this asserts the (?!s) negative lookahead correctly excludes it from the page count.
+    expect(getPdfPageCount(buildPdfBuffer(2))).toBe(2);
   });
 });
 
