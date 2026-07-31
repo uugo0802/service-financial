@@ -187,6 +187,19 @@ describe("EXPENSE_RULES — case/whitespace variants", () => {
     expect(firstMatch(EXPENSE_RULES, "  AWS利用料  ")?.account).toBe("支払手数料(ソフトウェア利用料)");
     expect(firstMatch(EXPENSE_RULES, "\tAmazon購入\n")?.account).toBe("消耗品費");
   });
+
+  // Regression: an unbounded "AWS" substring match would also match "LAWSON" (L-AWS-ON),
+  // the convenience store chain, since LAWSON transactions on Japanese card statements are
+  // often rendered in English. Same class of bug as the past au/ANA/JR/JAL/ETC false positives.
+  it("does not misclassify LAWSON convenience-store purchases as an AWS software subscription", () => {
+    const rule = firstMatch(EXPENSE_RULES, "LAWSON 渋谷店");
+    expect(rule?.account).not.toBe("支払手数料(ソフトウェア利用料)");
+  });
+
+  it("still matches genuine AWS charges even when adjacent to other words", () => {
+    expect(firstMatch(EXPENSE_RULES, "AWS Japan K.K.")?.account).toBe("支払手数料(ソフトウェア利用料)");
+    expect(firstMatch(EXPENSE_RULES, "利用料 AWS 請求")?.account).toBe("支払手数料(ソフトウェア利用料)");
+  });
 });
 
 describe("INCOME_RULES", () => {
