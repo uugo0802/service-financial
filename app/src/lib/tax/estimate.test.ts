@@ -248,4 +248,72 @@ describe("estimateForIndividual", () => {
       expect(paperResult.blueReturnDeduction).toBe(100_000);
     });
   });
+
+  describe("loss carryforward (純損失の繰越控除)", () => {
+    // 事業所得（青色控除後）が4,262,000円になる、既存の最初のテストと同じ収支構成
+    const profitableRows = [
+      tx({ id: "1", amount: 8_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: -2_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
+      tx({ id: "3", amount: -108_000, account: "水道光熱費", taxCategory: "課税仕入8%(軽減)" }),
+    ];
+
+    it("is byte-for-byte identical to the baseline (no third argument) when omitted", () => {
+      const baseline = estimateForIndividual(profitableRows, { bookkeepingMethod: "double", filingMethod: "eTax" });
+      const withUndefined = estimateForIndividual(
+        profitableRows,
+        { bookkeepingMethod: "double", filingMethod: "eTax" },
+        undefined
+      );
+
+      expect(withUndefined).toEqual(baseline);
+      expect(baseline.lossCarryforward).toBeUndefined();
+      expect(baseline.assumptions.at(-1)).toContain("考慮していません");
+    });
+
+    it("fully absorbs a single prior-year loss smaller than this year's income after the blue-return deduction", () => {
+      const result = estimateForIndividual(
+        profitableRows,
+        { bookkeepingMethod: "double", filingMethod: "eTax" },
+        { currentFiscalYear: 2026, priorLosses: [{ fiscalYear: 2025, remainingLoss: 1_000_000 }] }
+      );
+
+      // 事業所得(青色控除後) 5,242,000 - 100万円繰越控除 - 基礎控除48万円 = 3,762,000
+      expect(result.businessProfit).toBe(5_892_000);
+      expect(result.blueReturnDeduction).toBe(650_000);
+      expect(result.lossCarryforward?.totalDeduction).toBe(1_000_000);
+      expect(result.lossCarryforward?.incomeAfterCarryforward).toBe(4_242_000);
+      expect(result.taxableIncome).toBe(3_762_000);
+      expect(result.assumptions.at(-1)).toContain("1,000,000円");
+    });
+
+    it("partially carries a loss forward across multiple prior years (oldest used first)", () => {
+      const result = estimateForIndividual(profitableRows, undefined, {
+        currentFiscalYear: 2026,
+        priorLosses: [
+          { fiscalYear: 2024, remainingLoss: 3_000_000 },
+          { fiscalYear: 2025, remainingLoss: 3_000_000 },
+        ],
+      });
+
+      // 事業所得(青色控除55万円後) = 5,342,000。繰越控除は所得を上回るため全額吸収され、課税所得は0。
+      expect(result.lossCarryforward?.totalDeduction).toBe(5_342_000);
+      expect(result.lossCarryforward?.incomeAfterCarryforward).toBe(0);
+      expect(result.taxableIncome).toBe(0);
+      expect(result.lossCarryforward?.usage[0]).toMatchObject({ fiscalYear: 2024, status: "used" });
+      expect(result.lossCarryforward?.usage[1]).toMatchObject({ fiscalYear: 2025, status: "partially_used" });
+    });
+
+    it("does not apply an expired (more than 3 years old) prior-year loss", () => {
+      const result = estimateForIndividual(profitableRows, undefined, {
+        currentFiscalYear: 2026,
+        priorLosses: [{ fiscalYear: 2021, remainingLoss: 500_000 }], // age = 5, past the 3-year window
+      });
+
+      expect(result.lossCarryforward?.totalDeduction).toBe(0);
+      expect(result.lossCarryforward?.usage[0].status).toBe("expired");
+      expect(result.taxableIncome).toBe(
+        estimateForIndividual(profitableRows).taxableIncome // same as if no loss data had been supplied
+      );
+    });
+  });
 });

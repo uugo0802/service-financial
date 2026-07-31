@@ -167,4 +167,83 @@ describe("estimateForMicroCorp", () => {
     expect(result.consumptionTax.isLikelyExempt).toBe(true);
     expect(result.consumptionTax.payable).toBe(0);
   });
+
+  describe("loss carryforward (繰越欠損金)", () => {
+    const profitableRows = [
+      tx({ id: "1", amount: 5_500_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 2_200_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "3", amount: -1_100_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
+      tx({ id: "4", amount: -270_000, account: "会議費", taxCategory: "課税仕入8%(軽減)" }),
+    ];
+    // revenue = 7,700,000; expenses = 1,370,000; taxableIncome (no carryforward) = 6,330,000
+
+    it("is byte-for-byte identical to the baseline when the second argument is omitted or undefined", () => {
+      const baseline = estimateForMicroCorp(profitableRows);
+      const withUndefined = estimateForMicroCorp(profitableRows, undefined);
+
+      expect(withUndefined).toEqual(baseline);
+      expect(baseline.lossCarryforward).toBeUndefined();
+      expect(baseline.taxableIncome).toBe(6_330_000);
+      expect(baseline.assumptions.at(-1)).toContain("考慮していません");
+    });
+
+    it("fully absorbs a single prior-year loss smaller than this year's income", () => {
+      const result = estimateForMicroCorp(profitableRows, {
+        currentFiscalYear: 2026,
+        priorLosses: [{ fiscalYear: 2025, remainingLoss: 2_000_000 }],
+      });
+
+      expect(result.lossCarryforward?.totalDeduction).toBe(2_000_000);
+      expect(result.lossCarryforward?.incomeAfterCarryforward).toBe(4_330_000);
+      expect(result.taxableIncome).toBe(4_330_000);
+      // Corporate tax should now be computed on the reduced base: 4,330,000 * 15%
+      expect(result.corporateTax).toBe(649_500);
+      expect(result.assumptions.at(-1)).toContain("2,000,000円");
+    });
+
+    it("partially carries a loss forward across multiple prior years (oldest used first)", () => {
+      const result = estimateForMicroCorp(profitableRows, {
+        currentFiscalYear: 2026,
+        priorLosses: [
+          { fiscalYear: 2020, remainingLoss: 4_000_000 },
+          { fiscalYear: 2023, remainingLoss: 4_000_000 },
+        ],
+      });
+
+      // 6,330,000 of income offsets the full 2020 loss (4,000,000) then 2,330,000 of the 2023 loss
+      expect(result.lossCarryforward?.totalDeduction).toBe(6_330_000);
+      expect(result.lossCarryforward?.incomeAfterCarryforward).toBe(0);
+      expect(result.taxableIncome).toBe(0);
+      expect(result.corporateTax).toBe(0);
+      expect(result.lossCarryforward?.usage[0]).toMatchObject({ fiscalYear: 2020, status: "used" });
+      expect(result.lossCarryforward?.usage[1]).toMatchObject({
+        fiscalYear: 2023,
+        usedThisYear: 2_330_000,
+        status: "partially_used",
+      });
+    });
+
+    it("does not apply a prior-year loss older than the 10-year corporate carryforward window", () => {
+      const result = estimateForMicroCorp(profitableRows, {
+        currentFiscalYear: 2026,
+        priorLosses: [{ fiscalYear: 2015, remainingLoss: 1_000_000 }], // age = 11, past the 10-year window
+      });
+
+      expect(result.lossCarryforward?.totalDeduction).toBe(0);
+      expect(result.lossCarryforward?.usage[0].status).toBe("expired");
+      expect(result.taxableIncome).toBe(estimateForMicroCorp(profitableRows).taxableIncome);
+    });
+
+    it("respects an explicit deductionCapRatio (e.g. a large-corporation 50% limit)", () => {
+      const result = estimateForMicroCorp(profitableRows, {
+        currentFiscalYear: 2026,
+        priorLosses: [{ fiscalYear: 2025, remainingLoss: 6_000_000 }],
+        deductionCapRatio: 0.5,
+      });
+
+      // Cap = floor(6,330,000 * 0.5) = 3,165,000
+      expect(result.lossCarryforward?.totalDeduction).toBe(3_165_000);
+      expect(result.taxableIncome).toBe(3_165_000);
+    });
+  });
 });

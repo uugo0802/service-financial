@@ -1,4 +1,5 @@
 import { CategorizedTransaction } from "../categorize/engine";
+import { applyIndividualLossCarryforward, LossCarryforwardResult, PriorYearLoss } from "./lossCarryforward";
 
 // ------------------------------------------------------------------
 // 免責: これは確定申告書の正式な計算ではなく、概算シミュレーションです。
@@ -95,6 +96,17 @@ function extractTax(amountInclusive: number, ratePercent: number): number {
 const SOCIAL_INSURANCE_ACCOUNT = "社会保険料(個人)";
 const LIFE_INSURANCE_ACCOUNT = "生命保険料(個人)";
 
+/**
+ * 青色申告の純損失繰越控除（所得税法70条、翌年以後3年間）を適用するためのオプション入力。
+ * 省略した場合、繰越控除は一切考慮されません（従来どおりの挙動）。
+ */
+export interface IndividualLossCarryforwardInput {
+  /** 概算対象の年度（例: 2026）。繰越期限（3年）の判定に使用します */
+  currentFiscalYear: number;
+  /** 前年以前から繰り越されている未使用の純損失一覧（例: yearArchive.ts の記録から算出） */
+  priorLosses: PriorYearLoss[];
+}
+
 export interface IndividualEstimate {
   totalIncome: number;
   totalExpense: number; // 事業の必要経費のみ（社会保険料・生命保険料等の個人的な支払いは含まない）
@@ -102,7 +114,9 @@ export interface IndividualEstimate {
   socialInsuranceDeduction: number; // 社会保険料控除（国民健康保険・国民年金など、全額控除）
   lifeInsurancePaidInfo: number; // 生命保険料の年間支払額（参考表示のみ。控除額の上限計算は未対応）
   blueReturnDeduction: number; // 青色申告特別控除額（記帳方法・申告方法に応じて65万/55万/10万円）
-  taxableIncome: number; // 事業所得 - 青色控除 - 社会保険料控除 - 基礎控除（他の所得控除は考慮しない）
+  /** 純損失の繰越控除の適用結果。lossCarryforwardOptions未指定の場合はundefined（従来どおり考慮しない） */
+  lossCarryforward?: LossCarryforwardResult;
+  taxableIncome: number; // 事業所得 - 青色控除 - 純損失繰越控除 - 社会保険料控除 - 基礎控除（他の所得控除は考慮しない）
   incomeTax: { tax: number; marginalRate: number };
   reconstructionSurtax: number; // 復興特別所得税（所得税額×2.1%）
   totalIncomeTax: number; // 所得税及び復興特別所得税の額
@@ -117,7 +131,8 @@ export interface IndividualEstimate {
 
 export function estimateForIndividual(
   rows: CategorizedTransaction[],
-  options?: BlueReturnDeductionOptions
+  options?: BlueReturnDeductionOptions,
+  lossCarryforwardOptions?: IndividualLossCarryforwardInput
 ): IndividualEstimate {
   const { amount: blueReturnDeduction, note: blueReturnDeductionNote } = resolveBlueReturnDeduction(options);
 
@@ -139,9 +154,27 @@ export function estimateForIndividual(
     .filter((r) => r.account === LIFE_INSURANCE_ACCOUNT)
     .reduce((sum, r) => sum + Math.abs(r.amount), 0);
 
+  // 事業所得（収入 - 必要経費 - 青色申告特別控除）。純損失の繰越控除は、この事業所得
+  // （総所得金額相当額）に対して適用し、その後で社会保険料控除・基礎控除等の他の
+  // 所得控除を差し引くのが正しい順序（所得税の計算構造上、繰越控除は所得控除より前）。
+  const businessIncomeAfterBlueDeduction = businessProfit - blueReturnDeduction;
+  const lossCarryforward = lossCarryforwardOptions
+    ? applyIndividualLossCarryforward(
+        lossCarryforwardOptions.currentFiscalYear,
+        businessIncomeAfterBlueDeduction,
+        lossCarryforwardOptions.priorLosses
+      )
+    : undefined;
+  // lossCarryforwardOptions未指定時はlossCarryforwardがundefinedとなり、
+  // incomeAfterLossCarryforwardはbusinessIncomeAfterBlueDeductionとそのまま等しくなる
+  // （繰越控除がなかった従来の計算式と完全に同一の値・同一の演算になる）。
+  const incomeAfterLossCarryforward = lossCarryforward
+    ? lossCarryforward.incomeAfterCarryforward
+    : businessIncomeAfterBlueDeduction;
+
   const taxableIncome = Math.max(
     0,
-    Math.floor((businessProfit - blueReturnDeduction - socialInsuranceDeduction - BASIC_DEDUCTION) / 1000) * 1000
+    Math.floor((incomeAfterLossCarryforward - socialInsuranceDeduction - BASIC_DEDUCTION) / 1000) * 1000
   );
   const { tax, rate } = calcIncomeTax(taxableIncome);
   const reconstructionSurtax = Math.floor(tax * RECONSTRUCTION_SURTAX_RATE);
@@ -173,6 +206,7 @@ export function estimateForIndividual(
     socialInsuranceDeduction,
     lifeInsurancePaidInfo,
     blueReturnDeduction,
+    lossCarryforward,
     taxableIncome,
     incomeTax: { tax, marginalRate: rate },
     reconstructionSurtax,
@@ -190,6 +224,11 @@ export function estimateForIndividual(
       "消費税は金額を税込として扱い、税率から逆算した概算です（簡易課税は考慮していません）",
       "課税売上高が1,000万円以下の場合、基準期間の実績次第で免税事業者となる可能性があります",
       "住民税・事業税は含まれていません",
+      lossCarryforward
+        ? `青色申告の純損失の繰越控除（翌年以後3年間）として${lossCarryforward.totalDeduction.toLocaleString("ja-JP")}円を所得から控除しています。入力された前年以前の繰越損失額に基づく概算であり、期限切れ・控除額の最終確認は必ずご自身（または税理士）で行ってください${
+            lossCarryforward.notes.length > 0 ? "。" + lossCarryforward.notes.join("。") : ""
+          }`
+        : "青色申告の純損失の繰越控除（前年以前3年間の赤字の繰越）は考慮していません。過去に赤字（純損失）があり繰越控除の適用を受けたい場合は、繰越損失データを入力してください",
     ],
   };
 }
