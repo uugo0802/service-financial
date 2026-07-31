@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 import { LegalFooterLinks } from "@/components/LegalFooterLinks";
 import "./globals.css";
 
@@ -43,6 +44,7 @@ export default function RootLayout({
         <div className="flex-1">{children}</div>
         <LegalFooterLinks />
         <ServiceWorkerRegister />
+        <InstallPromptBanner />
       </body>
     </html>
   );
