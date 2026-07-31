@@ -128,4 +128,17 @@ describe("splitParagraphs", () => {
       }
     }
   });
+
+  it("returns an empty array for an empty string", () => {
+    expect(splitParagraphs("")).toEqual([]);
+  });
+
+  it("returns an empty array for a body consisting only of blank-line separators", () => {
+    expect(splitParagraphs("\n\n\n\n")).toEqual([]);
+  });
+
+  it("trims leading/trailing whitespace from each paragraph", () => {
+    const body = "  段落A。  \n\n  段落B。  ";
+    expect(splitParagraphs(body)).toEqual(["段落A。", "段落B。"]);
+  });
 });

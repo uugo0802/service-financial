@@ -57,4 +57,23 @@ describe("PRICING_PLANS", () => {
       expect(new Set(plan.features).size).toBe(plan.features.length);
     }
   });
+
+  it("has ids that are lowercase-kebab-case-ish (safe to embed in a URL/DOM id)", () => {
+    for (const plan of PRICING_PLANS) {
+      expect(plan.id).toMatch(/^[a-z0-9-]+$/);
+    }
+  });
+
+  it("orders plans by ascending monthly price (freelance cheaper than micro-corp)", () => {
+    for (let i = 1; i < PRICING_PLANS.length; i++) {
+      expect(PRICING_PLANS[i].monthlyPriceFrom).toBeGreaterThanOrEqual(PRICING_PLANS[i - 1].monthlyPriceFrom);
+    }
+  });
+});
+
+describe("TAX_ACCOUNTANT_MONTHLY_FEE_RANGE", () => {
+  it("has a positive range where the minimum is strictly less than the maximum", () => {
+    expect(TAX_ACCOUNTANT_MONTHLY_FEE_RANGE.minYen).toBeGreaterThan(0);
+    expect(TAX_ACCOUNTANT_MONTHLY_FEE_RANGE.maxYen).toBeGreaterThan(TAX_ACCOUNTANT_MONTHLY_FEE_RANGE.minYen);
+  });
 });

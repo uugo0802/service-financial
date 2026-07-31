@@ -87,6 +87,16 @@ describe("enrollTotpFactor", () => {
 
     expect(result).toEqual({ data: null, error: "enroll failed" });
   });
+
+  it("falls back to a default Japanese error message when Supabase returns no data and no error", async () => {
+    mockClient({
+      enroll: vi.fn().mockResolvedValue({ data: null, error: null }),
+    });
+
+    const result = await enrollTotpFactor();
+
+    expect(result).toEqual({ data: null, error: "TOTPの登録に失敗しました" });
+  });
 });
 
 describe("verifyTotpFactor", () => {
@@ -198,6 +208,26 @@ describe("listTotpFactors", () => {
     const result = await listTotpFactors();
 
     expect(result).toEqual({ data: null, error: "not authenticated" });
+  });
+
+  it("falls back to a default Japanese error message when Supabase returns no data and no error", async () => {
+    mockClient({
+      listFactors: vi.fn().mockResolvedValue({ data: null, error: null }),
+    });
+
+    const result = await listTotpFactors();
+
+    expect(result).toEqual({ data: null, error: "2要素認証の一覧取得に失敗しました" });
+  });
+
+  it("returns an empty array (not an error) when the user has no factors of any type", async () => {
+    mockClient({
+      listFactors: vi.fn().mockResolvedValue({ data: { all: [] }, error: null }),
+    });
+
+    const result = await listTotpFactors();
+
+    expect(result).toEqual({ data: [], error: null });
   });
 });
 

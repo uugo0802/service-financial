@@ -183,3 +183,69 @@ describe("buildWeeklyDigest - invalid input", () => {
     );
   });
 });
+
+describe("buildWeeklyDigest - pending review confidence boundary", () => {
+  it("does not count a transaction with confidence exactly at the escalation threshold (0.75) as pending review", () => {
+    const digest = buildWeeklyDigest({
+      asOf: "2026-01-10",
+      categorizedTransactions: [lowConfidenceTx({ id: "tx-boundary", confidence: 0.75 })],
+      filing: { entityType: "individual" },
+    });
+
+    expect(digest.pendingReviewCount).toBe(0);
+  });
+
+  it("counts a transaction just below the escalation threshold as pending review", () => {
+    const digest = buildWeeklyDigest({
+      asOf: "2026-01-10",
+      categorizedTransactions: [lowConfidenceTx({ id: "tx-just-below", confidence: 0.7499 })],
+      filing: { entityType: "individual" },
+    });
+
+    expect(digest.pendingReviewCount).toBe(1);
+  });
+});
+
+describe("buildWeeklyDigest - isolated headline segments", () => {
+  it("mentions only the unreconciled count when review queue is empty and no deadline is near-term", () => {
+    const digest = buildWeeklyDigest({
+      asOf: "2026-01-10",
+      filing: { entityType: "individual" },
+      reconciliations: [reconciliation({ isReconciled: false, transactionCount: 4 })],
+    });
+
+    expect(digest.pendingReviewCount).toBe(0);
+    expect(digest.upcomingDeadlines).toEqual([]);
+    expect(digest.headline).toBe("今週対応が必要な項目: 銀行残高が未突合の取引が4件");
+  });
+
+  it("says 'due today' (本日が期限) when the soonest deadline's daysRemaining is 0", () => {
+    const digest = buildWeeklyDigest({ asOf: "2026-03-15", filing: { entityType: "individual" } });
+
+    const incomeTax = digest.upcomingDeadlines.find((d) => d.id === "individual-income-tax");
+    expect(incomeTax?.daysRemaining).toBe(0);
+    expect(digest.headline).toContain("本日が期限");
+  });
+});
+
+describe("buildWeeklyDigest - zero-width deadline window", () => {
+  it("with upcomingDeadlineWindowDays=0, only includes a deadline that is due today", () => {
+    const digest = buildWeeklyDigest({
+      asOf: "2026-03-15",
+      filing: { entityType: "individual" },
+      upcomingDeadlineWindowDays: 0,
+    });
+
+    expect(digest.upcomingDeadlines.map((d) => d.id)).toEqual(["individual-income-tax"]);
+  });
+
+  it("with upcomingDeadlineWindowDays=0, excludes deadlines that are one or more days away", () => {
+    const digest = buildWeeklyDigest({
+      asOf: "2026-03-14",
+      filing: { entityType: "individual" },
+      upcomingDeadlineWindowDays: 0,
+    });
+
+    expect(digest.upcomingDeadlines).toEqual([]);
+  });
+});
