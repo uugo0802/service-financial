@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import type { Session } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/db/supabaseClient";
 import { signInWithMagicLink, signOut } from "@/lib/auth/authClient";
@@ -143,6 +144,9 @@ export default function LoginPage() {
                 >
                   {status === "sending" ? "送信中…" : "ログインリンクを送る"}
                 </button>
+                <Link href="/reset-password" className="text-xs text-stone-500 underline underline-offset-2 self-start">
+                  パスワードをお忘れですか？
+                </Link>
               </form>
             )}
           </section>
