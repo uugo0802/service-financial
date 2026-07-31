@@ -33,9 +33,13 @@ function calcIncomeTax(taxableIncome: number): { tax: number; rate: number } {
   return { tax, rate: bracket.rate };
 }
 
-/** 税込金額から消費税額を抜き出す（総額表示前提） */
+/**
+ * 税込金額から消費税額を抜き出す（総額表示前提）。
+ * 消費税額は切り捨て（円未満切り捨て）で算出する。四捨五入すると本来の納税額より
+ * 過大に算出されてしまう。
+ */
 function extractTax(amountInclusive: number, ratePercent: number): number {
-  return Math.round((amountInclusive * ratePercent) / (100 + ratePercent));
+  return Math.floor((amountInclusive * ratePercent) / (100 + ratePercent));
 }
 
 const SOCIAL_INSURANCE_ACCOUNT = "社会保険料(個人)";
@@ -65,7 +69,10 @@ export function estimateForIndividual(rows: CategorizedTransaction[]): Individua
   const allExpense = rows.filter((r) => r.amount < 0);
   const businessExpense = allExpense.filter((r) => !r.personalDeductionOnly);
 
-  const totalIncome = income.reduce((sum, r) => sum + r.amount, 0);
+  // 借入金の実行・出資の払込み等（excludeFromIncome）は負債・純資産の増加であり、事業の
+  // 収入金額ではないため、収入合計・事業所得・免税判定のいずれからも除外する。
+  const businessIncome = income.filter((r) => !r.excludeFromIncome);
+  const totalIncome = businessIncome.reduce((sum, r) => sum + r.amount, 0);
   const totalExpense = businessExpense.reduce((sum, r) => sum + Math.abs(r.amount), 0);
   const businessProfit = totalIncome - totalExpense;
 
@@ -83,16 +90,24 @@ export function estimateForIndividual(rows: CategorizedTransaction[]): Individua
   const { tax, rate } = calcIncomeTax(taxableIncome);
   const reconstructionSurtax = Math.floor(tax * RECONSTRUCTION_SURTAX_RATE);
 
-  const salesTax10 = income
+  // 消費税額は取引ごとに端数処理してから合算するのではなく、税率区分ごとに税込金額を
+  // まず合計し、その合計額に対して1回だけ端数処理（円未満切り捨て）する（「割戻し計算」）。
+  // 取引ごとに端数処理してから合算すると、個々の端数処理誤差が積み重なり、本来の税額から
+  // ずれてしまう（例: 105円・115円の売上2件は取引ごとの切り捨てだと9円+10円=19円になるが、
+  // 合計220円を1回だけ切り捨てると正しくは20円になる）。
+  const salesInclusive10 = businessIncome
     .filter((r) => r.taxCategory === "課税売上10%")
-    .reduce((sum, r) => sum + extractTax(r.amount, 10), 0);
+    .reduce((sum, r) => sum + r.amount, 0);
+  const salesTax10 = extractTax(salesInclusive10, 10);
 
-  const purchaseTax10 = businessExpense
+  const purchaseInclusive10 = businessExpense
     .filter((r) => r.taxCategory === "課税仕入10%")
-    .reduce((sum, r) => sum + extractTax(Math.abs(r.amount), 10), 0);
-  const purchaseTax8 = businessExpense
+    .reduce((sum, r) => sum + Math.abs(r.amount), 0);
+  const purchaseTax10 = extractTax(purchaseInclusive10, 10);
+  const purchaseInclusive8 = businessExpense
     .filter((r) => r.taxCategory === "課税仕入8%(軽減)")
-    .reduce((sum, r) => sum + extractTax(Math.abs(r.amount), 8), 0);
+    .reduce((sum, r) => sum + Math.abs(r.amount), 0);
+  const purchaseTax8 = extractTax(purchaseInclusive8, 8);
 
   const isLikelyExempt = totalIncome <= 10_000_000;
 

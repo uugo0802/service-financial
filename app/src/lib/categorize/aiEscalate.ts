@@ -1,5 +1,5 @@
 import { CategorizedTransaction, Transaction } from "./engine";
-import { TaxCategory } from "./dictionary";
+import { isExcludeFromIncomeAccount, isPersonalDeductionOnlyAccount, TaxCategory } from "./dictionary";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-haiku-4-5";
@@ -131,6 +131,15 @@ export async function escalateWithAi(
       confidence: ai.confidence,
       source: "ai" as const,
       note: ai.reasoning,
+      // AIが返すのは勘定科目名のみで、どのルールにも一致していない（＝ルールが持つ
+      // personalDeductionOnly/excludeFromIncomeを直接引き継げない）。row側の古い値
+      // （エスカレーション前のフォールバック分類が持っていた値、常にundefined）を
+      // そのまま残すと、AIが「社会保険料(個人)」「生命保険料(個人)」「借入金」「元入金」
+      // 等のpersonalDeductionOnly/excludeFromIncome対象科目に分類した取引が、事業の
+      // 必要経費・収入金額の集計にそのまま混入してしまう（dictionary.ts参照）。
+      // 科目名から曖昧でない場合のみ再引き当てする。
+      personalDeductionOnly: isPersonalDeductionOnlyAccount(ai.account) ? true : undefined,
+      excludeFromIncome: isExcludeFromIncomeAccount(ai.account) ? true : undefined,
     };
   });
 

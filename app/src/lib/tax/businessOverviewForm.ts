@@ -29,7 +29,9 @@ function extractMonth(date: string): string {
 }
 
 export function buildMonthlySalesTrend(rows: CategorizedTransaction[]): MonthlySales[] {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資の払込み等（excludeFromIncome）は事業の売上ではないため、
+  // 「売上高の月別推移」には含めない。
+  const income = rows.filter((r) => r.amount > 0 && !r.excludeFromIncome);
   const byMonth = new Map<string, { amount: number; count: number }>();
 
   for (const r of income) {

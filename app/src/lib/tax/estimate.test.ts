@@ -58,12 +58,12 @@ describe("estimateForIndividual", () => {
     expect(result.reconstructionSurtax).toBe(8_922);
     expect(result.totalIncomeTax).toBe(433_822);
 
-    // 消費税: 税込金額から税率で逆算
+    // 消費税: 税込金額から税率で逆算（円未満切り捨て。8,000,000×10/110=727,272.72...→727,272）
     expect(result.consumptionTax).toEqual({
       isLikelyExempt: true,
-      salesTax: 727_273,
+      salesTax: 727_272,
       purchaseTax: 189_818,
-      payable: 537_455,
+      payable: 537_454,
     });
   });
 
@@ -110,6 +110,57 @@ describe("estimateForIndividual", () => {
     ]);
     expect(justAbove.taxableIncome).toBe(1_951_000);
     expect(justAbove.incomeTax).toEqual({ tax: 97_600, marginalRate: 10 });
+  });
+
+  // Regression: loan proceeds and capital contributions are balance-sheet items, not business
+  // revenue. Before excludeFromIncome was honored here, a business loan drawdown or capital
+  // injection (both routinely categorized this way by the rule dictionary) would have been
+  // summed into totalIncome/businessProfit exactly like a sale, inflating taxable income and
+  // the tax due, and could incorrectly flip the consumption-tax exemption threshold.
+  it("excludes loan proceeds and capital contributions from income, profit, and the exemption threshold", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({
+        id: "2",
+        amount: 5_000_000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({
+        id: "3",
+        amount: 2_000_000,
+        account: "元入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({ id: "4", amount: -1_000_000, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+
+    const result = estimateForIndividual(rows);
+
+    expect(result.totalIncome).toBe(3_000_000);
+    expect(result.businessProfit).toBe(2_000_000);
+    // Total cash in (10,000,000) is well over the 10,000,000 exemption threshold, but actual
+    // business income is only 3,000,000, so this should still read as likely-exempt.
+    expect(result.consumptionTax.isLikelyExempt).toBe(true);
+  });
+
+  // Regression: consumption tax on sales/purchases must be derived from the aggregated
+  // tax-inclusive total per rate, not from summing each transaction's individually-truncated
+  // tax. Summing per-transaction truncations loses fractional yen on every row instead of just
+  // once on the combined total, so the estimate can drift away from the amount the
+  // aggregate-based 割戻し計算 method would produce.
+  it("derives consumption tax on sales from the aggregated taxable total, not from summed per-transaction truncations", () => {
+    const rows = [
+      tx({ id: "1", amount: 105, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 115, account: "売上高", taxCategory: "課税売上10%" }),
+    ];
+    const result = estimateForIndividual(rows);
+
+    // Per-transaction: floor(105*10/110)=9, floor(115*10/110)=10 -> summed = 19 (wrong).
+    // Aggregated: floor(220*10/110) = 20 (correct).
+    expect(result.consumptionTax.salesTax).toBe(20);
   });
 
   it("treats total income at or below ¥10,000,000 as likely exempt from consumption tax", () => {

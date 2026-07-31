@@ -84,7 +84,9 @@ const STANDARD_DISPLAY_LABEL: Record<string, string> = {
 };
 
 export function buildBlueReturnStatement(rows: CategorizedTransaction[]): BlueReturnStatement {
-  const income = rows.filter((r) => r.amount > 0);
+  // 借入金の実行・出資（元入金）の払込み等（excludeFromIncome）は貸借対照表項目であり、
+  // 青色申告決算書の「収入金額」（事業の売上）には含めない。
+  const income = rows.filter((r) => r.amount > 0 && !r.excludeFromIncome);
   const expense = rows.filter((r) => r.amount < 0 && !r.personalDeductionOnly);
 
   const salesTotal = income.reduce((s, r) => s + r.amount, 0);

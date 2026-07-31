@@ -238,4 +238,25 @@ describe("buildBlueReturnStatement", () => {
     expect(statement.otherExpenseLines).toEqual([]);
     expect(statement.standardExpenseLines).toHaveLength(16);
   });
+
+  // Regression: 青色申告決算書の「収入金額」は事業の売上のみを指し、借入金の実行や
+  // 出資（元入金）の払込みのような貸借対照表項目は含まない。
+  it("excludes loan proceeds and capital contributions from the 収入 (sales) total", () => {
+    const rows = [
+      tx({ id: "1", amount: 1_000_000, account: "売上高" }),
+      tx({
+        id: "2",
+        amount: 4_000_000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({ id: "3", amount: -100_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
+    ];
+
+    const statement = buildBlueReturnStatement(rows);
+
+    expect(statement.salesTotal).toBe(1_000_000);
+    expect(statement.incomeBeforeBlueDeduction).toBe(900_000);
+  });
 });

@@ -104,6 +104,63 @@ describe("buildConsumptionTaxForm", () => {
     expect(overThreshold.isLikelyExempt).toBe(false);
   });
 
+  // Regression: 免税判定に使う totalIncome（isLikelyExempt の基準）に、借入金の実行や
+  // 出資の払込みのような課税売上に該当しない資金調達を含めてはならない。含めてしまうと、
+  // 実際の課税売上高が1,000万円以下でも、借入・出資の分だけ合計が押し上げられて誤って
+  // 「免税事業者ではない」と判定されてしまう。
+  it("does not let loan proceeds or capital contributions push isLikelyExempt to false", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, taxCategory: "課税売上10%", account: "売上高" }),
+      tx({
+        id: "2",
+        amount: 8_000_000,
+        taxCategory: "対象外",
+        account: "借入金",
+        excludeFromIncome: true,
+      }),
+    ];
+    const form = buildConsumptionTaxForm(rows);
+    expect(form.isLikelyExempt).toBe(true);
+  });
+
+  // Regression: ②消費税額 must be derived from the aggregated, 1,000-yen-truncated taxable
+  // base (①) rather than by truncating each transaction's tax split individually and summing
+  // the results. Two sales of ¥1,100 and ¥550 (tax-inclusive, 10%) have taxable bases of ¥1,000
+  // and ¥500 respectively (¥1,500 combined), which ① truncates down to ¥1,000 ->
+  // ②=floor(1,000*7.8/100)=78円. Summing each transaction's own truncated tax first
+  // (78円+39円=117円) ignores the 1,000-yen rounding that applies to the aggregate base, and
+  // materially overstates the tax due.
+  it("derives 消費税額 from the aggregated, 1,000-yen-truncated taxable base rather than summing per-transaction splits", () => {
+    const rows = [
+      tx({ id: "1", amount: 1_100, taxCategory: "課税売上10%", account: "売上高" }),
+      tx({ id: "2", amount: 550, taxCategory: "課税売上10%", account: "売上高" }),
+    ];
+    const form = buildConsumptionTaxForm(rows);
+
+    expect(form.taxStandardBase).toBe(1_000);
+    expect(form.taxOnSales).toBe(78);
+    // The pre-fix (buggy) per-transaction-summed result would have been 117.
+    expect(form.taxOnSales).not.toBe(117);
+  });
+
+  // Regression: 控除対象仕入税額 must likewise be computed by summing the tax-inclusive purchase
+  // amounts per rate first and truncating once, not by truncating each transaction's split
+  // individually and summing the truncated results. Two purchases of ¥21 each (10%,
+  // tax-inclusive) individually truncate to ¥0 deductible tax each (floor(21*10/110)=1 ->
+  // floor(1*7.8/10)=0), but the combined ¥42 truncates to national tax ¥2
+  // (floor(42*10/110)=3 -> floor(3*7.8/10)=2): summing per-transaction results understates it.
+  it("derives 控除対象仕入税額 from the aggregated purchase amount rather than summing per-transaction splits", () => {
+    const rows = [
+      tx({ id: "1", amount: -21, taxCategory: "課税仕入10%", account: "外注費" }),
+      tx({ id: "2", amount: -21, taxCategory: "課税仕入10%", account: "外注費" }),
+    ];
+    const form = buildConsumptionTaxForm(rows);
+
+    expect(form.deductibleInputTax).toBe(2);
+    // The pre-fix (buggy) per-transaction-summed result would have been 0.
+    expect(form.deductibleInputTax).not.toBe(0);
+  });
+
   it("returns all zeros for an empty input", () => {
     const form = buildConsumptionTaxForm([]);
     expect(form).toEqual({

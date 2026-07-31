@@ -25,16 +25,33 @@ export interface CategoryRule {
    * マイクロ法人モードでは通常の経費として扱う（会社が負担する場合の福利厚生費等と区別しない簡易対応）。
    */
   personalDeductionOnly?: boolean;
+  /**
+   * true の場合、収入（プラスの金額）であっても売上・事業収入として扱わない。
+   * 借入金の実行・出資（資本金）の払込みは貸借対照表項目（負債・純資産の増加）であり、
+   * 所得税・法人税上の収入金額には含まれないため、収入合計・免税判定・損益集計から除外する。
+   */
+  excludeFromIncome?: boolean;
 }
 
 export const EXPENSE_RULES: CategoryRule[] = [
   { pattern: /法定福利費|社会保険料.{0,4}(会社|法人)負担/, account: "法定福利費", taxCategory: "不課税" },
   { pattern: /家賃|賃貸|不動産管理/, account: "地代家賃", taxCategory: "課税仕入10%", note: "事業用と仮定。住居兼用の場合は家事按分が必要" },
-  { pattern: /NTT|ドコモ|docomo|au(?!.{0,3}損保)|ソフトバンク|softbank|光回線|インターネット|プロバイダ/i, account: "通信費", taxCategory: "課税仕入10%" },
-  { pattern: /電気|東京電力|関西電力|中部電力|水道局|ガス(?!ソリン)/, account: "水道光熱費", taxCategory: "課税仕入10%" },
-  { pattern: /JR|ANA|JAL|Suica|PASMO|タクシー|新幹線|航空券|高速道路|ETC/i, account: "旅費交通費", taxCategory: "課税仕入10%" },
+  { pattern: /NTT|ドコモ|docomo|\bau\b(?!.{0,3}損保)|ソフトバンク|softbank|光回線|インターネット|プロバイダ/i, account: "通信費", taxCategory: "課税仕入10%" },
+  // "ガス" 単体は「ガスト」（全国チェーンのファミリーレストラン）等の固有名詞の先頭2文字とも
+  // 一致してしまうため、ガソリン同様に否定先読みで除外する。
+  { pattern: /電気|東京電力|関西電力|中部電力|水道局|ガス(?!ソリン|ト)/, account: "水道光熱費", taxCategory: "課税仕入10%" },
+  { pattern: /\bJR\b|\bANA\b|\bJAL\b|Suica|PASMO|タクシー|新幹線|航空券|高速道路/i, account: "旅費交通費", taxCategory: "課税仕入10%" },
+  // ETC（高速道路の電子料金収受システム）は常に大文字の固有名詞として表記されるため、
+  // 大文字小文字を区別するマッチにしている。他の語（JR/ANA/JAL等）と同じ大小文字無視の
+  // \bETC\b にすると、日本語の摘要文でよく使われる英語の省略語「etc」（例:「文房具・伝票用紙etc.」）
+  // まで誤って旅費交通費（ETC利用料）と判定してしまう。
+  { pattern: /\bETC\b/, account: "旅費交通費", taxCategory: "課税仕入10%", note: "ETC（高速道路）利用料" },
   { pattern: /Amazon|ヨドバシ|文房具|事務用品|コクヨ/i, account: "消耗品費", taxCategory: "課税仕入10%" },
-  { pattern: /AWS|Google\s?Workspace|GCP|Adobe|Slack|Zoom|GitHub|Notion|Dropbox|Microsoft|サブスクリプション/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "国外事業者のリバースチャージ対象の可能性あり、要確認" },
+  // "AWS" は \b で単語境界を必須にしている。境界なしの場合、コンビニエンスストアの
+  // "LAWSON"（ローソン）がクレジットカード明細の摘要に英字表記で現れると、部分文字列として
+  // "AWS" を含んでしまい（L-AWS-ON）、コンビニでの買い物がソフトウェア利用料（AWS利用料）と
+  // 誤分類されてしまう。
+  { pattern: /\bAWS\b|Google\s?Workspace|GCP|Adobe|Slack|Zoom|GitHub|Notion|Dropbox|Microsoft|サブスクリプション/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "国外事業者のリバースチャージ対象の可能性あり、要確認" },
   { pattern: /振込手数料|送金手数料|PayPal|Stripe手数料|銀行手数料|口座維持手数料/i, account: "支払手数料", taxCategory: "課税仕入10%" },
   { pattern: /ヤマト|佐川|日本郵便|ゆうパック|レターパック|宅急便/, account: "荷造運賃", taxCategory: "課税仕入10%" },
   { pattern: /会議費|カフェ|喫茶|スターバックス|ドトール/i, account: "会議費", taxCategory: "課税仕入10%" },
@@ -57,7 +74,18 @@ export const EXPENSE_RULES: CategoryRule[] = [
   },
   { pattern: /損害保険|火災保険|賠償責任保険/, account: "損害保険料", taxCategory: "非課税", note: "事業用の損害保険料（青色申告決算書の経費科目）" },
   { pattern: /社会保険料/, account: "社会保険料(個人)", taxCategory: "非課税", personalDeductionOnly: true, note: "個人事業主の場合、事業の必要経費ではなく所得控除（社会保険料控除）の対象です" },
-  { pattern: /所得税|住民税|印紙|租税公課|消費税(?!.{0,4}還付)/, account: "租税公課", taxCategory: "不課税" },
+  // 所得税・住民税は事業主個人の家事費であり、青色申告決算書の必要経費「租税公課」には
+  // 算入できない（法人の場合は影響しない。personalDeductionOnly は個人事業主モードでのみ
+  // 経費集計から除外する扱いのため）。印紙税・消費税（事業として納付するもの）等の他の
+  // 租税公課は引き続き必要経費として扱うため、別ルールに分けている。
+  {
+    pattern: /所得税|住民税/,
+    account: "租税公課",
+    taxCategory: "不課税",
+    personalDeductionOnly: true,
+    note: "所得税・住民税の納付は事業主個人の家事費であり、事業の必要経費には算入できません",
+  },
+  { pattern: /印紙|租税公課|消費税(?!.{0,4}還付)/, account: "租税公課", taxCategory: "不課税" },
   { pattern: /給与|給料|賞与|外注費(?!.{0,4}消費税)/, account: "給料賃金/外注工賃", taxCategory: "不課税", note: "給与は不課税。外注（事業者への業務委託）は課税仕入となる場合あり、要確認" },
   { pattern: /役員報酬/, account: "役員報酬", taxCategory: "不課税", note: "法人の場合、定期同額給与でないと損金不算入になる可能性があり要確認" },
   { pattern: /広告|リスティング|Meta広告|Google広告|SNS広告/i, account: "広告宣伝費", taxCategory: "課税仕入10%" },
@@ -78,8 +106,20 @@ export const EXPENSE_RULES: CategoryRule[] = [
 
 export const INCOME_RULES: CategoryRule[] = [
   { pattern: /返金|キャッシュバック|還付/, account: "雑収入", taxCategory: "対象外" },
-  { pattern: /借入|融資|ローン実行/, account: "借入金", taxCategory: "対象外" },
-  { pattern: /出資|資本金/, account: "元入金", taxCategory: "対象外" },
+  {
+    pattern: /借入|融資|ローン実行/,
+    account: "借入金",
+    taxCategory: "対象外",
+    excludeFromIncome: true,
+    note: "借入金の実行は負債の増加であり事業の収入ではないため、収入金額・所得金額の計算に含めません",
+  },
+  {
+    pattern: /出資|資本金/,
+    account: "元入金",
+    taxCategory: "対象外",
+    excludeFromIncome: true,
+    note: "出資・資本金の払込みは純資産の増加であり事業の収入ではないため、収入金額・所得金額の計算に含めません",
+  },
   { pattern: /利息|受取利子/, account: "受取利息", taxCategory: "非課税" },
 ];
 
@@ -94,3 +134,46 @@ export const DEFAULT_INCOME: CategoryRule = {
   account: "売上高",
   taxCategory: "課税売上10%",
 };
+
+/**
+ * 勘定科目名から、その科目が「常に」personalDeductionOnly / excludeFromIncome 扱いかどうかを
+ * 逆引きするヘルパー。ルールベース分類（engine.ts）は一致したルールから直接これらのフラグを
+ * コピーするため問題ないが、AI分類（aiEscalate.ts）はLLMが返す勘定科目名しか持っておらず、
+ * どのルールにも一致していない（＝どちらのフラグも知らない）ため、account名から再引き当てる
+ * 必要がある。
+ *
+ * 「租税公課」のように同じ科目名が personalDeductionOnly:true のルール（所得税・住民税）と
+ * そうでないルール（印紙・消費税）の両方に使われている科目は、科目名だけでは判別できないため
+ * 意図的に対象外（false を返す）とする。事業主個人の家事費（社会保険料(個人)・生命保険料(個人)）
+ * や貸借対照表項目（借入金・元入金）のように、同じ科目名を使うルールが必ず同じフラグを持つ
+ * 「曖昧でない」科目のみを対象とする。
+ */
+function buildUnambiguousAccountFlagLookup(flag: "personalDeductionOnly" | "excludeFromIncome"): Set<string> {
+  const allRules = [...EXPENSE_RULES, ...INCOME_RULES];
+  const result = new Set<string>();
+  const seenFalseOrUndefined = new Set<string>();
+  for (const rule of allRules) {
+    if (rule[flag]) {
+      result.add(rule.account);
+    } else {
+      seenFalseOrUndefined.add(rule.account);
+    }
+  }
+  for (const account of seenFalseOrUndefined) {
+    result.delete(account);
+  }
+  return result;
+}
+
+const PERSONAL_DEDUCTION_ONLY_ACCOUNTS = buildUnambiguousAccountFlagLookup("personalDeductionOnly");
+const EXCLUDE_FROM_INCOME_ACCOUNTS = buildUnambiguousAccountFlagLookup("excludeFromIncome");
+
+/** 科目名（例:「社会保険料(個人)」）が、辞書上つねに personalDeductionOnly 扱いの科目かどうか */
+export function isPersonalDeductionOnlyAccount(account: string): boolean {
+  return PERSONAL_DEDUCTION_ONLY_ACCOUNTS.has(account);
+}
+
+/** 科目名（例:「借入金」）が、辞書上つねに excludeFromIncome 扱いの科目かどうか */
+export function isExcludeFromIncomeAccount(account: string): boolean {
+  return EXCLUDE_FROM_INCOME_ACCOUNTS.has(account);
+}

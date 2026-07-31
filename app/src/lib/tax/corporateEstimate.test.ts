@@ -96,6 +96,66 @@ describe("estimateForMicroCorp", () => {
     expect(result.taxableIncome).toBe(500_000);
   });
 
+  // Regression: loan proceeds and capital contributions are balance-sheet items, not corporate
+  // revenue. A micro-corp's initial 資本金 payment or a business loan drawdown (both routinely
+  // categorized this way by the rule dictionary) must not be summed into revenue/taxableIncome
+  // as if it were a taxable sale, and must not push the consumption-tax exemption check to false.
+  it("excludes loan proceeds and capital contributions from revenue, taxable income, and the exemption threshold", () => {
+    const rows = [
+      tx({ id: "1", amount: 3_000_000, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({
+        id: "2",
+        amount: 5_000_000,
+        account: "借入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+      tx({
+        id: "3",
+        amount: 2_000_000,
+        account: "元入金",
+        taxCategory: "対象外",
+        excludeFromIncome: true,
+      }),
+    ];
+
+    const result = estimateForMicroCorp(rows);
+
+    expect(result.revenue).toBe(3_000_000);
+    expect(result.taxableIncome).toBe(3_000_000);
+    // Total cash in (10,000,000) exceeds the 10,000,000 exemption threshold, but actual revenue
+    // is only 3,000,000, so this should still read as likely-exempt.
+    expect(result.consumptionTax.isLikelyExempt).toBe(true);
+  });
+
+  // Regression: consumption tax on sales/purchases must be derived from the aggregated
+  // tax-inclusive total per rate, not from summing each transaction's individually-truncated
+  // tax. Summing per-transaction truncations loses fractional yen on every row instead of just
+  // once on the combined total.
+  it("derives consumption tax on sales from the aggregated taxable total, not from summed per-transaction truncations", () => {
+    const rows = [
+      tx({ id: "1", amount: 105, taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 115, taxCategory: "課税売上10%" }),
+    ];
+    const result = estimateForMicroCorp(rows);
+
+    // Per-transaction: floor(105*10/110)=9, floor(115*10/110)=10 -> summed = 19 (wrong).
+    // Aggregated: floor(220*10/110) = 20 (correct).
+    expect(result.consumptionTax.salesTax).toBe(20);
+  });
+
+  it("derives consumption tax on purchases from the aggregated taxable total, not from summed per-transaction truncations", () => {
+    const rows = [
+      tx({ id: "1", amount: -105, account: "外注費", taxCategory: "課税仕入10%" }),
+      tx({ id: "2", amount: -115, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+    const result = estimateForMicroCorp(rows);
+
+    // Per-transaction: floor(105*10/110)=9, floor(115*10/110)=10 -> summed = 19 (wrong).
+    // Aggregated: floor(220*10/110) = 20 (correct).
+    expect(result.consumptionTax.purchaseTax).toBe(20);
+  });
+
   it("marks consumption tax as not exempt once revenue exceeds 10,000,000", () => {
     const rows = [tx({ id: "1", amount: 11_000_000, taxCategory: "課税売上10%" })];
 
