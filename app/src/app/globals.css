@@ -19,6 +19,23 @@
   }
 }
 
+/*
+ * 手動テーマ上書き（アプリ内設定 > OS設定）。
+ * <html data-theme="dark|light"> は src/components/ThemeToggle.tsx が設定する。
+ * 属性セレクタは上のprefers-color-schemeメディアクエリより詳細度が高いため、
+ * data-theme指定時はOSの設定に関わらずこちらが優先される。
+ * "system"選択時は属性自体を外し、上のメディアクエリに解決を委ねる。
+ */
+:root[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+:root[data-theme="light"] {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
