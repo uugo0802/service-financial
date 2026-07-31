@@ -132,8 +132,11 @@ export function ClientInvoiceForm() {
           <h2 className="text-lg font-semibold mb-3">発行者情報（あなた）</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>氏名・屋号・法人名</label>
+              <label className={labelClass} htmlFor="invoice-issuer-name">
+                氏名・屋号・法人名
+              </label>
               <input
+                id="invoice-issuer-name"
                 type="text"
                 value={issuerName}
                 onChange={(e) => setIssuerName(e.target.value)}
@@ -142,11 +145,12 @@ export function ClientInvoiceForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>
+              <label className={labelClass} htmlFor="invoice-issuer-registration-number">
                 適格請求書発行事業者登録番号（任意）
                 <InvoiceNumberBadge registrationNumber={issuerRegistrationNumber} className="ml-2 align-middle" />
               </label>
               <input
+                id="invoice-issuer-registration-number"
                 type="text"
                 value={issuerRegistrationNumber}
                 onChange={(e) => setIssuerRegistrationNumber(e.target.value)}
@@ -161,8 +165,11 @@ export function ClientInvoiceForm() {
           <h2 className="text-lg font-semibold mb-3">請求先・取引日</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>請求先（取引先）名称</label>
+              <label className={labelClass} htmlFor="invoice-client-name">
+                請求先（取引先）名称
+              </label>
               <input
+                id="invoice-client-name"
                 type="text"
                 value={clientName}
                 onChange={(e) => setClientName(e.target.value)}
@@ -171,8 +178,11 @@ export function ClientInvoiceForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>請求書発行日</label>
+              <label className={labelClass} htmlFor="invoice-issue-date">
+                請求書発行日
+              </label>
               <input
+                id="invoice-issue-date"
                 type="date"
                 value={issueDate}
                 onChange={(e) => setIssueDate(e.target.value)}
@@ -190,8 +200,11 @@ export function ClientInvoiceForm() {
             {usePeriod ? (
               <>
                 <div>
-                  <label className={labelClass}>取引期間 開始日</label>
+                  <label className={labelClass} htmlFor="invoice-transaction-period-start">
+                    取引期間 開始日
+                  </label>
                   <input
+                    id="invoice-transaction-period-start"
                     type="date"
                     value={transactionPeriodStart}
                     onChange={(e) => setTransactionPeriodStart(e.target.value)}
@@ -199,8 +212,11 @@ export function ClientInvoiceForm() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>取引期間 終了日</label>
+                  <label className={labelClass} htmlFor="invoice-transaction-period-end">
+                    取引期間 終了日
+                  </label>
                   <input
+                    id="invoice-transaction-period-end"
                     type="date"
                     value={transactionPeriodEnd}
                     onChange={(e) => setTransactionPeriodEnd(e.target.value)}
@@ -210,8 +226,11 @@ export function ClientInvoiceForm() {
               </>
             ) : (
               <div>
-                <label className={labelClass}>取引年月日</label>
+                <label className={labelClass} htmlFor="invoice-transaction-date">
+                  取引年月日
+                </label>
                 <input
+                  id="invoice-transaction-date"
                   type="date"
                   value={transactionDate}
                   onChange={(e) => setTransactionDate(e.target.value)}
@@ -231,8 +250,11 @@ export function ClientInvoiceForm() {
                 className="grid grid-cols-1 sm:grid-cols-[1fr_6rem_8rem_8rem_auto] gap-2 items-end border border-stone-200 bg-white p-3"
               >
                 <div>
-                  <label className={labelClass}>品目・内容 {index + 1}</label>
+                  <label className={labelClass} htmlFor={`invoice-line-description-${item.id}`}>
+                    品目・内容 {index + 1}
+                  </label>
                   <input
+                    id={`invoice-line-description-${item.id}`}
                     type="text"
                     value={item.description}
                     onChange={(e) => updateLineItem(item.id, { description: e.target.value })}
@@ -241,8 +263,11 @@ export function ClientInvoiceForm() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>数量</label>
+                  <label className={labelClass} htmlFor={`invoice-line-quantity-${item.id}`}>
+                    数量
+                  </label>
                   <input
+                    id={`invoice-line-quantity-${item.id}`}
                     type="number"
                     step="any"
                     min="0"
@@ -252,8 +277,11 @@ export function ClientInvoiceForm() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>単価（税抜・円）</label>
+                  <label className={labelClass} htmlFor={`invoice-line-unit-price-${item.id}`}>
+                    単価（税抜・円）
+                  </label>
                   <input
+                    id={`invoice-line-unit-price-${item.id}`}
                     type="number"
                     step="any"
                     min="0"
@@ -264,8 +292,11 @@ export function ClientInvoiceForm() {
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>税率</label>
+                  <label className={labelClass} htmlFor={`invoice-line-tax-rate-${item.id}`}>
+                    税率
+                  </label>
                   <select
+                    id={`invoice-line-tax-rate-${item.id}`}
                     value={item.taxRate}
                     onChange={(e) => updateLineItem(item.id, { taxRate: Number(e.target.value) as InvoiceTaxRate })}
                     className={inputClass}

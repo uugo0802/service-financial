@@ -107,8 +107,11 @@ export function WithholdingSlipForm() {
     <div className="flex flex-col gap-8">
       <section className="print:hidden flex flex-col gap-6 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className={labelClass}>対象の年（西暦）</label>
+          <label className={labelClass} htmlFor="slip-fiscal-year">
+            対象の年（西暦）
+          </label>
           <input
+            id="slip-fiscal-year"
             type="number"
             value={fiscalYear}
             onChange={(e) => setFiscalYear(e.target.value)}
@@ -121,8 +124,11 @@ export function WithholdingSlipForm() {
           <div className="text-xs font-semibold text-stone-600 mb-2">支払者（会社）情報</div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>会社の名称</label>
+              <label className={labelClass} htmlFor="slip-company-name">
+                会社の名称
+              </label>
               <input
+                id="slip-company-name"
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
@@ -131,8 +137,11 @@ export function WithholdingSlipForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>住所（所在地、任意）</label>
+              <label className={labelClass} htmlFor="slip-payer-address">
+                住所（所在地、任意）
+              </label>
               <input
+                id="slip-payer-address"
                 type="text"
                 value={payerAddress}
                 onChange={(e) => setPayerAddress(e.target.value)}
@@ -141,8 +150,11 @@ export function WithholdingSlipForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>法人番号（13桁、任意）</label>
+              <label className={labelClass} htmlFor="slip-corporate-number">
+                法人番号（13桁、任意）
+              </label>
               <input
+                id="slip-corporate-number"
                 type="text"
                 value={corporateNumber}
                 onChange={(e) => setCorporateNumber(e.target.value)}
@@ -151,8 +163,11 @@ export function WithholdingSlipForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>代表者氏名（任意）</label>
+              <label className={labelClass} htmlFor="slip-representative-name">
+                代表者氏名（任意）
+              </label>
               <input
+                id="slip-representative-name"
                 type="text"
                 value={representativeName}
                 onChange={(e) => setRepresentativeName(e.target.value)}
@@ -169,8 +184,11 @@ export function WithholdingSlipForm() {
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>氏名</label>
+              <label className={labelClass} htmlFor="slip-employee-name">
+                氏名
+              </label>
               <input
+                id="slip-employee-name"
                 type="text"
                 value={employeeName}
                 onChange={(e) => setEmployeeName(e.target.value)}
@@ -179,8 +197,11 @@ export function WithholdingSlipForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>住所又は居所（任意）</label>
+              <label className={labelClass} htmlFor="slip-employee-address">
+                住所又は居所（任意）
+              </label>
               <input
+                id="slip-employee-address"
                 type="text"
                 value={employeeAddress}
                 onChange={(e) => setEmployeeAddress(e.target.value)}
@@ -189,8 +210,11 @@ export function WithholdingSlipForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>受給者番号（社内管理用、任意）</label>
+              <label className={labelClass} htmlFor="slip-employee-number">
+                受給者番号（社内管理用、任意）
+              </label>
               <input
+                id="slip-employee-number"
                 type="text"
                 value={employeeNumber}
                 onChange={(e) => setEmployeeNumber(e.target.value)}
@@ -199,8 +223,11 @@ export function WithholdingSlipForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>種別（任意。省略時は「給与・賞与」）</label>
+              <label className={labelClass} htmlFor="slip-payment-kind">
+                種別（任意。省略時は「給与・賞与」）
+              </label>
               <input
+                id="slip-payment-kind"
                 type="text"
                 value={paymentKind}
                 onChange={(e) => setPaymentKind(e.target.value)}
@@ -215,8 +242,11 @@ export function WithholdingSlipForm() {
           <div className="text-xs font-semibold text-stone-600 mb-2">年末調整の入力（yearEndAdjustment.tsと同じ内容）</div>
           <div className="flex flex-col gap-4">
             <div>
-              <label className={labelClass}>年間の給与等の総支給額（月々の役員報酬・給与＋賞与の合計、円）</label>
+              <label className={labelClass} htmlFor="slip-annual-gross-compensation">
+                年間の給与等の総支給額（月々の役員報酬・給与＋賞与の合計、円）
+              </label>
               <input
+                id="slip-annual-gross-compensation"
                 type="number"
                 min="0"
                 value={annualGrossCompensation}
@@ -227,8 +257,11 @@ export function WithholdingSlipForm() {
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass}>年間の社会保険料（健康保険・厚生年金等の合計、円）</label>
+                <label className={labelClass} htmlFor="slip-annual-social-insurance">
+                  年間の社会保険料（健康保険・厚生年金等の合計、円）
+                </label>
                 <input
+                  id="slip-annual-social-insurance"
                   type="number"
                   min="0"
                   value={annualSocialInsurancePremium}
@@ -238,8 +271,11 @@ export function WithholdingSlipForm() {
                 />
               </div>
               <div>
-                <label className={labelClass}>控除対象扶養親族等の数（0〜7人以上）</label>
+                <label className={labelClass} htmlFor="slip-dependent-count">
+                  控除対象扶養親族等の数（0〜7人以上）
+                </label>
                 <input
+                  id="slip-dependent-count"
                   type="number"
                   min="0"
                   step="1"
@@ -251,8 +287,11 @@ export function WithholdingSlipForm() {
               </div>
             </div>
             <div>
-              <label className={labelClass}>その年にすでに源泉徴収した所得税額の合計（月々の給与・賞与分、円）</label>
+              <label className={labelClass} htmlFor="slip-monthly-withholding-total">
+                その年にすでに源泉徴収した所得税額の合計（月々の給与・賞与分、円）
+              </label>
               <input
+                id="slip-monthly-withholding-total"
                 type="number"
                 min="0"
                 value={monthlyWithholdingTotal}
