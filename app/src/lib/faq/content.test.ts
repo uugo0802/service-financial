@@ -112,6 +112,21 @@ describe("FAQ_ENTRIES compliance guardrail (税理士法第2条: 個別具体の
     expect(hasIndividualizedAdviceRiskyPhrasing(okExample)).toBe(false);
   });
 
+  it("flags personalized framing combined with a definitive qualifier even without a concrete amount", () => {
+    const badExample = "あなたの場合は必ず経費にできます。";
+    expect(hasIndividualizedAdviceRiskyPhrasing(badExample)).toBe(true);
+  });
+
+  it("detects the 'あなたは...できます/べきです/必要です' personalized-obligation phrasing pattern combined with an amount", () => {
+    const badExample = "あなたは50万円計上できます。";
+    expect(hasIndividualizedAdviceRiskyPhrasing(badExample)).toBe(true);
+  });
+
+  it("does not flag a plain amount mention with no personalized framing at all", () => {
+    const okExample = "確定申告の基礎控除は48万円です。";
+    expect(hasIndividualizedAdviceRiskyPhrasing(okExample)).toBe(false);
+  });
+
   it("every advisor-referral-relevant answer at least gestures toward consulting a tax accountant for individualized cases", () => {
     // advisorカテゴリの回答は、提携税理士への送客導線という趣旨から外れていないことを確認する
     const advisorEntries = FAQ_ENTRIES.filter((e) => e.category === "advisor");

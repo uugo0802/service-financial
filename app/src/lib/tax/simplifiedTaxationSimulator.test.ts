@@ -176,4 +176,65 @@ describe("simulateSimplifiedVsGeneralTaxation — 入力検証", () => {
       })
     ).toThrow(/0以上/);
   });
+
+  it("throws for a negative actualTaxablePurchases value", () => {
+    expect(() =>
+      simulateSimplifiedVsGeneralTaxation({
+        baseYearTaxableSales: 10_000_000,
+        businessCategoryBreakdown: [{ category: 1, taxableSales: 10_000_000 }],
+        actualTaxablePurchases: -1,
+      })
+    ).toThrow(/0以上/);
+  });
+
+  it("throws for a non-finite (Infinity) base-year taxable sales value", () => {
+    expect(() =>
+      simulateSimplifiedVsGeneralTaxation({
+        baseYearTaxableSales: Infinity,
+        businessCategoryBreakdown: [{ category: 1, taxableSales: 10_000_000 }],
+        actualTaxablePurchases: 0,
+      })
+    ).toThrow(/数値で入力/);
+  });
+
+  it("throws when businessCategoryBreakdown is missing entirely (not just an empty array)", () => {
+    expect(() =>
+      simulateSimplifiedVsGeneralTaxation({
+        baseYearTaxableSales: 10_000_000,
+        businessCategoryBreakdown: undefined as unknown as never,
+        actualTaxablePurchases: 0,
+      })
+    ).toThrow(/事業区分別の課税売上高を1件以上/);
+  });
+});
+
+describe("simulateSimplifiedVsGeneralTaxation — ゼロ値の境界", () => {
+  it("treats all-zero sales/purchases as a tie with zero tax due on both methods", () => {
+    const result = simulateSimplifiedVsGeneralTaxation({
+      baseYearTaxableSales: 0,
+      businessCategoryBreakdown: [{ category: 1, taxableSales: 0 }],
+      actualTaxablePurchases: 0,
+    });
+
+    expect(result.eligible).toBe(true);
+    expect(result.totalTaxableSales).toBe(0);
+    expect(result.taxOnSales).toBe(0);
+    expect(result.simplified.taxDue).toBe(0);
+    expect(result.general.taxDue).toBe(0);
+    expect(result.cheaperMethod).toBe("tie");
+    expect(result.taxDueDelta).toBe(0);
+  });
+
+  it("floors fractional yen amounts consistently (Math.floor) rather than rounding", () => {
+    // taxableSales=9 -> taxOnSales = floor(9*0.1) = 0, so deductibleInputTax also floors to 0
+    const result = simulateSimplifiedVsGeneralTaxation({
+      baseYearTaxableSales: 10_000_000,
+      businessCategoryBreakdown: [{ category: 1, taxableSales: 9 }],
+      actualTaxablePurchases: 9,
+    });
+
+    expect(result.taxOnSales).toBe(0);
+    expect(result.simplified.deductibleInputTax).toBe(0);
+    expect(result.general.deductibleInputTax).toBe(0);
+  });
 });
