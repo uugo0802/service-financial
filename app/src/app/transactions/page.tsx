@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { TransactionRow } from "@/lib/db/supabaseClient";
 import { TransactionSearchForm } from "@/components/TransactionSearchForm";
 import { CsvColumnMapper } from "@/components/CsvColumnMapper";
@@ -128,6 +129,19 @@ export default function TransactionsPage() {
             それ以外の銀行・カード会社をお使いの場合や自動判定がうまくいかない場合は、以下からCSVの列をご自身で指定して取り込めます。
           </p>
           <CsvColumnMapper />
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-stone-300 pt-6">
+          <h2 className="text-sm font-semibold text-stone-700">家賃・サブスクリプション費用など毎月の定期取引</h2>
+          <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
+            毎月ほぼ同じ内容で発生する取引はテンプレートとして登録しておくと、取込取引との自動マッチ提案や記帳漏れチェックに使えます。
+          </p>
+          <Link
+            href="/recurring-transactions"
+            className="text-sm text-red-700 underline hover:text-red-900 self-start"
+          >
+            定期取引テンプレートを管理する →
+          </Link>
         </div>
       </main>
 
