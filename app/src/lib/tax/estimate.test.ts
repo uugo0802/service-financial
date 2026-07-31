@@ -84,6 +84,36 @@ describe("estimateForIndividual", () => {
     expect(result.consumptionTax.salesTax).toBe(90);
   });
 
+  // Regression: consumption tax on sales/purchases must be derived from the aggregated
+  // tax-inclusive total per rate, not from summing each transaction's individually-truncated
+  // tax (same bug pattern already fixed for buildConsumptionTaxForm in commit 2c20dc7). Summing
+  // per-transaction truncations loses fractional yen on every row instead of just once on the
+  // combined total, so the estimate can drift away from the amount the aggregate-based
+  // calculation (the legally correct 割戻し計算 method) would produce.
+  it("derives consumption tax on sales from the aggregated taxable total, not from summed per-transaction truncations", () => {
+    const rows = [
+      tx({ id: "1", amount: 105, account: "売上高", taxCategory: "課税売上10%" }),
+      tx({ id: "2", amount: 115, account: "売上高", taxCategory: "課税売上10%" }),
+    ];
+    const result = estimateForIndividual(rows);
+
+    // Per-transaction: floor(105*10/110)=9, floor(115*10/110)=10 -> summed = 19 (wrong).
+    // Aggregated: floor(220*10/110) = 20 (correct).
+    expect(result.consumptionTax.salesTax).toBe(20);
+  });
+
+  it("derives consumption tax on purchases from the aggregated taxable total, not from summed per-transaction truncations", () => {
+    const rows = [
+      tx({ id: "1", amount: -105, account: "外注費", taxCategory: "課税仕入10%" }),
+      tx({ id: "2", amount: -115, account: "外注費", taxCategory: "課税仕入10%" }),
+    ];
+    const result = estimateForIndividual(rows);
+
+    // Per-transaction: floor(105*10/110)=9, floor(115*10/110)=10 -> summed = 19 (wrong).
+    // Aggregated: floor(220*10/110) = 20 (correct).
+    expect(result.consumptionTax.purchaseTax).toBe(20);
+  });
+
   it("floors taxable income and tax at zero when expenses exceed income", () => {
     const rows = [tx({ id: "1", amount: -300_000, account: "外注費", taxCategory: "課税仕入10%" })];
 

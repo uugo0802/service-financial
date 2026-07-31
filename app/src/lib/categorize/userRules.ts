@@ -1,14 +1,17 @@
 // ユーザー辞書編集機能 — テナントごとのカスタム分類ルール。
 //
 // dictionary.ts（グローバルなキーワード辞書）には一切手を加えない、追加のレイヤーとして実装する。
-// dictionary.ts からは型（CategoryRule / TaxCategory）のみをインポートし、
-// EXPENSE_RULES / INCOME_RULES といった実際のルール配列には依存しない。
+// dictionary.ts からは型（CategoryRule / TaxCategory）に加え、isPersonalDeductionOnlyAccount /
+// isExcludeFromIncomeAccount という「勘定科目名から personalDeductionOnly/excludeFromIncome を
+// 再引き当てする」ための小さな安定APIのみを利用する（aiEscalate.ts が同じ理由で使っているのと
+// 同じ関数）。EXPENSE_RULES / INCOME_RULES といった実際のルール配列そのものには依存しない。
 // これにより、辞書本体に対する他の変更（キーワードの追加・修正等）と競合せず、
-// このファイルは常にグローバル辞書から疎結合な状態を保つ。
+// このファイルは常にグローバル辞書のルール配列からは疎結合な状態を保つ。
 //
 // 注意: これはMVP用の簡易ルールであり、正式な税務判断ではありません。
 // 最終的な勘定科目・税区分の確定は必ず利用者本人が確認してください。
 
+import { isExcludeFromIncomeAccount, isPersonalDeductionOnlyAccount } from "./dictionary";
 import type { CategoryRule, TaxCategory } from "./dictionary";
 
 export type { TaxCategory };
@@ -128,6 +131,13 @@ function escapeRegExp(value: string): string {
  * ユーザー辞書ルールを、グローバル辞書と同じ CategoryRule 形式に変換する。
  * ユーザー入力は正規表現ではなく単純なキーワード文字列として扱い、
  * 大文字小文字を無視した（エスケープ済みの）部分一致に変換する。
+ *
+ * ユーザー辞書の入力フォームには personalDeductionOnly / excludeFromIncome を直接指定する
+ * 項目がないため、aiEscalate.ts（AI分類結果の再分類）と同じ方法で、勘定科目名から
+ * 曖昧でない場合のみ再引き当てする。これを行わないと、例えばユーザーが独自キーワードを
+ * 「社会保険料(個人)」「借入金」「元入金」等のアカウントに割り当てた場合、personalDeductionOnly/
+ * excludeFromIncome が付与されないまま事業の必要経費・収入金額の集計に混入してしまう
+ * （dictionary.ts の isPersonalDeductionOnlyAccount/isExcludeFromIncomeAccount 参照）。
  */
 export function userCategoryRuleToCategoryRule(rule: UserCategoryRule): CategoryRule {
   return {
@@ -135,6 +145,8 @@ export function userCategoryRuleToCategoryRule(rule: UserCategoryRule): Category
     account: rule.account,
     taxCategory: rule.taxCategory,
     note: rule.note ?? `ユーザー辞書登録ルール（${rule.createdAt.slice(0, 10)}追加）`,
+    personalDeductionOnly: isPersonalDeductionOnlyAccount(rule.account) ? true : undefined,
+    excludeFromIncome: isExcludeFromIncomeAccount(rule.account) ? true : undefined,
   };
 }
 

@@ -170,6 +170,49 @@ describe("userCategoryRuleToCategoryRule", () => {
     // An unescaped "." would also match any single character in place of the literal dot.
     expect(rule.pattern.test("v2X5plan 契約")).toBe(false);
   });
+
+  // Regression: a tenant-defined keyword routed to an account that is unambiguously
+  // personalDeductionOnly/excludeFromIncome in the global dictionary (e.g. "社会保険料(個人)",
+  // "借入金", "元入金") must carry that same flag, exactly like aiEscalate.ts re-attaches it for
+  // AI-classified rows (see dictionary.ts's isPersonalDeductionOnlyAccount/isExcludeFromIncomeAccount).
+  // Without this, a user rule mapping a custom keyword to "社会保険料(個人)" would silently count
+  // that spend as a deductible business expense instead of a personal-deduction item, and a user
+  // rule mapping to "借入金"/"元入金" would silently count loan/capital inflows as taxable revenue.
+  it("re-attaches personalDeductionOnly for a user rule mapped to a personal-deduction-only account", () => {
+    const userRule = createUserCategoryRule({
+      pattern: "○○共済掛金",
+      account: "社会保険料(個人)",
+      taxCategory: "非課税",
+    });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.personalDeductionOnly).toBe(true);
+    expect(rule.excludeFromIncome).toBeUndefined();
+  });
+
+  it("re-attaches excludeFromIncome for a user rule mapped to a balance-sheet account (loan proceeds)", () => {
+    const userRule = createUserCategoryRule({
+      pattern: "○○銀行融資",
+      account: "借入金",
+      taxCategory: "対象外",
+    });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.excludeFromIncome).toBe(true);
+    expect(rule.personalDeductionOnly).toBeUndefined();
+  });
+
+  it("leaves both flags undefined for a user rule mapped to an ordinary expense/income account", () => {
+    const userRule = createUserCategoryRule({
+      pattern: "クライアントD社",
+      account: "売上高",
+      taxCategory: "課税売上10%",
+    });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.personalDeductionOnly).toBeUndefined();
+    expect(rule.excludeFromIncome).toBeUndefined();
+  });
 });
 
 describe("TAX_CATEGORY_OPTIONS", () => {
