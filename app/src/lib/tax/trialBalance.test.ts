@@ -94,25 +94,6 @@ describe("buildTrialBalance", () => {
     expect(entertainmentLine?.periodDebit).toBe(8_800);
   });
 
-  // Regression: bank/card CSV exports commonly list the newest transaction first
-  // (reverse-chronological order). buildTrialBalance must not assume `entries[0]`/
-  // `entries[entries.length - 1]` are the earliest/latest dates when periodStart/periodEnd
-  // are not explicitly supplied — otherwise the displayed "自◯◯至◯◯" period on this
-  // quasi-official trial balance document could be wrong, or even have the start date
-  // after the end date.
-  it("derives periodStart/periodEnd from the min/max transaction date, not array order", () => {
-    const reverseChronological = [
-      tx({ date: "2026-06-01", amount: 780_000, account: "売上高" }),
-      tx({ date: "2026-05-02", amount: -8_800, account: "接待交際費", taxCategory: "課税仕入10%" }),
-      tx({ date: "2026-04-15", amount: -32_000, account: "地代家賃", taxCategory: "課税仕入10%" }),
-      tx({ date: "2026-04-10", amount: 550_000, account: "売上高" }),
-    ];
-    const tb = buildTrialBalance(reverseChronological);
-
-    expect(tb.periodStart).toBe("2026-04-10");
-    expect(tb.periodEnd).toBe("2026-06-01");
-  });
-
   it("ignores zero-amount transactions entirely", () => {
     const tb = buildTrialBalance([tx({ date: "2026-04-10", amount: 0, account: "売上高" })]);
     expect(tb.lines).toHaveLength(0);

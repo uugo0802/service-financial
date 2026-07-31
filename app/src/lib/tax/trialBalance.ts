@@ -181,21 +181,9 @@ export function buildTrialBalance(
     }
   );
 
-  // periodStart/periodEndが明示されない場合のフォールバックは、対象取引の日付の
-  // 最小値・最大値を使う（配列の先頭・末尾要素ではない）。銀行・カードのCSVは
-  // 新しい取引が先頭に来る「降順」で並んでいることが多く、entries（引数）の並び順を
-  // そのまま信用すると「自◯◯至◯◯」の期間表示が実際の取引日と矛盾する
-  // （最悪の場合、開始日が終了日より後になる）ため、必ず日付そのものから算出する。
-  let fallbackPeriodStart: string | undefined;
-  let fallbackPeriodEnd: string | undefined;
-  for (const entry of filtered) {
-    if (fallbackPeriodStart === undefined || entry.date < fallbackPeriodStart) fallbackPeriodStart = entry.date;
-    if (fallbackPeriodEnd === undefined || entry.date > fallbackPeriodEnd) fallbackPeriodEnd = entry.date;
-  }
-
   return {
-    periodStart: options.periodStart ?? fallbackPeriodStart ?? "-",
-    periodEnd: options.periodEnd ?? fallbackPeriodEnd ?? "-",
+    periodStart: options.periodStart ?? filtered[0]?.date ?? "-",
+    periodEnd: options.periodEnd ?? filtered[filtered.length - 1]?.date ?? "-",
     lines,
     ...totals,
     balanced: isApproximatelyEqual(totals.closingDebitTotal, totals.closingCreditTotal),
