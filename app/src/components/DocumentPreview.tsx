@@ -743,8 +743,9 @@ function ConsumptionTaxOfficialBody({ rows }: { rows: CategorizedTransaction[] }
     <>
       <div className="print:hidden mb-4 flex flex-wrap items-end gap-4 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className="block text-xs font-semibold text-stone-500 mb-1">課税方式</label>
+          <label className="block text-xs font-semibold text-stone-500 mb-1" htmlFor="document-preview-consumption-tax-method">課税方式</label>
           <select
+            id="document-preview-consumption-tax-method"
             className="border border-stone-300 rounded px-2 py-1.5 text-sm"
             value={method}
             onChange={(e) => setMethod(e.target.value as ConsumptionTaxMethod)}
@@ -758,8 +759,9 @@ function ConsumptionTaxOfficialBody({ rows }: { rows: CategorizedTransaction[] }
         </div>
         {method === "simplified" && (
           <div>
-            <label className="block text-xs font-semibold text-stone-500 mb-1">事業区分</label>
+            <label className="block text-xs font-semibold text-stone-500 mb-1" htmlFor="document-preview-simplified-business-category">事業区分</label>
             <select
+              id="document-preview-simplified-business-category"
               className="border border-stone-300 rounded px-2 py-1.5 text-sm"
               value={businessCategory}
               onChange={(e) => setBusinessCategory(Number(e.target.value) as SimplifiedBusinessCategory)}
