@@ -544,7 +544,12 @@ export default function Home() {
         {rows && (
           <section className="border-t border-stone-300 pt-6 print:hidden">
             <h2 className="text-lg font-semibold mb-3">送信について</h2>
-            <SubmissionGuide mode={mode} />
+            <SubmissionGuide
+              mode={mode}
+              individualEstimate={individualEstimate}
+              corpEstimate={corpEstimate}
+              entityName={entityName}
+            />
           </section>
         )}
       </main>
