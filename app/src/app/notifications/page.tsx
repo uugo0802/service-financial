@@ -7,6 +7,7 @@ import { EntityType } from "@/lib/filing/deadlines";
 import { ReconciliationResult } from "@/lib/reconcile/bankReconciliation";
 import { buildWeeklyDigest, IsoDate } from "@/lib/notifications/weeklyDigest";
 import { WeeklyDigestPreview } from "@/components/WeeklyDigestPreview";
+import { NotificationPreferencesForm } from "@/components/NotificationPreferencesForm";
 
 // このページ専用のサンプルデータ。実際のアップロード・記帳フロー（app/page.tsx）や
 // Supabase等の実データとは連携しない、週次ダイジェストの見え方を確認するための
@@ -213,6 +214,14 @@ export default function NotificationsPage() {
         <section>
           <h2 className="text-lg font-semibold mb-3">ダイジェストのプレビュー</h2>
           <WeeklyDigestPreview digest={digest} />
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-2">通知の詳細設定</h2>
+          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-3">
+            ダイジェストの配信頻度と、通知を控えたい静音時間帯（クワイエットアワー）をこの端末に保存できます。
+          </p>
+          <NotificationPreferencesForm />
         </section>
 
         <section className="border-t border-stone-300 dark:border-stone-700 pt-6">
