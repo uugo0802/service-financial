@@ -3,13 +3,29 @@
 import { useState } from "react";
 import { useSubmissionWizard } from "@/hooks/useSubmissionWizard";
 import { SubmissionSystem, SubmissionStep } from "@/lib/filing/submissionSteps";
+import { ExportDataButton } from "@/components/ExportDataButton";
 
 const SYSTEM_LABEL: Record<SubmissionSystem, string> = {
   etax: "e-Tax（国税）",
   eltax: "eLTAX（地方税）",
 };
 
-export function FilingSubmissionWizard({ system, note }: { system: SubmissionSystem; note?: string }) {
+/** ステップ1「下書きデータをダウンロード」で提供する、実際の下書きCSVファイル */
+export interface DraftDownload {
+  csvContent: string;
+  fileNamePrefix: string;
+}
+
+export function FilingSubmissionWizard({
+  system,
+  note,
+  draftDownload,
+}: {
+  system: SubmissionSystem;
+  note?: string;
+  /** ダウンロード対象の下書きデータ。未指定の場合、ステップ1の説明文のみが表示される（ボタンは出さない） */
+  draftDownload?: DraftDownload;
+}) {
   const wizard = useSubmissionWizard(system);
   const current = wizard.steps.find((s) => s.id === wizard.displayedStep) ?? wizard.steps[0];
 
@@ -90,6 +106,7 @@ export function FilingSubmissionWizard({ system, note }: { system: SubmissionSys
           totalSteps={wizard.totalSteps}
           onBack={() => wizard.goToStep(current.id - 1)}
           onComplete={wizard.completeCurrentStep}
+          draftDownload={current.id === 1 ? draftDownload : undefined}
         />
       )}
     </div>
@@ -104,11 +121,13 @@ function StepPanel({
   totalSteps,
   onBack,
   onComplete,
+  draftDownload,
 }: {
   step: SubmissionStep;
   totalSteps: number;
   onBack: () => void;
   onComplete: () => void;
+  draftDownload?: DraftDownload;
 }) {
   const [acknowledged, setAcknowledged] = useState(false);
 
@@ -119,6 +138,17 @@ function StepPanel({
         <h4 className="text-sm font-semibold">{step.title}</h4>
       </div>
       <p className="text-sm text-stone-600 leading-relaxed mb-3">{step.description}</p>
+
+      {draftDownload && (
+        <div className="mb-4">
+          <ExportDataButton
+            csvContent={draftDownload.csvContent}
+            fileNamePrefix={draftDownload.fileNamePrefix}
+            label="下書きデータをダウンロード（CSV）"
+          />
+        </div>
+      )}
+
       <div className="bg-amber-50 border border-amber-200 px-3 py-2 mb-4">
         <p className="text-xs text-amber-800 leading-relaxed">
           <span className="font-semibold">本人操作について: </span>
