@@ -46,6 +46,67 @@ describe("normalizeCsvWithBankFormat", () => {
     });
   });
 
+  it("normalizes ゆうちょ銀行 (split withdraw/deposit, お取り扱い内容 column)", () => {
+    const csv =
+      "取扱日,お取り扱い内容,お引出し,お預入れ,残高\n2026-01-07,通信費引落,5500,,300000\n2026-01-09,配当入金,,20000,320000\n";
+    const result = normalizeCsvWithBankFormat(csv, "yucho");
+    expect(result.transactions).toEqual([
+      { id: "row-1", date: "2026-01-07", description: "通信費引落", amount: -5500 },
+      { id: "row-2", date: "2026-01-09", description: "配当入金", amount: 20000 },
+    ]);
+    expect(result.detectedColumns).toEqual({
+      date: "取扱日",
+      description: "お取り扱い内容",
+      amount: "出金/入金列を合成",
+    });
+  });
+
+  it("normalizes みずほ銀行 (split withdraw/deposit, 年月日/取引内容 columns)", () => {
+    const csv = "年月日,取引内容,出金,入金,残高\n2026-01-11,消耗品費引落,3200,,600000\n2026-01-13,業務委託料入金,,150000,750000\n";
+    const result = normalizeCsvWithBankFormat(csv, "mizuho");
+    expect(result.transactions).toEqual([
+      { id: "row-1", date: "2026-01-11", description: "消耗品費引落", amount: -3200 },
+      { id: "row-2", date: "2026-01-13", description: "業務委託料入金", amount: 150000 },
+    ]);
+    expect(result.detectedColumns).toEqual({
+      date: "年月日",
+      description: "取引内容",
+      amount: "出金/入金列を合成",
+    });
+  });
+
+  it("normalizes 三菱UFJ銀行 (split withdraw/deposit, 入出金先内容 column)", () => {
+    const csv = "取引日,入出金先内容,お支払金額,お預入れ,残高\n2026-01-14,地代家賃引落,90000,,400000\n2026-01-16,売掛金入金,,300000,700000\n";
+    const result = normalizeCsvWithBankFormat(csv, "mufg");
+    expect(result.transactions).toEqual([
+      { id: "row-1", date: "2026-01-14", description: "地代家賃引落", amount: -90000 },
+      { id: "row-2", date: "2026-01-16", description: "売掛金入金", amount: 300000 },
+    ]);
+    expect(result.detectedColumns).toEqual({
+      date: "取引日",
+      description: "入出金先内容",
+      amount: "出金/入金列を合成",
+    });
+  });
+
+  it("normalizes JCBカード (positive usage amount negated to an expense, ご利用先 column)", () => {
+    const csv = "ご利用日,ご利用先,ご利用金額\n2026-01-18,セブンイレブン,980\n";
+    const result = normalizeCsvWithBankFormat(csv, "jcb_card");
+    expect(result.transactions).toEqual([{ id: "row-1", date: "2026-01-18", description: "セブンイレブン", amount: -980 }]);
+    expect(result.detectedColumns).toEqual({ date: "ご利用日", description: "ご利用先", amount: "ご利用金額" });
+  });
+
+  it("normalizes PayPayカード (positive usage amount negated to an expense, 利用店名・商品名 column)", () => {
+    const csv = "ご利用日,利用店名・商品名,ご利用金額\n2026-01-22,PayPayモール,4500\n";
+    const result = normalizeCsvWithBankFormat(csv, "paypay_card");
+    expect(result.transactions).toEqual([{ id: "row-1", date: "2026-01-22", description: "PayPayモール", amount: -4500 }]);
+    expect(result.detectedColumns).toEqual({
+      date: "ご利用日",
+      description: "利用店名・商品名",
+      amount: "ご利用金額",
+    });
+  });
+
   it("normalizes 三井住友カード (positive usage amount negated to an expense)", () => {
     const csv = "ご利用日,ご利用店名,ご利用金額\n2026-01-12,Amazon.co.jp,6400\n2026-01-20,スターバックス,580\n";
     const result = normalizeCsvWithBankFormat(csv, "smcc");
@@ -147,6 +208,35 @@ describe("detectBankFormat", () => {
     expect(detectBankFormat(gmoHeader)).toBe("gmo_aozora");
   });
 
+  it("detects ゆうちょ銀行 from its header row", () => {
+    const header = parseCsvText("取扱日,お取り扱い内容,お引出し,お預入れ,残高\n")[0];
+    expect(detectBankFormat(header)).toBe("yucho");
+  });
+
+  it("detects みずほ銀行 from its header row", () => {
+    const header = parseCsvText("年月日,取引内容,出金,入金,残高\n")[0];
+    expect(detectBankFormat(header)).toBe("mizuho");
+  });
+
+  it("detects 三菱UFJ銀行 from its header row", () => {
+    const header = parseCsvText("取引日,入出金先内容,お支払金額,お預入れ,残高\n")[0];
+    expect(detectBankFormat(header)).toBe("mufg");
+  });
+
+  it("distinguishes 三菱UFJ銀行 (split, 入出金先内容) from 楽天銀行 (signed, 摘要) despite sharing the 取引日 date column", () => {
+    const mufgHeader = parseCsvText("取引日,入出金先内容,お支払金額,お預入れ,残高\n")[0];
+    const rakutenHeader = parseCsvText("取引日,入出金,摘要,取引後残高\n")[0];
+    expect(detectBankFormat(mufgHeader)).toBe("mufg");
+    expect(detectBankFormat(rakutenHeader)).toBe("rakuten_bank");
+  });
+
+  it("distinguishes ゆうちょ銀行 from 三菱UFJ銀行 despite both using an お預入れ deposit column", () => {
+    const yuchoHeader = parseCsvText("取扱日,お取り扱い内容,お引出し,お預入れ\n")[0];
+    const mufgHeader = parseCsvText("取引日,入出金先内容,お支払金額,お預入れ\n")[0];
+    expect(detectBankFormat(yuchoHeader)).toBe("yucho");
+    expect(detectBankFormat(mufgHeader)).toBe("mufg");
+  });
+
   it("detects 三井住友カード from its header row", () => {
     const header = parseCsvText("ご利用日,ご利用店名,ご利用金額\n")[0];
     expect(detectBankFormat(header)).toBe("smcc");
@@ -155,6 +245,25 @@ describe("detectBankFormat", () => {
   it("detects 楽天カード from its header row", () => {
     const header = parseCsvText("利用日,利用店名,利用金額\n")[0];
     expect(detectBankFormat(header)).toBe("rakuten_card");
+  });
+
+  it("detects JCBカード from its header row", () => {
+    const header = parseCsvText("ご利用日,ご利用先,ご利用金額\n")[0];
+    expect(detectBankFormat(header)).toBe("jcb_card");
+  });
+
+  it("detects PayPayカード from its header row", () => {
+    const header = parseCsvText("ご利用日,利用店名・商品名,ご利用金額\n")[0];
+    expect(detectBankFormat(header)).toBe("paypay_card");
+  });
+
+  it("distinguishes 三井住友カード, JCBカード, and PayPayカード despite all sharing ご利用日/ご利用金額 columns", () => {
+    const smccHeader = parseCsvText("ご利用日,ご利用店名,ご利用金額\n")[0];
+    const jcbHeader = parseCsvText("ご利用日,ご利用先,ご利用金額\n")[0];
+    const paypayHeader = parseCsvText("ご利用日,利用店名・商品名,ご利用金額\n")[0];
+    expect(detectBankFormat(smccHeader)).toBe("smcc");
+    expect(detectBankFormat(jcbHeader)).toBe("jcb_card");
+    expect(detectBankFormat(paypayHeader)).toBe("paypay_card");
   });
 
   it("is case-insensitive and tolerant of surrounding whitespace in header cells", () => {
@@ -210,13 +319,31 @@ describe("normalizeBankCsv", () => {
 });
 
 describe("BANK_FORMATS", () => {
-  it("exposes exactly the five priority institutions with Japanese labels", () => {
+  it("exposes exactly the ten supported institutions with Japanese labels", () => {
     const ids = Object.keys(BANK_FORMATS).sort();
-    expect(ids).toEqual(["gmo_aozora", "rakuten_bank", "rakuten_card", "sbi_sumishin", "smcc"].sort());
+    expect(ids).toEqual(
+      [
+        "gmo_aozora",
+        "jcb_card",
+        "mizuho",
+        "mufg",
+        "paypay_card",
+        "rakuten_bank",
+        "rakuten_card",
+        "sbi_sumishin",
+        "smcc",
+        "yucho",
+      ].sort()
+    );
     expect(BANK_FORMATS.sbi_sumishin.label).toBe("住信SBIネット銀行");
     expect(BANK_FORMATS.rakuten_bank.label).toBe("楽天銀行");
     expect(BANK_FORMATS.gmo_aozora.label).toBe("GMOあおぞらネット銀行");
+    expect(BANK_FORMATS.yucho.label).toBe("ゆうちょ銀行");
+    expect(BANK_FORMATS.mizuho.label).toBe("みずほ銀行");
+    expect(BANK_FORMATS.mufg.label).toBe("三菱UFJ銀行");
     expect(BANK_FORMATS.smcc.label).toBe("三井住友カード");
     expect(BANK_FORMATS.rakuten_card.label).toBe("楽天カード");
+    expect(BANK_FORMATS.jcb_card.label).toBe("JCBカード");
+    expect(BANK_FORMATS.paypay_card.label).toBe("PayPayカード");
   });
 });
