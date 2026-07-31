@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClientInvoiceForm } from "@/components/ClientInvoiceForm";
 import { ReceivablesAgingTable } from "@/components/ReceivablesAgingTable";
+import { RecurringInvoiceManager } from "@/components/RecurringInvoiceManager";
 import { ReceivableInvoiceInput, computeReceivablesSummary } from "@/lib/invoice/receivables";
 
 export const metadata: Metadata = {
@@ -100,6 +101,18 @@ export default function InvoicesPage() {
         </section>
 
         <ClientInvoiceForm />
+
+        <section>
+          <h2 className="text-2xl font-semibold mb-2">定期請求書（サブスクリプション/顧問料クライアント向け）</h2>
+          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+            毎月/四半期ごとに同じ内容で発行する顧問料・サブスクリプション請求をテンプレートとして登録すると、
+            対象期間に発生する発行日を確認しながら、その場で請求書を作成できます。
+          </p>
+          <p className="text-xs text-amber-700 max-w-2xl leading-relaxed mb-4">
+            これは請求書データの下書き作成を補助する概算ツールです。税務代理・個別具体的な税務相談は行っておりません。
+          </p>
+          <RecurringInvoiceManager />
+        </section>
 
         <section>
           <h2 className="text-2xl font-semibold mb-2">未収入金（発行済み請求書の入金状況）</h2>
