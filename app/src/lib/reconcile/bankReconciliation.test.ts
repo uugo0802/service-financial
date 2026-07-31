@@ -72,6 +72,56 @@ describe("reconcileBankBalance - tolerance", () => {
     expect(result.isReconciled).toBe(true);
   });
 
+  it("treats a discrepancy exactly equal to a custom positive tolerance as reconciled (inclusive boundary)", () => {
+    const result = reconcileBankBalance({
+      transactions: [{ amount: 100000 }],
+      openingBalance: 0,
+      actualClosingBalance: 101000,
+      toleranceYen: 1000,
+    });
+    expect(result.discrepancy).toBe(1000);
+    expect(result.isReconciled).toBe(true);
+  });
+
+  it("treats a discrepancy exactly equal to the negative of a custom tolerance as reconciled (inclusive boundary)", () => {
+    const result = reconcileBankBalance({
+      transactions: [{ amount: 100000 }],
+      openingBalance: 0,
+      actualClosingBalance: 99000,
+      toleranceYen: 1000,
+    });
+    expect(result.discrepancy).toBe(-1000);
+    expect(result.isReconciled).toBe(true);
+  });
+
+  it("treats a discrepancy one yen beyond a custom tolerance as not reconciled", () => {
+    const result = reconcileBankBalance({
+      transactions: [{ amount: 100000 }],
+      openingBalance: 0,
+      actualClosingBalance: 101001,
+      toleranceYen: 1000,
+    });
+    expect(result.isReconciled).toBe(false);
+  });
+
+  it("requires an exact match when toleranceYen is explicitly set to 0", () => {
+    const exact = reconcileBankBalance({
+      transactions: [{ amount: 100000 }],
+      openingBalance: 0,
+      actualClosingBalance: 100000,
+      toleranceYen: 0,
+    });
+    expect(exact.isReconciled).toBe(true);
+
+    const offByOne = reconcileBankBalance({
+      transactions: [{ amount: 100000 }],
+      openingBalance: 0,
+      actualClosingBalance: 100001,
+      toleranceYen: 0,
+    });
+    expect(offByOne.isReconciled).toBe(false);
+  });
+
   it("treats a negative discrepancy within tolerance as reconciled too", () => {
     const result = reconcileBankBalance({
       transactions: [{ amount: 100000 }],

@@ -239,6 +239,21 @@ describe("findDuplicateCounterparties", () => {
     ];
     expect(findDuplicateCounterparties(records)).toEqual([]);
   });
+
+  it("returns no groups for an empty record list", () => {
+    expect(findDuplicateCounterparties([])).toEqual([]);
+  });
+
+  it("groups three or more records sharing the same normalized name into a single group", () => {
+    const records: Counterparty[] = [
+      counterparty({ id: "1", name: "同名会社" }),
+      counterparty({ id: "2", name: "同名会社　" }),
+      counterparty({ id: "3", name: "  同名会社" }),
+    ];
+    const groups = findDuplicateCounterparties(records);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].records.map((r) => r.id).sort()).toEqual(["1", "2", "3"]);
+  });
 });
 
 describe("dedupeCounterpartiesByName", () => {
@@ -317,5 +332,60 @@ describe("dedupeCounterpartiesByName", () => {
       invoiceRegistrationNumber: VALID_REGISTRATION_NUMBER_2,
     });
     expect(hasCounterpartyErrors(errors)).toBe(false);
+  });
+
+  it("merges three or more duplicate-name records, keeping the oldest and filling gaps from any of the others", () => {
+    const records: Counterparty[] = [
+      counterparty({
+        id: "oldest",
+        name: "三重複会社",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+      }),
+      counterparty({
+        id: "middle",
+        name: "三重複会社　",
+        createdAt: "2026-02-01T00:00:00.000Z",
+        updatedAt: "2026-02-01T00:00:00.000Z",
+        notes: "2件目のメモ",
+      }),
+      counterparty({
+        id: "newest",
+        name: "  三重複会社",
+        createdAt: "2026-03-01T00:00:00.000Z",
+        updatedAt: "2026-03-01T00:00:00.000Z",
+        defaultAccountName: "売上高",
+      }),
+    ];
+
+    const result = dedupeCounterpartiesByName(records);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("oldest");
+    expect(result[0].notes).toBe("2件目のメモ");
+    expect(result[0].defaultAccountName).toBe("売上高");
+    expect(result[0].updatedAt).toBe("2026-03-01T00:00:00.000Z");
+  });
+
+  it("returns an empty array for an empty record list", () => {
+    expect(dedupeCounterpartiesByName([])).toEqual([]);
+  });
+});
+
+describe("isDuplicateCounterpartyName - blank input", () => {
+  it("returns false for an empty or whitespace-only name even when records exist", () => {
+    const records: Counterparty[] = [counterparty({ id: "1", name: "株式会社サンプル商事" })];
+    expect(isDuplicateCounterpartyName(records, "")).toBe(false);
+    expect(isDuplicateCounterpartyName(records, "   ")).toBe(false);
+  });
+
+  it("returns false against an empty record list", () => {
+    expect(isDuplicateCounterpartyName([], "株式会社サンプル商事")).toBe(false);
+  });
+});
+
+describe("listCounterparties - empty input", () => {
+  it("returns an empty array for an empty record list regardless of filters", () => {
+    expect(listCounterparties([])).toEqual([]);
+    expect(listCounterparties([], { kind: "vendor", query: "何か" })).toEqual([]);
   });
 });

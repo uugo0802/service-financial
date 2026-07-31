@@ -288,4 +288,42 @@ describe("buildClientInvoice - zero line item edge case", () => {
     expect(result.invoice.totalTax).toBe(0);
     expect(result.invoice.grandTotal).toBe(0);
   });
+
+  it("does not throw and reports the same missing-line-items error when lineItems is undefined", () => {
+    const input = baseInput() as ClientInvoiceInput;
+    // @ts-expect-error intentionally simulating a caller that omits lineItems entirely
+    delete input.lineItems;
+
+    expect(() => buildClientInvoice(input)).not.toThrow();
+    const result = buildClientInvoice(input);
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes("明細行が1件もありません"))).toBe(true);
+    expect(result.invoice.lineItems).toEqual([]);
+  });
+});
+
+describe("buildClientInvoice - negative quantity edge case", () => {
+  it("flags a negative quantity as an error rather than silently computing a negative line amount", () => {
+    const result = buildClientInvoice(
+      baseInput({ lineItems: [{ description: "返品調整", quantity: -1, unitPrice: 1000, taxRate: 10 }] })
+    );
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes("数量"))).toBe(true);
+  });
+});
+
+describe("buildClientInvoice - many line items at the same tax rate", () => {
+  it("sums a large number of line items without losing precision", () => {
+    const lineItems = Array.from({ length: 50 }, (_, i) => ({
+      description: `明細${i + 1}`,
+      quantity: 1,
+      unitPrice: 1_111,
+      taxRate: 10 as const,
+    }));
+    const result = buildClientInvoice(baseInput({ lineItems }));
+
+    const standard = result.invoice.taxRateSubtotals.find((s) => s.taxRate === 10)!;
+    expect(standard.taxableBase).toBe(1_111 * 50);
+    expect(result.invoice.lineItems).toHaveLength(50);
+  });
 });

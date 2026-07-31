@@ -242,6 +242,22 @@ describe("loadNotificationPreferences", () => {
 
     expect(loadNotificationPreferences(storage)).toEqual(custom);
   });
+
+  it("returns defaults when storage.getItem throws (e.g. a disabled/corrupted storage backend)", () => {
+    const throwingStorage: NotificationPreferencesStorage = {
+      getItem: () => {
+        throw new Error("storage unavailable");
+      },
+      setItem: () => {},
+    };
+    expect(() => loadNotificationPreferences(throwingStorage)).not.toThrow();
+    expect(loadNotificationPreferences(throwingStorage)).toEqual(DEFAULT_NOTIFICATION_PREFERENCES);
+  });
+
+  it("returns defaults when the stored value is valid JSON but not an object (e.g. a bare string or number)", () => {
+    const storage = createMemoryStorage({ [NOTIFICATION_PREFERENCES_STORAGE_KEY]: JSON.stringify("weekly") });
+    expect(loadNotificationPreferences(storage)).toEqual(DEFAULT_NOTIFICATION_PREFERENCES);
+  });
 });
 
 describe("saveNotificationPreferences", () => {
