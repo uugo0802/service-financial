@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ExpenseAllocationCalculator } from "@/components/ExpenseAllocationCalculator";
+import { MileageAllocationCalculator } from "@/components/MileageAllocationCalculator";
 
 export const metadata: Metadata = {
   title: "家事按分計算（個人事業主向け）｜税務申告AI ジャービス",
@@ -38,6 +39,23 @@ export default function ExpenseAllocationPage() {
 
         <section className="border border-stone-300 bg-white p-6">
           <ExpenseAllocationCalculator />
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xl font-semibold">車両費：走行距離（マイレージ）からの按分計算</h2>
+          <p className="text-sm text-stone-600 leading-relaxed">
+            車両費（ガソリン代・車検代・自動車保険料など）については、按分率を直接入力する代わりに、
+            走行距離ログ（日付・目的・事業利用km・総走行km）から事業按分率を算出することもできます。
+            上記の按分率入力フォームを置き換えるものではなく、<b>車両費に限った代替の入力方法</b>です。
+          </p>
+          <p className="text-sm text-stone-600 leading-relaxed">
+            こちらも、走行距離ログの記録内容や、算出された按分率が税務上妥当かどうかの判断は行いません。
+            記録・保管はご自身の責任で行い、必要に応じて税理士へご相談ください。
+          </p>
+        </section>
+
+        <section className="border border-stone-300 bg-white p-6">
+          <MileageAllocationCalculator />
         </section>
       </main>
 
