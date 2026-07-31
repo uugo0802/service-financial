@@ -45,6 +45,22 @@ describe("validateUserCategoryRuleDraft", () => {
     expect(errors.pattern).toBeDefined();
   });
 
+  it("rejects a pattern made only of full-width (全角) spaces, same as half-width whitespace", () => {
+    const errors = validateUserCategoryRuleDraft({ ...validDraft, pattern: "　　　" });
+    expect(errors.pattern).toBeDefined();
+  });
+
+  it("accepts a 3-character full-width (全角) Japanese pattern and rejects a 2-character one", () => {
+    // MIN_PATTERN_LENGTH is a raw .length check; full-width Japanese characters are single UTF-16
+    // code units (unlike astral-plane emoji), so a 2-character keyword like "税理" must still be
+    // rejected as too short, and a 3-character one like "税理士" must be accepted.
+    const tooShort = validateUserCategoryRuleDraft({ ...validDraft, pattern: "税理" });
+    expect(tooShort.pattern).toBeDefined();
+
+    const longEnough = validateUserCategoryRuleDraft({ ...validDraft, pattern: "税理士" });
+    expect(longEnough.pattern).toBeUndefined();
+  });
+
   it("rejects patterns shorter than MIN_PATTERN_LENGTH characters (regression guard for the au/ANA/JR-style false positives)", () => {
     // dictionary.ts のコミット ae8d39b で明らかになった通り、"au"/"ANA"/"JR" のような
     // 1〜2文字の非境界キーワードは無関係な文字列に誤マッチしやすい。
@@ -169,6 +185,25 @@ describe("userCategoryRuleToCategoryRule", () => {
     expect(rule.pattern.test("v2.5plan 契約")).toBe(true);
     // An unescaped "." would also match any single character in place of the literal dot.
     expect(rule.pattern.test("v2X5plan 契約")).toBe(false);
+  });
+
+  it("matches a full-width (全角) Japanese keyword literally against a full-width description", () => {
+    const userRule = createUserCategoryRule({ pattern: "取引先ＡＢＣ", account: "売上高", taxCategory: "課税売上10%" });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.pattern.test("取引先ＡＢＣからの入金")).toBe(true);
+  });
+
+  // Documents current behavior (not a bug fix): the pattern is matched as a literal substring with
+  // no full-width/half-width normalization, so a full-width digit keyword will NOT match a
+  // half-width digit description and vice versa. If bank CSV descriptions turn out to mix widths in
+  // practice, normalizing both sides before matching would need to be a deliberate follow-up change.
+  it("does not match across full-width vs half-width digit forms (no NFKC normalization on match)", () => {
+    const userRule = createUserCategoryRule({ pattern: "１２３商店", account: "外注費", taxCategory: "課税仕入10%" });
+    const rule = userCategoryRuleToCategoryRule(userRule);
+
+    expect(rule.pattern.test("１２３商店 御中")).toBe(true);
+    expect(rule.pattern.test("123商店 御中")).toBe(false);
   });
 
   // Regression: a tenant-defined keyword routed to an account that is unambiguously
