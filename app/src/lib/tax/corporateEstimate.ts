@@ -61,15 +61,24 @@ export function estimateForMicroCorp(rows: CategorizedTransaction[]): CorporateE
   // LLMの出力をそのまま使うため、両者が食い違う結果（account="元入金"だがtaxCategory="課税売上10%"等）
   // を返す可能性がある。businessIncome（excludeFromIncomeを除外済み）を使うことで、
   // そのような食い違いがあっても借入金・出資を課税売上として扱わないようにする。
-  const salesTax10 = businessIncome
+  //
+  // 消費税額は取引ごとに端数処理してから合算するのではなく、税率区分ごとに税込金額を
+  // まず合計し、その合計額に対して1回だけ端数処理（円未満切り捨て）する（consumptionTaxForm.ts の
+  // 「割戻し計算」と同じ考え方）。取引ごとに端数処理してから合算すると、個々の端数処理誤差が
+  // 積み重なり、本来の税額からずれてしまう（例: 105円・115円の売上2件は取引ごとの切り捨てだと
+  // 9円+10円=19円になるが、合計220円を1回だけ切り捨てると正しくは20円になる）。
+  const salesInclusive10 = businessIncome
     .filter((r) => r.taxCategory === "課税売上10%")
-    .reduce((sum, r) => sum + extractTax(r.amount, 10), 0);
-  const purchaseTax10 = expense
+    .reduce((sum, r) => sum + r.amount, 0);
+  const salesTax10 = extractTax(salesInclusive10, 10);
+  const purchaseInclusive10 = expense
     .filter((r) => r.taxCategory === "課税仕入10%")
-    .reduce((sum, r) => sum + extractTax(Math.abs(r.amount), 10), 0);
-  const purchaseTax8 = expense
+    .reduce((sum, r) => sum + Math.abs(r.amount), 0);
+  const purchaseTax10 = extractTax(purchaseInclusive10, 10);
+  const purchaseInclusive8 = expense
     .filter((r) => r.taxCategory === "課税仕入8%(軽減)")
-    .reduce((sum, r) => sum + extractTax(Math.abs(r.amount), 8), 0);
+    .reduce((sum, r) => sum + Math.abs(r.amount), 0);
+  const purchaseTax8 = extractTax(purchaseInclusive8, 8);
 
   return {
     revenue,
