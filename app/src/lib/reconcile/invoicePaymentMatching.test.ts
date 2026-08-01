@@ -162,4 +162,95 @@ describe("matchInvoicePayments - no match", () => {
     expect(result.unmatchedDeposits).toHaveLength(0);
     expect(result.unmatchedInvoices).toHaveLength(0);
   });
+
+  it("ignores a zero-amount transaction entirely (neither a deposit nor an outgoing payment)", () => {
+    const invoices = [invoice({ invoiceNumber: "INV-0001", clientName: "G社", grandTotal: 100000 })];
+    const transactions = [{ id: "tx-1", date: "2026-06-15", description: "残高照会", amount: 0 }];
+
+    const result = matchInvoicePayments({ invoices, transactions });
+
+    expect(result.highConfidenceMatches).toHaveLength(0);
+    expect(result.unmatchedDeposits).toHaveLength(0);
+    expect(result.unmatchedInvoices).toHaveLength(1);
+  });
+
+  it("tolerates undefined invoices/transactions arrays without throwing (defensive against partial input)", () => {
+    expect(() =>
+      matchInvoicePayments({
+        invoices: undefined as unknown as ReceivableInvoiceInput[],
+        transactions: undefined as unknown as { id: string; date: string; description: string; amount: number }[],
+      })
+    ).not.toThrow();
+
+    const result = matchInvoicePayments({
+      invoices: undefined as unknown as ReceivableInvoiceInput[],
+      transactions: undefined as unknown as { id: string; date: string; description: string; amount: number }[],
+    });
+    expect(result.highConfidenceMatches).toHaveLength(0);
+    expect(result.unmatchedDeposits).toHaveLength(0);
+    expect(result.unmatchedInvoices).toHaveLength(0);
+  });
+});
+
+describe("matchInvoicePayments - combined (lump-sum) payment edge cases", () => {
+  it("does not detect a lump sum that only matches when three invoices (not a pair) are summed", () => {
+    const invoices = [
+      invoice({ invoiceNumber: "INV-0001", clientName: "H社", grandTotal: 100000 }),
+      invoice({ invoiceNumber: "INV-0002", clientName: "H社", grandTotal: 100000 }),
+      invoice({ invoiceNumber: "INV-0003", clientName: "H社", grandTotal: 100000 }),
+    ];
+    // 3件合計 (300000) と一致するが、2件の組み合わせでは一致しない金額
+    const transactions = [{ id: "tx-1", date: "2026-06-15", description: "フリコミ）エイチシャ", amount: 300000 }];
+
+    const result = matchInvoicePayments({ invoices, transactions });
+
+    expect(result.combinedPaymentReviewItems).toHaveLength(0);
+    expect(result.unmatchedDeposits).toHaveLength(1);
+    expect(result.unmatchedInvoices).toHaveLength(3);
+  });
+
+  it("does not treat a cross-client coincidental pair sum as a combined payment (grouping is per-client only)", () => {
+    const invoices = [
+      invoice({ invoiceNumber: "INV-0001", clientName: "I社", grandTotal: 150000 }),
+      invoice({ invoiceNumber: "INV-0002", clientName: "J社", grandTotal: 250000 }),
+    ];
+    // 150000 + 250000 = 400000 と一致するが、請求先が異なるためまとめ入金として検出されるべきではない
+    const transactions = [{ id: "tx-1", date: "2026-06-15", description: "謎の振込", amount: 400000 }];
+
+    const result = matchInvoicePayments({ invoices, transactions });
+
+    expect(result.combinedPaymentReviewItems).toHaveLength(0);
+    expect(result.unmatchedDeposits).toHaveLength(1);
+    expect(result.unmatchedInvoices).toHaveLength(2);
+  });
+});
+
+describe("matchInvoicePayments - multiple partial-payment candidates for the same client", () => {
+  it("surfaces every outstanding invoice larger than the deposit as its own partial candidate when the payer name matches multiple invoices", () => {
+    const invoices = [
+      invoice({ invoiceNumber: "INV-0001", clientName: "K社", grandTotal: 500000 }),
+      invoice({ invoiceNumber: "INV-0002", clientName: "K社", grandTotal: 800000 }),
+    ];
+    const transactions = [{ id: "tx-1", date: "2026-06-15", description: "入金 K社分", amount: 300000 }];
+
+    const result = matchInvoicePayments({ invoices, transactions });
+
+    expect(result.partialPaymentCandidates).toHaveLength(2);
+    const remaining = result.partialPaymentCandidates.map((c) => c.remainingBalanceAfterMatch).sort((a, b) => a! - b!);
+    expect(remaining).toEqual([200000, 500000]);
+  });
+});
+
+describe("fuzzyPayerNameMatches - edge cases", () => {
+  it("returns false when the client name is a single character (too short to reliably match)", () => {
+    expect(fuzzyPayerNameMatches("A社からのフリコミ", "A")).toBe(false);
+  });
+
+  it("returns false for an empty description", () => {
+    expect(fuzzyPayerNameMatches("", "株式会社ホゲホゲ")).toBe(false);
+  });
+
+  it("returns false for an empty client name", () => {
+    expect(fuzzyPayerNameMatches("フリコミ）ホゲホゲ", "")).toBe(false);
+  });
 });
