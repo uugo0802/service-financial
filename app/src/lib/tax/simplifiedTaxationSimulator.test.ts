@@ -121,6 +121,34 @@ describe("simulateSimplifiedVsGeneralTaxation — 複数事業区分の内訳", 
   });
 });
 
+describe("simulateSimplifiedVsGeneralTaxation — 事業区分ごとの端数処理の集計順序", () => {
+  // Regression: computeSimplifiedEstimate used to truncate each business category's tax-on-sales
+  // portion individually (floor(105*0.1)=10, floor(115*0.1)=11 -> summed to 21) instead of
+  // truncating once on the combined taxable sales across categories (floor(220*0.1)=22), the same
+  // per-subgroup-truncate-then-sum bug already fixed for consumptionTaxForm.ts (commit 2c20dc7) and
+  // estimate.ts/corporateEstimate.ts (commit 023166e). This understated the simplified method's
+  // taxDue base by 1 yen versus the already-correct top-level taxOnSales field, and the discrepancy
+  // grows with the number of business categories.
+  it("aggregates taxable sales across business categories before truncating once, matching taxOnSales, instead of truncating each category separately and summing", () => {
+    const result = simulateSimplifiedVsGeneralTaxation({
+      baseYearTaxableSales: 20_000_000,
+      businessCategoryBreakdown: [
+        { category: 1, taxableSales: 105 }, // floor(105*0.1) = 10 if truncated alone
+        { category: 6, taxableSales: 115 }, // floor(115*0.1) = 11 if truncated alone
+      ],
+      actualTaxablePurchases: 0,
+    });
+
+    // Combined taxable sales = 220 -> floor(220*0.1) = 22 (correct), not 10+11=21 (per-category leak).
+    expect(result.taxOnSales).toBe(22);
+    // deductibleInputTax = floor(10*0.9) + floor(11*0.4) = 9 + 4 = 13 (per-category rates are
+    // legitimately category-specific, only the taxOnSales base used for taxDue must be the
+    // single aggregate truncation).
+    expect(result.simplified.deductibleInputTax).toBe(13);
+    expect(result.simplified.taxDue).toBe(22 - 13);
+  });
+});
+
 describe("simulateSimplifiedVsGeneralTaxation — 固定文言", () => {
   it("always returns the two-year lock-in warning and the disclaimer verbatim", () => {
     const result = simulateSimplifiedVsGeneralTaxation({

@@ -114,7 +114,22 @@ function assertFiniteNonNegative(value: number, label: string): void {
   }
 }
 
-function computeSimplifiedEstimate(breakdown: BusinessCategorySalesBreakdown[]): SimplifiedMethodEstimate {
+/**
+ * taxOnSales は呼び出し側（simulateSimplifiedVsGeneralTaxation）が、事業区分をまたいだ
+ * 課税売上高の合計に対して1回だけ端数処理（円未満切り捨て）した値をそのまま渡す。
+ * 事業区分ごとのみなし仕入率を適用するため控除対象仕入税額の内訳計算は事業区分ごとに
+ * 行う必要があるが（各区分でみなし仕入率が異なるため区分ごとの計算自体は必須）、
+ * 納税額の算出に使う「課税売上げに係る消費税額」は、区分ごとに端数処理してから合算するの
+ * ではなく、consumptionTaxForm.ts / estimate.ts と同じ「合計してから1回だけ端数処理」した
+ * taxOnSales を使う。区分ごとに端数処理してから合算すると、区分数が増えるほど端数処理誤差が
+ * 積み重なり、税額が本来より過小に算出されてしまう（例: 第一種105円・第六種115円の2区分は
+ * 合計220円→切り捨てで22円が正しいが、区分ごとに切り捨てて合算すると10円+11円=21円という
+ * 過小な額になってしまう）。
+ */
+function computeSimplifiedEstimate(
+  breakdown: BusinessCategorySalesBreakdown[],
+  taxOnSales: number
+): SimplifiedMethodEstimate {
   const categoryBreakdown: SimplifiedTaxationCategoryEstimate[] = breakdown.map((entry) => {
     const deemedPurchaseRate = DEEMED_PURCHASE_RATES[entry.category];
     const categoryTaxOnSales = Math.floor(entry.taxableSales * APPROX_COMBINED_TAX_RATE);
@@ -129,11 +144,7 @@ function computeSimplifiedEstimate(breakdown: BusinessCategorySalesBreakdown[]):
   });
 
   const deductibleInputTax = categoryBreakdown.reduce((sum, c) => sum + c.deductibleInputTax, 0);
-  const totalCategoryTaxOnSales = categoryBreakdown.reduce(
-    (sum, c) => sum + Math.floor(c.taxableSales * APPROX_COMBINED_TAX_RATE),
-    0
-  );
-  const taxDue = Math.max(0, totalCategoryTaxOnSales - deductibleInputTax);
+  const taxDue = Math.max(0, taxOnSales - deductibleInputTax);
 
   return { method: "simplified", deductibleInputTax, taxDue, categoryBreakdown };
 }
@@ -171,7 +182,7 @@ export function simulateSimplifiedVsGeneralTaxation(
   const totalTaxableSales = businessCategoryBreakdown.reduce((sum, entry) => sum + entry.taxableSales, 0);
   const taxOnSales = Math.floor(totalTaxableSales * APPROX_COMBINED_TAX_RATE);
 
-  const simplified = computeSimplifiedEstimate(businessCategoryBreakdown);
+  const simplified = computeSimplifiedEstimate(businessCategoryBreakdown, taxOnSales);
   const general = computeGeneralEstimate(actualTaxablePurchases, taxOnSales);
 
   const eligible = baseYearTaxableSales <= SIMPLIFIED_TAXATION_ELIGIBILITY_THRESHOLD;
