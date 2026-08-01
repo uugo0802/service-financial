@@ -86,6 +86,26 @@ describe("buildCategorizationRationale", () => {
 
       expect(result.explanation).toContain("推定しました");
     });
+
+    // Boundary regression: LOW_CONFIDENCE_THRESHOLD (0.75) is duplicated from
+    // categorize/engine.ts's CONFIDENCE_THRESHOLD and compared with strict "<", so a
+    // confidence exactly at the threshold must still read as "confirmed" (not silently
+    // flagged, nor silently missed) and a confidence a hair below it must flip to
+    // "needsReview". This locks in that exact-equality boundary so the two duplicated
+    // constants can't quietly drift apart from engine.ts's needsEscalation() behavior.
+    it("stays confirmed when AI confidence is exactly at the review threshold (boundary)", () => {
+      const result = buildCategorizationRationale(tx({ source: "ai", confidence: 0.75, note: "定期購読" }));
+
+      expect(result.tone).toBe("confirmed");
+      expect(result.reviewMessage).toBeNull();
+    });
+
+    it("flags needsReview when AI confidence is a hair below the review threshold (boundary)", () => {
+      const result = buildCategorizationRationale(tx({ source: "ai", confidence: 0.749999, note: "定期購読" }));
+
+      expect(result.tone).toBe("needsReview");
+      expect(result.reviewMessage).not.toBeNull();
+    });
   });
 
   describe("manual source", () => {
