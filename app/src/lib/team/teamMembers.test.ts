@@ -174,6 +174,12 @@ describe("changeTeamMemberRole", () => {
   it("throws when the member does not exist", () => {
     expect(() => changeTeamMemberRole([], "missing", "editor")).toThrow();
   });
+
+  it("does not throw a LastOwnerError when 'changing' the sole owner's role to owner (no-op)", () => {
+    const members = [ownerMember()];
+    const result = changeTeamMemberRole(members, "member-owner", "owner");
+    expect(result.find((m) => m.id === "member-owner")?.role).toBe("owner");
+  });
 });
 
 describe("removeTeamMember", () => {
@@ -223,6 +229,15 @@ describe("countOwners / isLastOwner", () => {
   it("returns false once a second owner exists", () => {
     const members = [ownerMember(), ownerMember({ id: "member-owner-2", email: "owner2@example.com" })];
     expect(isLastOwner(members, "member-owner")).toBe(false);
+  });
+
+  it("returns false for a memberId that does not exist", () => {
+    const members = [ownerMember()];
+    expect(isLastOwner(members, "does-not-exist")).toBe(false);
+  });
+
+  it("scoped tenant with zero owners (e.g. empty member list) counts as 0, not an error", () => {
+    expect(countOwners([], TENANT_ID)).toBe(0);
   });
 });
 

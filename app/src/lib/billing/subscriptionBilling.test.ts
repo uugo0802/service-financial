@@ -99,6 +99,12 @@ describe("computeNextBillingDate / formatNextBillingDateLabel", () => {
     expect(computeNextBillingDate(subscription)).toBeNull();
     expect(formatNextBillingDateLabel(subscription)).toBe("未設定");
   });
+
+  it("still reports the period-end date as the next billing date while past_due (payment is late, not canceled)", () => {
+    const subscription = baseSubscription({ status: "past_due", currentPeriodEnd: "2026-07-31" });
+    expect(computeNextBillingDate(subscription)).toBe("2026-07-31");
+    expect(formatNextBillingDateLabel(subscription)).toBe("2026年7月31日");
+  });
 });
 
 describe("buildCurrentSubscriptionView", () => {
@@ -257,5 +263,17 @@ describe("buildReceiptPrintFields", () => {
     const fields = buildReceiptPrintFields(entry);
     expect(fields.find((f) => f.key === "tenantName")?.value).toBe("（未入力）");
     expect(fields.find((f) => f.key === "receiptNumber")?.value).toBe("R-2026-0001");
+  });
+
+  it("falls back to a placeholder receipt number when it is an empty string", () => {
+    const [entry] = buildReceiptHistory([charge({ receiptNumber: "" })]);
+    const fields = buildReceiptPrintFields(entry, "サンプル合同会社");
+    expect(fields.find((f) => f.key === "receiptNumber")?.value).toBe("未採番");
+  });
+
+  it("treats a whitespace-only tenant name the same as no tenant name", () => {
+    const [entry] = buildReceiptHistory([charge()]);
+    const fields = buildReceiptPrintFields(entry, "   ");
+    expect(fields.find((f) => f.key === "tenantName")?.value).toBe("（未入力）");
   });
 });

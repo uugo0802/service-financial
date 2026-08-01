@@ -50,6 +50,52 @@ describe("computeActualExpenseByCategory", () => {
     );
     expect(totals.size).toBe(0);
   });
+
+  // 回帰テスト: personalDeductionOnly（国民健康保険・国民年金・生命保険料等）は
+  // 個人事業主の所得控除項目であり事業の必要経費ではないため、estimate.ts /
+  // individualForms.ts / consumptionTaxForm.ts と同様に実績支出から除外する必要がある。
+  // 修正前は tx.amount < 0 であれば無条件に合算しており、この行も事業経費として
+  // カウントしてしまっていた（budgetTracking.ts の computeActualExpenseByCategory）。
+  it("excludes personalDeductionOnly rows (personal social insurance / life insurance) from the actual expense total", () => {
+    const totals = computeActualExpenseByCategory(
+      [
+        tx({
+          id: "1",
+          date: "2026-06-05",
+          amount: -30000,
+          account: "社会保険料(個人)",
+          personalDeductionOnly: true,
+        }),
+        tx({ id: "2", date: "2026-06-10", amount: -1000, account: "通信費" }),
+      ],
+      "2026-06"
+    );
+    expect(totals.has("社会保険料(個人)")).toBe(false);
+    expect(totals.get("通信費")).toBe(1000);
+  });
+
+  it("does not let a personalDeductionOnly-only category surface in the comparison at all", () => {
+    const result = compareBudgetToActual(
+      [{ account: "社会保険料(個人)", monthlyBudgetYen: 20000 }],
+      [
+        tx({
+          id: "1",
+          date: "2026-06-05",
+          amount: -30000,
+          account: "社会保険料(個人)",
+          personalDeductionOnly: true,
+        }),
+      ],
+      "2026-06"
+    );
+    // 実績が0円扱いになるため under_budget（＝所得控除の支払いが「事業予算の超過」として
+    // 誤って警告されない）
+    const c = result.comparisons.find((x) => x.account === "社会保険料(個人)")!;
+    expect(c.actualYen).toBe(0);
+    expect(c.status).toBe("under_budget");
+    expect(c.isOverBudget).toBe(false);
+    expect(result.totalActualYen).toBe(0);
+  });
 });
 
 describe("compareBudgetToActual", () => {

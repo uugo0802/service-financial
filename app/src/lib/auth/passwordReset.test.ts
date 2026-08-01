@@ -73,6 +73,11 @@ describe("isPasswordResetTokenExpired", () => {
     const record = createPasswordResetRequest({ email: "user@example.com", now: new Date("2026-07-31T00:00:00.000Z") });
     expect(isPasswordResetTokenExpired(record, new Date("2026-07-31T00:30:01.000Z"))).toBe(true);
   });
+
+  it("is false at the exact expiry instant (boundary: strictly-greater-than comparison, not >=)", () => {
+    const record = createPasswordResetRequest({ email: "user@example.com", now: new Date("2026-07-31T00:00:00.000Z") });
+    expect(isPasswordResetTokenExpired(record, new Date(record.expiresAt))).toBe(false);
+  });
 });
 
 describe("validatePasswordResetToken", () => {
@@ -165,6 +170,19 @@ describe("checkPasswordStrength", () => {
     const result = checkPasswordStrength("weak");
     expect(result.valid).toBe(false);
     expect(result.reasons.length).toBeGreaterThan(1);
+  });
+
+  it("accepts a password exactly at the minimum length boundary", () => {
+    const exact = "Aa1!".repeat(3); // 12 characters, satisfies every character-class requirement
+    expect(exact.length).toBe(PASSWORD_MIN_LENGTH);
+    expect(checkPasswordStrength(exact)).toEqual({ valid: true, reasons: [] });
+  });
+
+  it("rejects a password one character shorter than the minimum length boundary", () => {
+    const oneUnder = "Aa1!".repeat(3).slice(0, PASSWORD_MIN_LENGTH - 1);
+    const result = checkPasswordStrength(oneUnder);
+    expect(result.valid).toBe(false);
+    expect(result.reasons.some((r) => r.includes(`${PASSWORD_MIN_LENGTH}文字以上`))).toBe(true);
   });
 });
 
