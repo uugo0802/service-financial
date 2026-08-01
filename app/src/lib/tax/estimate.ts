@@ -78,7 +78,16 @@ const INCOME_TAX_BRACKETS: IncomeTaxBracket[] = [
   { upTo: Infinity, rate: 45, deduction: 4_796_000 },
 ];
 
-function calcIncomeTax(taxableIncome: number): { tax: number; rate: number } {
+/**
+ * 所得税の速算表（国税庁公表ベース、住民税は含まない）を用いて、課税所得金額から
+ * 所得税額と適用される限界税率を計算する。
+ *
+ * 事業所得のみの概算（estimateForIndividual）に加え、給与所得と合算した総合課税の
+ * 概算（sideIncomeEstimate.ts、副業/給与所得+事業所得の合算課税）からも再利用するため
+ * exportしている。速算表そのものの重複実装を避ける目的の追加であり、既存の計算結果・
+ * 既存のexportには一切影響しない。
+ */
+export function calcIncomeTax(taxableIncome: number): { tax: number; rate: number } {
   if (taxableIncome <= 0) return { tax: 0, rate: 0 };
   const bracket = INCOME_TAX_BRACKETS.find((b) => taxableIncome <= b.upTo)!;
   const tax = Math.floor(Math.max(0, taxableIncome * (bracket.rate / 100) - bracket.deduction));
