@@ -172,6 +172,20 @@ describe("globalSearch", () => {
     expect((clientResult as { subtitle?: string }).subtitle).toContain("売上先");
   });
 
+  it("falls back to a placeholder file name when storage_path has no non-empty segments", () => {
+    const emptyPathDocs: DocumentWithTransaction[] = [document({ id: "doc-empty-path", storage_path: "///" })];
+    const results = globalSearch("事務所家賃", { documents: emptyPathDocs });
+    const documentResult = results.find((r) => r.kind === "document");
+    expect(documentResult).toMatchObject({ id: "doc-empty-path", fileName: "(ファイル名不明)" });
+  });
+
+  it("omits notes from the client subtitle when the client has none, without a dangling separator", () => {
+    const noNotesClient = client({ id: "cp-no-notes", name: "A社", kind: "client", notes: undefined });
+    const results = globalSearch("A社", { clients: [noNotesClient] });
+    const clientResult = results.find((r) => r.kind === "client");
+    expect((clientResult as { subtitle?: string }).subtitle).toBe("売上先（顧客）");
+  });
+
   it("treats missing source arrays as empty for each kind independently", () => {
     expect(globalSearch("不動産", { transactions })).toEqual([
       expect.objectContaining({ kind: "transaction", id: "tx-rent" }),

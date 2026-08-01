@@ -121,6 +121,9 @@ export function removeCategoryBudget(budgets: readonly CategoryBudget[], account
 /**
  * 指定期間（"YYYY-MM"）における、経費科目（account）ごとの実績支出合計（円）を算出する。
  * - 収入行（amount >= 0）は対象外。
+ * - personalDeductionOnly（国民健康保険・国民年金・生命保険料等、個人事業主の所得控除であり
+ *   事業の必要経費ではない行）は対象外。estimate.ts / individualForms.ts / consumptionTaxForm.ts
+ *   と同様に、事業の予算 vs 実績比較に個人の所得控除項目を混在させない。
  * - 取引の date は "YYYY-MM-DD"（ISO日付）を想定し、先頭7文字が period と一致するものだけを集計する。
  */
 export function computeActualExpenseByCategory(
@@ -130,6 +133,7 @@ export function computeActualExpenseByCategory(
   const totals = new Map<string, number>();
   for (const tx of transactions) {
     if (tx.amount >= 0) continue;
+    if (tx.personalDeductionOnly) continue;
     if (!tx.date.startsWith(period)) continue;
     const current = totals.get(tx.account) ?? 0;
     totals.set(tx.account, current + Math.abs(tx.amount));

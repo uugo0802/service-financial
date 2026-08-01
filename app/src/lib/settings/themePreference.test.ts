@@ -68,6 +68,20 @@ describe("getThemePreference", () => {
     stubWindow({ storage: { "theme-preference": "purple" } });
     expect(getThemePreference()).toBe("system");
   });
+
+  it("falls back to 'system' (without throwing) when localStorage.getItem throws (e.g. private browsing)", () => {
+    stubWindow();
+    Object.defineProperty(globalThis.window, "localStorage", {
+      value: {
+        getItem: () => {
+          throw new Error("SecurityError: localStorage is disabled");
+        },
+      },
+      configurable: true,
+    });
+    expect(() => getThemePreference()).not.toThrow();
+    expect(getThemePreference()).toBe("system");
+  });
 });
 
 describe("setThemePreference", () => {
@@ -80,6 +94,19 @@ describe("setThemePreference", () => {
     setThemePreference("light");
     expect(store["theme-preference"]).toBe("light");
     expect(getThemePreference()).toBe("light");
+  });
+
+  it("silently swallows a write failure (e.g. storage quota exceeded / disabled) instead of throwing", () => {
+    stubWindow();
+    Object.defineProperty(globalThis.window, "localStorage", {
+      value: {
+        setItem: () => {
+          throw new Error("QuotaExceededError");
+        },
+      },
+      configurable: true,
+    });
+    expect(() => setThemePreference("dark")).not.toThrow();
   });
 });
 
