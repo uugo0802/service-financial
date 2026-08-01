@@ -125,6 +125,18 @@ describe("applyCustomMapping", () => {
     expect(result.transactions[0].amount).toBe(12800);
   });
 
+  // Regression: full-width (全角) digits/comma are used by some legacy exports and by users
+  // hand-editing a CSV on a Japanese IME. Before NFKC normalization was added to this module's
+  // toNumber() (matching the fix already applied in parse.ts/bankFormats.ts), Number("１２０，０００")
+  // was NaN and toNumber() silently fell back to 0, making a real expense vanish from the ledger.
+  it("parses a full-width (全角) amount with a full-width thousands comma, not silently treating it as zero", () => {
+    const csv = "日付,摘要,金額\n2026-01-05,家賃,－１２０，０００\n";
+    const result = applyCustomMapping(csv, { mode: "signed", date: "日付", description: "摘要", amount: "金額" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.transactions[0].amount).toBe(-120000);
+  });
+
   it("counts a row with no date/description and zero net amount as skipped", () => {
     const csv = "日付,内容,金額,メモ\n2026-01-05,家賃,-120000,\n,,0,備考のみ\n";
     const result = applyCustomMapping(csv, { mode: "signed", date: "日付", description: "内容", amount: "金額" });
