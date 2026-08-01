@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
-import { estimateForIndividual } from "@/lib/tax/estimate";
+import { estimateForIndividual, ItemizedDeductionInput } from "@/lib/tax/estimate";
 import { estimateForMicroCorp } from "@/lib/tax/corporateEstimate";
 import { buildIndividualTaxSavingChecklist, buildCorporateTaxSavingChecklist } from "@/lib/tax/taxSavingChecklist";
 import { DocumentPreview } from "@/components/DocumentPreview";
@@ -52,7 +52,61 @@ export default function Home() {
   const [pendingDuplicateUpload, setPendingDuplicateUpload] = useState<PendingDuplicateUpload | null>(null);
   const [flaggedDuplicateIds, setFlaggedDuplicateIds] = useState<Set<string>>(new Set());
 
-  const individualEstimate = useMemo(() => (rows ? estimateForIndividual(rows) : null), [rows]);
+  // 生命保険料控除・地震保険料控除・寄附金控除（ふるさと納税を含む）・医療費控除・
+  // 小規模企業共済等掛金控除（iDeCoを含む）の任意入力。すべて空欄のままなら
+  // itemizedDeductionOptionsはundefinedのままとなり、estimateForIndividualの挙動は
+  // これらの項目を追加する前と完全に同一になる（lib/tax/estimate.tsのitemizedDeductionOptions
+  // と同じ「未指定なら考慮しない」後方互換パターン）。
+  const [showItemizedDeductions, setShowItemizedDeductions] = useState(false);
+  const [lifeInsGeneral, setLifeInsGeneral] = useState("");
+  const [lifeInsNursingMedical, setLifeInsNursingMedical] = useState("");
+  const [lifeInsPersonalPension, setLifeInsPersonalPension] = useState("");
+  const [earthquakeInsurancePremium, setEarthquakeInsurancePremium] = useState("");
+  const [donations, setDonations] = useState("");
+  const [medicalExpenses, setMedicalExpenses] = useState("");
+  const [medicalExpenseReimbursements, setMedicalExpenseReimbursements] = useState("");
+  const [mutualAidContributions, setMutualAidContributions] = useState("");
+
+  const itemizedDeductionOptions = useMemo<ItemizedDeductionInput | undefined>(() => {
+    const toNumberOrUndefined = (v: string) => (v.trim() === "" ? undefined : Number(v) || 0);
+    const general = toNumberOrUndefined(lifeInsGeneral);
+    const nursingMedical = toNumberOrUndefined(lifeInsNursingMedical);
+    const personalPension = toNumberOrUndefined(lifeInsPersonalPension);
+    const earthquake = toNumberOrUndefined(earthquakeInsurancePremium);
+    const donationsAmount = toNumberOrUndefined(donations);
+    const medicalExpensesAmount = toNumberOrUndefined(medicalExpenses);
+    const medicalExpenseReimbursementsAmount = toNumberOrUndefined(medicalExpenseReimbursements);
+    const mutualAidAmount = toNumberOrUndefined(mutualAidContributions);
+
+    const hasAnyInput =
+      [general, nursingMedical, personalPension, earthquake, donationsAmount, medicalExpensesAmount, medicalExpenseReimbursementsAmount, mutualAidAmount].some(
+        (v) => v !== undefined
+      );
+    if (!hasAnyInput) return undefined; // 何も入力されていなければオプション自体を渡さず、従来どおりの挙動にする
+
+    return {
+      lifeInsurancePremiums: { general, nursingMedical, personalPension },
+      earthquakeInsurancePremium: earthquake,
+      donations: donationsAmount,
+      medicalExpenses: medicalExpensesAmount,
+      medicalExpenseReimbursements: medicalExpenseReimbursementsAmount,
+      smallBusinessMutualAidContributions: mutualAidAmount,
+    };
+  }, [
+    lifeInsGeneral,
+    lifeInsNursingMedical,
+    lifeInsPersonalPension,
+    earthquakeInsurancePremium,
+    donations,
+    medicalExpenses,
+    medicalExpenseReimbursements,
+    mutualAidContributions,
+  ]);
+
+  const individualEstimate = useMemo(
+    () => (rows ? estimateForIndividual(rows, undefined, undefined, itemizedDeductionOptions) : null),
+    [rows, itemizedDeductionOptions]
+  );
   const corpEstimate = useMemo(() => (rows ? estimateForMicroCorp(rows) : null), [rows]);
   const individualChecklist = useMemo(
     () => (rows && individualEstimate ? buildIndividualTaxSavingChecklist(individualEstimate, rows) : null),
@@ -410,6 +464,142 @@ export default function Home() {
         {mode === "individual" && individualEstimate && (
           <section>
             <h2 className="text-lg font-semibold mb-3">確定申告 概算サマリー（フリーランス・個人事業主向け）</h2>
+
+            <div className="mb-4 print:hidden">
+              <button
+                type="button"
+                aria-expanded={showItemizedDeductions}
+                onClick={() => setShowItemizedDeductions((v) => !v)}
+                className="text-sm px-4 py-2 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+              >
+                {showItemizedDeductions
+                  ? "所得控除の追加入力を閉じる"
+                  : "生命保険料控除・寄附金控除など所得控除を追加入力する（任意）"}
+              </button>
+              {showItemizedDeductions && (
+                <div className="mt-3 border border-stone-300 bg-white p-4 sm:p-5">
+                  <p className="text-xs text-stone-500 mb-4 leading-relaxed max-w-2xl">
+                    社会保険料控除・基礎控除に加え、該当する所得控除があれば入力してください。未入力の項目は0円として扱われ、
+                    概算に反映されません。ここでの計算もあくまで概算シミュレーションであり、正式な控除額は必ずご自身（または税理士）でご確認ください。
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <fieldset className="flex flex-col gap-2">
+                      <legend className="text-xs font-semibold text-stone-600 mb-1">
+                        生命保険料控除（新制度＝2012年1月1日以後契約のみ対応）
+                      </legend>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        一般生命保険料（年間払込額）
+                        <input
+                          type="number"
+                          min="0"
+                          value={lifeInsGeneral}
+                          onChange={(e) => setLifeInsGeneral(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        介護医療保険料（年間払込額）
+                        <input
+                          type="number"
+                          min="0"
+                          value={lifeInsNursingMedical}
+                          onChange={(e) => setLifeInsNursingMedical(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        個人年金保険料（年間払込額）
+                        <input
+                          type="number"
+                          min="0"
+                          value={lifeInsPersonalPension}
+                          onChange={(e) => setLifeInsPersonalPension(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                      <p className="text-xs text-stone-400 leading-relaxed">
+                        2011年12月31日以前に契約した保険（旧制度、区分・上限額が異なる）は対応していません。
+                      </p>
+                    </fieldset>
+
+                    <fieldset className="flex flex-col gap-2">
+                      <legend className="text-xs font-semibold text-stone-600 mb-1">地震保険料控除</legend>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        年間支払保険料
+                        <input
+                          type="number"
+                          min="0"
+                          value={earthquakeInsurancePremium}
+                          onChange={(e) => setEarthquakeInsurancePremium(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                    </fieldset>
+
+                    <fieldset className="flex flex-col gap-2">
+                      <legend className="text-xs font-semibold text-stone-600 mb-1">寄附金控除（ふるさと納税を含む）</legend>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        年間寄附金合計額
+                        <input
+                          type="number"
+                          min="0"
+                          value={donations}
+                          onChange={(e) => setDonations(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                      <p className="text-xs text-stone-400 leading-relaxed">
+                        ふるさと納税のワンストップ特例・住民税側の控除額は住民税に影響するものであり、この所得税概算には含まれません。
+                      </p>
+                    </fieldset>
+
+                    <fieldset className="flex flex-col gap-2">
+                      <legend className="text-xs font-semibold text-stone-600 mb-1">医療費控除</legend>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        年間医療費合計額（保険金等による補填前）
+                        <input
+                          type="number"
+                          min="0"
+                          value={medicalExpenses}
+                          onChange={(e) => setMedicalExpenses(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        保険金等による補填額
+                        <input
+                          type="number"
+                          min="0"
+                          value={medicalExpenseReimbursements}
+                          onChange={(e) => setMedicalExpenseReimbursements(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                      <p className="text-xs text-stone-400 leading-relaxed">
+                        通常の医療費控除の計算のみ対応しています（セルフメディケーション税制は対応していません）。
+                      </p>
+                    </fieldset>
+
+                    <fieldset className="flex flex-col gap-2">
+                      <legend className="text-xs font-semibold text-stone-600 mb-1">
+                        小規模企業共済等掛金控除（iDeCoを含む）
+                      </legend>
+                      <label className="flex flex-col gap-1 text-xs text-stone-500">
+                        年間掛金合計額
+                        <input
+                          type="number"
+                          min="0"
+                          value={mutualAidContributions}
+                          onChange={(e) => setMutualAidContributions(e.target.value)}
+                          className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                        />
+                      </label>
+                    </fieldset>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="border border-stone-300 bg-white p-5">
                 <div className="text-xs text-stone-500 mb-3">所得税（概算）</div>
