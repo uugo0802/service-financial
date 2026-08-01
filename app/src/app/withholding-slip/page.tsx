@@ -34,6 +34,14 @@ export default function WithholdingSlipPage() {
             ふるさと納税等、年末調整の対象外としている控除は本ツールでも反映されません。正式な発行・提出前に、
             必ず内容をご自身または税理士等の専門家がご確認ください。
           </p>
+          <p className="text-xs text-stone-500 max-w-2xl leading-relaxed">
+            雇用関係にない外部の専門家・フリーランス（弁護士・税理士・デザイナー等）への報酬・料金の支払については、
+            こちらではなく「
+            <Link href="/payment-report" className="underline hover:text-stone-900">
+              支払調書（下書き）
+            </Link>
+            」をご利用ください。
+          </p>
         </section>
 
         <WithholdingSlipForm />
