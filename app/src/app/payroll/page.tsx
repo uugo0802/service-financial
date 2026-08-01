@@ -98,6 +98,18 @@ export default function PayrollPage() {
             </Link>
           </p>
         </section>
+
+        <section>
+          <h2 className="text-xl font-semibold mb-2">5. 青色事業専従者給与のチェック</h2>
+          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+            青色申告を行う個人事業主が、生計を一にする家族従業員（配偶者等の事業専従者）に支払う給与
+            （青色事業専従者給与）について、届出書に記載した上限額との比較・必要経費算入額の目安・
+            専従者要件のチェックリストを確認できる画面を別途用意しています。
+            <Link href="/family-employee" className="ml-1 underline hover:text-stone-900">
+              青色事業専従者給与のチェックへ →
+            </Link>
+          </p>
+        </section>
       </main>
     </div>
   );
