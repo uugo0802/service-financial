@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_QUOTE_VALIDITY_DAYS,
+  QUOTE_PRINT_NOTICE,
   QuoteInput,
   addDaysToIsoDate,
   buildQuote,
+  buildQuotePrintHeaderFields,
   convertQuoteToClientInvoiceInput,
+  formatQuoteDateLabel,
+  formatQuoteIssuerRegistrationLabel,
   formatQuoteNumber,
+  formatQuoteStatusLabel,
   isQuoteAcceptedForConversion,
   isQuoteExpired,
   markQuoteAsConvertedToInvoice,
@@ -345,5 +350,166 @@ describe("markQuoteAsConvertedToInvoice", () => {
     expect(converted.status).toBe("converted_to_invoice");
     expect(converted).not.toBe(quote);
     expect(quote.status).toBe("accepted"); // 元のオブジェクトはイミュータブルに保たれる
+  });
+});
+
+describe("formatQuoteNumber / addDaysToIsoDate - further boundary cases", () => {
+  it("floors a fractional positive sequence rather than rounding", () => {
+    expect(formatQuoteNumber("2026-07-29", 3.9)).toBe("EST-20260729-0003");
+  });
+
+  it("subtracts days when a negative day count is given (moves the date backwards)", () => {
+    expect(addDaysToIsoDate("2026-07-15", -10)).toBe("2026-07-05");
+  });
+
+  it("returns the same date unchanged when adding zero days", () => {
+    expect(addDaysToIsoDate("2026-07-15", 0)).toBe("2026-07-15");
+  });
+
+  it("rolls backwards across a year boundary", () => {
+    expect(addDaysToIsoDate("2026-01-05", -10)).toBe("2025-12-26");
+  });
+});
+
+describe("buildQuote - validity period edge cases", () => {
+  it("floors a fractional validityPeriodDays value", () => {
+    const result = buildQuote(baseInput({ issueDate: "2026-07-01", validityPeriodDays: 14.9 }));
+    expect(result.quote.validityPeriodDays).toBe(14);
+    expect(result.quote.validUntil).toBe("2026-07-15");
+  });
+
+  it("falls back to the default for a non-finite (Infinity) validityPeriodDays", () => {
+    const result = buildQuote(baseInput({ issueDate: "2026-07-01", validityPeriodDays: Infinity }));
+    expect(result.quote.validityPeriodDays).toBe(DEFAULT_QUOTE_VALIDITY_DAYS);
+  });
+
+  it("falls back to the default and warns for a negative validityPeriodDays", () => {
+    const result = buildQuote(baseInput({ issueDate: "2026-07-01", validityPeriodDays: -5 }));
+    expect(result.quote.validityPeriodDays).toBe(DEFAULT_QUOTE_VALIDITY_DAYS);
+    expect(result.warnings.some((w) => w.includes("有効期限"))).toBe(true);
+  });
+});
+
+describe("buildQuote - trimming and whitespace handling", () => {
+  it("treats a whitespace-only quoteNumber as absent and auto-formats one instead", () => {
+    const result = buildQuote(baseInput({ quoteNumber: "   ", issueDate: "2026-07-29" }));
+    expect(result.quote.quoteNumber).toBe("EST-20260729-0001");
+  });
+
+  it("trims a provided quoteNumber", () => {
+    const result = buildQuote(baseInput({ quoteNumber: "  EST-CUSTOM-0001  " }));
+    expect(result.quote.quoteNumber).toBe("EST-CUSTOM-0001");
+  });
+
+  it("treats a whitespace-only issuerName as blank (validation error) and trims it to an empty string", () => {
+    const result = buildQuote(baseInput({ issuerName: "   " }));
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes("発行者名"))).toBe(true);
+    expect(result.quote.issuerName).toBe("");
+  });
+
+  it("trims a note with surrounding whitespace, and treats a whitespace-only note as null", () => {
+    const withNote = buildQuote(baseInput({ note: "  納期は要相談  " }));
+    expect(withNote.quote.note).toBe("納期は要相談");
+
+    const blankNote = buildQuote(baseInput({ note: "   " }));
+    expect(blankNote.quote.note).toBeNull();
+  });
+});
+
+describe("buildQuote - registration number with an invalid (but non-empty) format", () => {
+  it("keeps the quote valid but warns when the registration number fails checksum validation", () => {
+    const result = buildQuote(baseInput({ issuerRegistrationNumber: "T1234567890123" }));
+    expect(result.isValid).toBe(true);
+    expect(result.warnings.some((w) => w.includes("形式に誤りがある可能性"))).toBe(true);
+  });
+});
+
+describe("buildQuote - large/negative numeric line item inputs", () => {
+  it("computes correctly for a very large unit price without losing precision", () => {
+    const result = buildQuote(
+      baseInput({ lineItems: [{ description: "大型案件", quantity: 1, unitPrice: 900_000_000_000, taxRate: 10 }] })
+    );
+    expect(result.quote.subtotalExcludingTax).toBe(900_000_000_000);
+    expect(result.quote.totalTax).toBe(90_000_000_000);
+    expect(result.quote.grandTotal).toBe(990_000_000_000);
+  });
+
+  it("reports a validation error for a negative unit price but still computes a best-effort (negative) line amount", () => {
+    const result = buildQuote(
+      baseInput({ lineItems: [{ description: "返金調整", quantity: 1, unitPrice: -1000, taxRate: 10 }] })
+    );
+    expect(result.isValid).toBe(false);
+    expect(result.errors.some((e) => e.includes("単価"))).toBe(true);
+    expect(result.quote.lineItems[0].lineAmountExcludingTax).toBe(-1000);
+  });
+});
+
+describe("resolveQuoteEffectiveStatus - explicit expired status is preserved even before validUntil", () => {
+  it("keeps an explicitly-set expired status even when the quote has not actually reached validUntil yet", () => {
+    const result = buildQuote(baseInput({ issueDate: "2026-07-01", validityPeriodDays: 30, status: "expired" }));
+    // asOfDateIso is well before validUntil (2026-07-31), so isQuoteExpired would be false on its own
+    expect(isQuoteExpired(result.quote, "2026-07-10")).toBe(false);
+    expect(resolveQuoteEffectiveStatus(result.quote, "2026-07-10")).toBe("expired");
+  });
+});
+
+describe("isQuoteExpired - invalid asOfDateIso", () => {
+  it("returns false when asOfDateIso itself is not a valid ISO date, even though validUntil is set", () => {
+    const result = buildQuote(baseInput({ issueDate: "2026-07-01", validityPeriodDays: 30 }));
+    expect(isQuoteExpired(result.quote, "not-a-date")).toBe(false);
+  });
+});
+
+describe("print layout helpers (formatQuoteDateLabel / formatQuoteIssuerRegistrationLabel / formatQuoteStatusLabel / buildQuotePrintHeaderFields)", () => {
+  it("QUOTE_PRINT_NOTICE clarifies this is a price quote, not a binding contract or tax agent service", () => {
+    expect(QUOTE_PRINT_NOTICE).toContain("税務代理");
+    expect(QUOTE_PRINT_NOTICE).toContain("正式な契約成立や請求を意味しません");
+  });
+
+  it("formatQuoteDateLabel formats a valid ISO date and falls back to '未設定' otherwise", () => {
+    expect(formatQuoteDateLabel("2026-07-29")).toBe("2026年7月29日");
+    expect(formatQuoteDateLabel(null)).toBe("未設定");
+    expect(formatQuoteDateLabel(undefined)).toBe("未設定");
+    expect(formatQuoteDateLabel("not-a-date")).toBe("未設定");
+    expect(formatQuoteDateLabel("2026-02-30")).toBe("未設定"); // 実在しない日付
+  });
+
+  it("formatQuoteIssuerRegistrationLabel explains absence rather than showing a blank value", () => {
+    const registered = buildQuote(baseInput({ issuerRegistrationNumber: VALID_REGISTRATION_NUMBER })).quote;
+    const unregistered = buildQuote(baseInput({ issuerRegistrationNumber: null })).quote;
+
+    expect(formatQuoteIssuerRegistrationLabel(registered)).toBe(VALID_REGISTRATION_NUMBER);
+    expect(formatQuoteIssuerRegistrationLabel(unregistered)).toContain("未登録");
+  });
+
+  it("formatQuoteStatusLabel reflects the effective status (expired), not the raw stored status, once past validUntil", () => {
+    const quote = buildQuote(baseInput({ issueDate: "2026-07-01", validityPeriodDays: 30, status: "sent" })).quote;
+    expect(formatQuoteStatusLabel(quote, "2026-07-15")).toBe("送付済み");
+    expect(formatQuoteStatusLabel(quote, "2026-08-01")).toBe("有効期限切れ");
+  });
+
+  it("buildQuotePrintHeaderFields includes all header fields in order, reflecting the quote's actual values", () => {
+    const quote = buildQuote(
+      baseInput({ quoteNumber: "EST-20260729-0001", clientName: "株式会社サンプル", issuerName: "山田太郎" })
+    ).quote;
+    const fields = buildQuotePrintHeaderFields(quote);
+    const keys = fields.map((f) => f.key);
+
+    expect(keys).toEqual(["quoteNumber", "issueDate", "validUntil", "issuerName", "issuerRegistrationNumber", "clientName"]);
+
+    const byKey = Object.fromEntries(fields.map((f) => [f.key, f.value]));
+    expect(byKey.quoteNumber).toBe("EST-20260729-0001");
+    expect(byKey.issueDate).toBe("2026年7月29日");
+    expect(byKey.clientName).toBe("株式会社サンプル");
+    expect(byKey.issuerName).toBe("山田太郎");
+  });
+
+  it("buildQuotePrintHeaderFields falls back to placeholder text for missing issuer/client names", () => {
+    const quote = buildQuote(baseInput({ issuerName: "", clientName: "" })).quote;
+    const byKey = Object.fromEntries(buildQuotePrintHeaderFields(quote).map((f) => [f.key, f.value]));
+
+    expect(byKey.issuerName).toBe("（未入力）");
+    expect(byKey.clientName).toBe("（未入力）");
   });
 });

@@ -47,6 +47,24 @@ describe("formatInvoiceDateLabel", () => {
     expect(formatInvoiceDateLabel("")).toBe("未設定");
     expect(formatInvoiceDateLabel("not-a-date")).toBe("未設定");
   });
+
+  // 回帰テスト: "YYYY-MM-DD"の形式には一致していても、2月30日のような実在しない暦日は
+  // 「不正な日付」として「未設定」を返す必要がある（本関数のドキュメントコメントの契約どおり）。
+  // 修正前はロールオーバーの検証がなく、"2026年2月30日"のような存在しない日付をそのまま
+  // 表示してしまっていた。
+  it("falls back to '未設定' for a non-existent calendar date such as February 30th (regression)", () => {
+    expect(formatInvoiceDateLabel("2026-02-30")).toBe("未設定");
+    expect(formatInvoiceDateLabel("2026-13-01")).toBe("未設定");
+    expect(formatInvoiceDateLabel("2026-04-31")).toBe("未設定");
+  });
+
+  it("still formats a valid leap-day date correctly", () => {
+    expect(formatInvoiceDateLabel("2028-02-29")).toBe("2028年2月29日");
+  });
+
+  it("falls back to '未設定' for a non-leap-year February 29th", () => {
+    expect(formatInvoiceDateLabel("2026-02-29")).toBe("未設定");
+  });
 });
 
 describe("formatInvoiceTransactionLabel", () => {
@@ -72,6 +90,20 @@ describe("formatInvoiceTransactionLabel", () => {
   it("falls back to '未設定' when neither a transaction date nor a full period is available", () => {
     const result = buildClientInvoice(
       baseInput({ transactionDate: null, transactionPeriodStart: null, transactionPeriodEnd: null })
+    );
+    expect(formatInvoiceTransactionLabel(result.invoice)).toBe("未設定");
+  });
+
+  it("falls back to '未設定' when only the period start is present (end missing)", () => {
+    const result = buildClientInvoice(
+      baseInput({ transactionDate: null, transactionPeriodStart: "2026-07-01", transactionPeriodEnd: null })
+    );
+    expect(formatInvoiceTransactionLabel(result.invoice)).toBe("未設定");
+  });
+
+  it("falls back to '未設定' when the transaction period end is a non-existent calendar date (regression)", () => {
+    const result = buildClientInvoice(
+      baseInput({ transactionDate: null, transactionPeriodStart: "2026-07-01", transactionPeriodEnd: "2026-02-30" })
     );
     expect(formatInvoiceTransactionLabel(result.invoice)).toBe("未設定");
   });
@@ -148,5 +180,15 @@ describe("buildInvoicePrintHeaderFields", () => {
 
     expect(byKey.issuerName).toBe("（未入力）");
     expect(byKey.clientName).toBe("（未入力）");
+  });
+
+  it("falls back to '未採番' when no invoice number was assigned (blank input, unparsable issue date)", () => {
+    const result = buildClientInvoice(baseInput({ invoiceNumber: "", issueDate: "not-a-date" }));
+    const byKey = Object.fromEntries(buildInvoicePrintHeaderFields(result.invoice).map((f) => [f.key, f.value]));
+
+    // issueDateが不正なため formatInvoiceNumber は "00000000" にフォールバックするが、
+    // それでも invoiceNumber 自体は空文字にはならない
+    expect(byKey.invoiceNumber).toBe("INV-00000000-0001");
+    expect(byKey.issueDate).toBe("未設定");
   });
 });

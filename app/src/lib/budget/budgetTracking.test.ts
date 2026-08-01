@@ -43,6 +43,19 @@ describe("computeActualExpenseByCategory", () => {
     expect(totals.size).toBe(0);
   });
 
+  it("excludes a zero-amount row (boundary of amount >= 0), not just clearly positive income", () => {
+    const totals = computeActualExpenseByCategory(
+      [tx({ id: "1", date: "2026-06-05", amount: 0, account: "通信費" })],
+      "2026-06"
+    );
+    expect(totals.size).toBe(0);
+  });
+
+  it("returns an empty map for an empty transaction list", () => {
+    const totals = computeActualExpenseByCategory([], "2026-06");
+    expect(totals.size).toBe(0);
+  });
+
   it("excludes rows outside the requested period", () => {
     const totals = computeActualExpenseByCategory(
       [tx({ id: "1", date: "2026-05-31", amount: -1000, account: "通信費" })],
@@ -209,6 +222,60 @@ describe("compareBudgetToActual", () => {
     expect(result.totalActualYen).toBe(0);
     expect(result.totalBudgetYen).toBe(0);
   });
+
+  it("counts both over_budget and over_budget_no_cap categories in overBudgetCount, but not under_budget/at_budget/no_budget_set", () => {
+    const result = compareBudgetToActual(
+      [
+        { account: "通信費", monthlyBudgetYen: 5000 },
+        { account: "旅費交通費", monthlyBudgetYen: 10000 },
+        { account: "接待交際費", monthlyBudgetYen: 0 },
+      ],
+      [
+        tx({ id: "1", date: "2026-06-05", amount: -8000, account: "通信費" }), // over_budget
+        tx({ id: "2", date: "2026-06-05", amount: -1000, account: "旅費交通費" }), // under_budget
+        tx({ id: "3", date: "2026-06-05", amount: -500, account: "接待交際費" }), // over_budget_no_cap
+        tx({ id: "4", date: "2026-06-05", amount: -100, account: "消耗品費" }), // no_budget_set
+      ],
+      "2026-06"
+    );
+
+    expect(result.overBudgetCount).toBe(2);
+  });
+
+  it("excludes an exact-boundary income row (amount === 0) from actual expenses", () => {
+    const result = compareBudgetToActual(
+      [{ account: "通信費", monthlyBudgetYen: 5000 }],
+      [tx({ id: "1", date: "2026-06-05", amount: 0, account: "通信費" })],
+      "2026-06"
+    );
+    expect(result.comparisons[0].actualYen).toBe(0);
+    expect(result.comparisons[0].status).toBe("under_budget");
+  });
+
+  it("handles a very large actual expense total without losing precision", () => {
+    const result = compareBudgetToActual(
+      [{ account: "外注費", monthlyBudgetYen: 1_000_000 }],
+      [tx({ id: "1", date: "2026-06-05", amount: -900_000_000_000, account: "外注費" })],
+      "2026-06"
+    );
+    const c = result.comparisons[0];
+    expect(c.actualYen).toBe(900_000_000_000);
+    expect(c.status).toBe("over_budget");
+    expect(c.varianceYen).toBe(1_000_000 - 900_000_000_000);
+  });
+
+  it("deduplicates budgets for the same account, keeping the last entry (data-integrity edge case)", () => {
+    const result = compareBudgetToActual(
+      [
+        { account: "通信費", monthlyBudgetYen: 5000 },
+        { account: "通信費", monthlyBudgetYen: 9000 },
+      ],
+      [],
+      "2026-06"
+    );
+    expect(result.comparisons).toHaveLength(1);
+    expect(result.comparisons[0].budgetYen).toBe(9000);
+  });
 });
 
 describe("parseBudgetInputYen", () => {
@@ -222,6 +289,28 @@ describe("parseBudgetInputYen", () => {
     expect(parseBudgetInputYen("-100")).toBe(0);
     expect(parseBudgetInputYen("NaN")).toBe(0);
     expect(parseBudgetInputYen("Infinity")).toBe(0);
+  });
+
+  it("treats zero and a small negative fraction that rounds toward zero as 0", () => {
+    expect(parseBudgetInputYen("0")).toBe(0);
+    expect(parseBudgetInputYen("-0.4")).toBe(0);
+  });
+
+  it("trims surrounding whitespace before parsing (Number() already does this)", () => {
+    expect(parseBudgetInputYen("  1500  ")).toBe(1500);
+  });
+
+  it("accepts scientific notation strings that Number() understands", () => {
+    expect(parseBudgetInputYen("1e3")).toBe(1000);
+  });
+
+  it("returns 0 for a string containing trailing non-numeric characters", () => {
+    expect(parseBudgetInputYen("1500abc")).toBe(0);
+  });
+
+  it("rounds down a fractional value below the .5 boundary and up at/above it", () => {
+    expect(parseBudgetInputYen("1500.4")).toBe(1500);
+    expect(parseBudgetInputYen("1500.5")).toBe(1501);
   });
 });
 
