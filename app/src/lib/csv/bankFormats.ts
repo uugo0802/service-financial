@@ -4,8 +4,9 @@ import { normalizeCsv, parseCsvText, ParseResult } from "./parse";
 /**
  * 銀行・カード会社ごとのCSV列マッピング（住信SBIネット銀行・楽天銀行・
  * GMOあおぞらネット銀行・ゆうちょ銀行・みずほ銀行・三菱UFJ銀行・三井住友銀行・
- * りそな銀行・イオン銀行・三井住友カード・楽天カード・JCBカード・
- * PayPayカード・au PAYカード・dカード）。
+ * りそな銀行・イオン銀行・PayPay銀行・ソニー銀行・セブン銀行・SBI新生銀行・
+ * 三井住友カード・楽天カード・JCBカード・PayPayカード・au PAYカード・
+ * dカード・オリコカード）。
  *
  * 重要: 実際の各社CSVサンプルは入手できていないため、以下は公知情報・一般的な
  * ネット銀行/カード会社CSVエクスポートの慣例から推測した列名である。
@@ -41,6 +42,23 @@ import { normalizeCsv, parseCsvText, ParseResult } from "./parse";
  *   共通だが、単一符号金額列の列名が楽天銀行の「入出金」ではなく「取引金額」
  *   である点、および残高列名が「取引後残高」ではなく「残高」である点で
  *   区別している）。
+ * - PayPay銀行: 列は「日付,内容,出金,入金,残高」を想定（出金/入金分離型。
+ *   ※未検証の仮定: 「日付」「内容」は住信SBIネット銀行と共通だが、金額列名が
+ *   住信SBIの「出金金額」「入金金額」ではなく「金額」を付けない短い
+ *   「出金」「入金」（みずほ銀行と同型の命名）である点で区別している）。
+ * - ソニー銀行: 列は「取引日,摘要,出金額,入金額,残高」を想定（出金/入金分離型。
+ *   ※未検証の仮定: 「取引日」「摘要」は楽天銀行・りそな銀行・イオン銀行と
+ *   共通だが、金額列名が「出金額」「入金額」（りそな銀行の「支払金額」
+ *   「預り金額」とも異なる独自表記）である点で区別している）。
+ * - セブン銀行: 列は「取引日,摘要,入出金額,残高」を想定（単一符号付き金額列
+ *   「入出金額」を持つ形式。※未検証の仮定: 「取引日」「摘要」「残高」は
+ *   イオン銀行と共通だが、単一符号金額列の列名がイオン銀行の「取引金額」
+ *   ではなく「入出金額」である点で区別している）。
+ * - SBI新生銀行: 列は「取引日,摘要,お引出し金額,お預入れ金額,残高」を想定
+ *   （出金/入金分離型。※未検証の仮定: 「取引日」「摘要」はりそな銀行と共通だが、
+ *   金額列名がりそな銀行の「支払金額」「預り金額」ではなく、ゆうちょ銀行の
+ *   「お引出し」「お預入れ」に「金額」を加えた「お引出し金額」「お預入れ金額」
+ *   である点で区別している）。
  * - 三井住友カード: 列は「ご利用日,ご利用店名,ご利用金額」を想定。カード利用額は
  *   明細上は正の数で記載されるため、支出として負値に変換する。丁寧表現の
  *   「ご利用日」列名で楽天カードと区別している。
@@ -58,6 +76,10 @@ import { normalizeCsv, parseCsvText, ParseResult } from "./parse";
  *   変換）。※未検証の仮定: 「ご利用日」「ご利用金額」は三井住友カードと共通
  *   だが、店名列名が三井住友カードの「ご利用店名」ではなく「ご利用店名等」
  *   （「等」が付く）である点で区別している。
+ * - オリコカード: 列は「利用日,利用先名称,利用金額」を想定（カード利用額を
+ *   負値へ変換）。※未検証の仮定: 「利用日」「利用金額」は楽天カード・au PAY
+ *   カードと共通だが、店名列名が楽天カードの「利用店名」やau PAYカードの
+ *   「利用先」ではなく「利用先名称」である点で区別している。
  *
  * これらの列名・区別方法はいずれも未検証の仮説であり、実データ次第で
  * detectHeaders・列候補の調整が必要になる可能性が高い。
@@ -73,12 +95,17 @@ export type BankFormatId =
   | "smbc_bank"
   | "resona_bank"
   | "aeon_bank"
+  | "paypay_bank"
+  | "sony_bank"
+  | "seven_bank"
+  | "sbi_shinsei_bank"
   | "smcc"
   | "rakuten_card"
   | "jcb_card"
   | "paypay_card"
   | "au_pay_card"
-  | "d_card";
+  | "d_card"
+  | "orico_card";
 
 interface SignedAmountConfig {
   mode: "signed";
@@ -187,6 +214,50 @@ export const BANK_FORMATS: Record<BankFormatId, BankFormatDefinition> = {
     amount: { mode: "signed", headers: ["取引金額"] },
     detectHeaders: ["取引日", "摘要", "取引金額", "残高"],
   },
+  paypay_bank: {
+    id: "paypay_bank",
+    label: "PayPay銀行",
+    dateHeaders: ["日付"],
+    descHeaders: ["内容"],
+    // 未検証の仮定: 住信SBIネット銀行と同じ「日付/内容」だが、金額列名が
+    // 住信SBIの「出金金額/入金金額」ではなく「金額」を付けない短い
+    // 「出金/入金」（みずほ銀行と同型の命名）である点で区別している。
+    amount: { mode: "split", withdrawHeaders: ["出金"], depositHeaders: ["入金"] },
+    detectHeaders: ["日付", "内容", "出金", "入金"],
+  },
+  sony_bank: {
+    id: "sony_bank",
+    label: "ソニー銀行",
+    dateHeaders: ["取引日"],
+    descHeaders: ["摘要"],
+    // 未検証の仮定: 楽天銀行・りそな銀行・イオン銀行と同じ「取引日/摘要」だが、
+    // 金額列名がりそな銀行の「支払金額/預り金額」とも異なる独自表記の
+    // 「出金額/入金額」である点で区別している。
+    amount: { mode: "split", withdrawHeaders: ["出金額"], depositHeaders: ["入金額"] },
+    detectHeaders: ["取引日", "摘要", "出金額", "入金額"],
+  },
+  seven_bank: {
+    id: "seven_bank",
+    label: "セブン銀行",
+    dateHeaders: ["取引日"],
+    descHeaders: ["摘要"],
+    // 未検証の仮定: イオン銀行と同じ単一符号型で「取引日/摘要/残高」も共通だが、
+    // 単一符号金額列の列名がイオン銀行の「取引金額」ではなく「入出金額」である
+    // 点で区別している。
+    amount: { mode: "signed", headers: ["入出金額"] },
+    detectHeaders: ["取引日", "摘要", "入出金額", "残高"],
+  },
+  sbi_shinsei_bank: {
+    id: "sbi_shinsei_bank",
+    label: "SBI新生銀行",
+    dateHeaders: ["取引日"],
+    descHeaders: ["摘要"],
+    // 未検証の仮定: りそな銀行と同じ「取引日/摘要」だが、金額列名がりそな銀行の
+    // 「支払金額/預り金額」ではなく、ゆうちょ銀行の「お引出し/お預入れ」に
+    // 「金額」を加えた「お引出し金額/お預入れ金額」である点で区別している。
+    amount: { mode: "split", withdrawHeaders: ["お引出し金額"], depositHeaders: ["お預入れ金額"] },
+    detectHeaders: ["取引日", "摘要", "お引出し金額", "お預入れ金額"],
+  },
   smcc: {
     id: "smcc",
     label: "三井住友カード",
@@ -238,6 +309,17 @@ export const BANK_FORMATS: Record<BankFormatId, BankFormatDefinition> = {
     // 「ご利用店名」ではなく「ご利用店名等」（「等」付き）である点で区別している。
     amount: { mode: "expense", headers: ["ご利用金額"] },
     detectHeaders: ["ご利用日", "ご利用店名等", "ご利用金額"],
+  },
+  orico_card: {
+    id: "orico_card",
+    label: "オリコカード",
+    dateHeaders: ["利用日"],
+    descHeaders: ["利用先名称"],
+    // 未検証の仮定: 楽天カード・au PAYカードと同じ「利用日/利用金額」だが、
+    // 店名列名が楽天カードの「利用店名」やau PAYカードの「利用先」ではなく
+    // 「利用先名称」である点で区別している。
+    amount: { mode: "expense", headers: ["利用金額"] },
+    detectHeaders: ["利用日", "利用先名称", "利用金額"],
   },
 };
 
