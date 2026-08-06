@@ -265,11 +265,27 @@ export function matchInvoicePayments(input: MatchInvoicePaymentsInput): InvoiceP
     // 相手先が摘要から推定できる場合はその請求先の請求書内で、推定できない場合は
     // 請求先ごとのグループそれぞれについてペアの合計額を確認する。
     let combinedMatch: { pair: OutstandingInvoiceForMatching[]; clientName: string } | null = null;
+
+    // まず摘要から請求先が推定できるグループだけを優先的に探す。複数の請求先がたまたま
+    // 同額のペアを持っていても、摘要が名指ししている請求先を優先して誤帰属を防ぐ。
     for (const [clientName, clientInvoices] of invoicesByClient.entries()) {
+      if (!fuzzyPayerNameMatches(deposit.description, clientName)) continue;
       const pair = findPairSummingTo(clientInvoices, deposit.amount);
       if (pair) {
         combinedMatch = { pair, clientName };
         break;
+      }
+    }
+
+    // 摘要から請求先を推定できなかった場合（推定できた請求先にペアが無かった場合を含む）は、
+    // 請求先ごとのグループそれぞれについて確認する（フォールバック）。
+    if (!combinedMatch) {
+      for (const [clientName, clientInvoices] of invoicesByClient.entries()) {
+        const pair = findPairSummingTo(clientInvoices, deposit.amount);
+        if (pair) {
+          combinedMatch = { pair, clientName };
+          break;
+        }
       }
     }
 
