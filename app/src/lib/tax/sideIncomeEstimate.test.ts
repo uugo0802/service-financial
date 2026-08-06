@@ -143,4 +143,42 @@ describe("estimateCombinedSalaryAndBusinessIncomeTax", () => {
     const result = estimateCombinedSalaryAndBusinessIncomeTax({ salaryRevenue: 4_000_000, businessProfit: 1_000_000 });
     expect(result.assumptions.some((a) => a.includes("概算") && a.includes("税理士"))).toBe(true);
   });
+
+  // Boundary regression: the combined taxableIncome (salary + business, after the basic deduction
+  // and 1,000-yen truncation) must land in the correct 所得税速算表 bracket exactly at a bracket
+  // edge, not just for round mid-bracket values. This locks the combination step (salary income +
+  // business profit -> shared calcIncomeTax bracket lookup) to the same boundary behavior already
+  // verified for calcIncomeTax in isolation (estimate.test.ts), so a future change to how the two
+  // income types are summed can't silently shift a taxpayer across a bracket edge.
+  it("lands exactly on the ¥3,300,000/¥6,950,000 bracket boundary when salary + business income combine to hit it precisely", () => {
+    // salaryRevenue=0 so salaryIncome=0; choose businessProfit so that
+    // taxableIncome = businessProfit - 480,000 (basicDeduction) lands exactly on a bracket edge.
+    const at3_300_000 = estimateCombinedSalaryAndBusinessIncomeTax({
+      salaryRevenue: 0,
+      businessProfit: 3_300_000 + 480_000,
+    });
+    expect(at3_300_000.taxableIncome).toBe(3_300_000);
+    // 速算表: 3,300,000*10%-97,500 = 232,500 (still the 10% bracket, not yet 20%)
+    expect(at3_300_000.incomeTax).toEqual({ tax: 232_500, marginalRate: 10 });
+
+    const oneYenOver = estimateCombinedSalaryAndBusinessIncomeTax({
+      salaryRevenue: 0,
+      businessProfit: 3_300_000 + 480_000 + 1_000, // +1,000 so the 1,000-yen truncation still shows the shift
+    });
+    expect(oneYenOver.taxableIncome).toBe(3_301_000);
+    // Crosses into the 20% bracket: 3,301,000*20%-427,500 = 232,700
+    expect(oneYenOver.incomeTax).toEqual({ tax: 232_700, marginalRate: 20 });
+  });
+
+  it("truncates the combined taxable income to the nearest lower ¥1,000, not per income type", () => {
+    // salaryIncome and businessProfit both contribute fractional-1,000 remainders that must be
+    // combined *before* the 1,000-yen truncation is applied once, not truncated separately.
+    const result = estimateCombinedSalaryAndBusinessIncomeTax({
+      salaryRevenue: 3_000_500, // employment income deduction: 3,000,500*0.3+80,000 = 980,150 -> salaryIncome = 2,020,350
+      businessProfit: 999_700,
+    });
+    // totalIncome = 2,020,350 + 999,700 = 3,020,050; taxableIncome = floor((3,020,050-480,000)/1000)*1000 = 2,540,000
+    expect(result.totalIncome).toBe(3_020_050);
+    expect(result.taxableIncome).toBe(2_540_000);
+  });
 });

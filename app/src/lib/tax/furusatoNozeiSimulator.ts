@@ -202,9 +202,19 @@ function calcPersonalDeductionGapTotal(dependents?: FurusatoNozeiDependentsInput
 }
 
 /**
+ * 合計課税所得金額が200万円を超える場合の調整控除額の下限（円）。地方税法附則3条の3等に
+ * 基づき、計算結果がこの金額を下回るときは一律この金額とする「最低保障額」（多くの
+ * 自治体の解説ページで「2,500円未満の場合は2,500円」と説明されている）。
+ * 出典例: 東京都主税局・神戸市の個人住民税「調整控除」解説ページ。
+ */
+const ADJUSTMENT_DEDUCTION_MINIMUM_ABOVE_THRESHOLD = 2_500;
+
+/**
  * 住民税の調整控除額を概算する（地方税法附則3条の3等に基づく制度の簡易近似）。
  * 合計課税所得金額が200万円以下: min(人的控除差の合計額, 合計課税所得金額) × 5%
- * 合計課税所得金額が200万円超: (人的控除差の合計額 − (合計課税所得金額 − 200万円)) × 5%（マイナスは0）
+ * 合計課税所得金額が200万円超: (人的控除差の合計額 − (合計課税所得金額 − 200万円)) × 5%。
+ *   ただし、この算式で求めた金額が2,500円未満となる場合（人的控除差が超過額以下で
+ *   マイナスになるケースを含む）は、一律2,500円とする（最低保障額）。
  * 実際の制度では高所得者（合計所得2,500万円超等）で基礎控除自体が逓減・消失し調整控除の
  * 扱いも変わるが、本ツールはその極端なケースまでは追わない簡易近似である。
  */
@@ -216,7 +226,8 @@ function calcAdjustmentDeductionApprox(residentTaxTaxableIncome: number, persona
   }
 
   const excess = residentTaxTaxableIncome - ADJUSTMENT_DEDUCTION_INCOME_THRESHOLD;
-  return Math.max(0, Math.floor((personalDeductionGapTotal - excess) * 0.05));
+  const raw = Math.floor((personalDeductionGapTotal - excess) * 0.05);
+  return Math.max(ADJUSTMENT_DEDUCTION_MINIMUM_ABOVE_THRESHOLD, raw);
 }
 
 /**
