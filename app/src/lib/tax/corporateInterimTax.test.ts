@@ -53,6 +53,40 @@ describe("calculateProvisionalInterimTax", () => {
     );
   });
 
+  // Regression: consumptionTaxPrepayment must not be gated by the CORPORATE tax's
+  // required flag (corporateTax > 200,000円). Consumption-tax interim filing is a
+  // separate system with its own threshold (前期確定消費税額48万円超, judged by the
+  // caller / interimPayment.ts, per this function's own doc comment on
+  // PriorYearFinalTaxAmounts.consumptionTax — this function explicitly does NOT
+  // judge that threshold itself). A small corporation can easily have corporateTax
+  // at or below 200,000円 (no corporate-tax interim obligation) while still owing a
+  // consumption-tax interim payment on a confirmed prior-year consumption tax well
+  // above 480,000円. Previously, the code silently zeroed out consumptionTaxPrepayment
+  // whenever the corporate-tax threshold wasn't met, understating a real consumption-tax
+  // obligation as ¥0 in the UI (CorporateInterimTaxForm.tsx renders this value directly).
+  it("still halves the consumption tax prepayment even when corporate tax is at/below its own 200,000 yen threshold (consumption tax has an independent obligation)", () => {
+    const belowCorporateThreshold = calculateProvisionalInterimTax({
+      corporateTax: 200_000, // at threshold: corporate tax interim NOT required
+      localCorporateTax: 20_000,
+      consumptionTax: 900_000, // well above the (separate) 480,000円 consumption-tax threshold
+    });
+
+    expect(belowCorporateThreshold.required).toBe(false);
+    expect(belowCorporateThreshold.corporateTaxPrepayment).toBe(0);
+    expect(belowCorporateThreshold.localCorporateTaxPrepayment).toBe(0);
+    // The consumption tax half-amount must still be computed and must NOT be forced to 0.
+    expect(belowCorporateThreshold.consumptionTaxPrepayment).toBe(450_000);
+    expect(belowCorporateThreshold.totalPrepayment).toBe(450_000);
+
+    const zeroCorporateTax = calculateProvisionalInterimTax({
+      corporateTax: 0,
+      localCorporateTax: 0,
+      consumptionTax: 601_111,
+    });
+    expect(zeroCorporateTax.required).toBe(false);
+    expect(zeroCorporateTax.consumptionTaxPrepayment).toBe(300_555);
+  });
+
   it("does not compute a consumption tax prepayment when consumptionTax is omitted", () => {
     const result = calculateProvisionalInterimTax({ corporateTax: 300_000, localCorporateTax: 30_000 });
     expect(result.priorYearConsumptionTax).toBeNull();

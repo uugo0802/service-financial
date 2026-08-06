@@ -93,8 +93,15 @@ export function calculateProvisionalInterimTax(input: PriorYearFinalTaxAmounts):
 
   const corporateTaxPrepayment = required ? roundDownToTenThousandYen(priorYearCorporateTax / 2) : 0;
   const localCorporateTaxPrepayment = required ? roundDownToTenThousandYen(priorYearLocalCorporateTax / 2) : 0;
+  // 消費税の中間納付要否は法人税の20万円しきい値（＝required）とは独立した別制度
+  // （前期確定消費税額48万円超、上記コメント参照）であり、本関数はその要否判定を行わず
+  // 呼び出し側の責務としている。そのため priorYearConsumptionTax が指定されている限り、
+  // 法人税側の required（corporateTax>20万円）の真偽にかかわらず半額を機械的に算出する
+  // （required で0円に丸めてしまうと、法人税は不要でも消費税は48万円超で中間納付が
+  // 必要なケース——多くの小規模法人でまさに起こりうる——で、実際には納付が必要な
+  // 消費税中間納付額を0円と誤って表示してしまう）。
   const consumptionTaxPrepayment =
-    priorYearConsumptionTax === null ? null : required ? roundDownToYen(priorYearConsumptionTax / 2) : 0;
+    priorYearConsumptionTax === null ? null : roundDownToYen(priorYearConsumptionTax / 2);
 
   return {
     method: "provisional",
