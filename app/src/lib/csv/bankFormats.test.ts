@@ -258,6 +258,82 @@ describe("normalizeCsvWithBankFormat", () => {
     const result = normalizeCsvWithBankFormat(csv, "sbi_sumishin");
     expect(result.transactions[0].amount).toBe(450000);
   });
+
+  // 全角数字の回帰テスト（三井住友銀行/りそな銀行/イオン銀行/au PAYカード/dカード）。
+  // toNumber() は raw.normalize("NFKC") で全角→半角に正規化してから解析するため、
+  // 正規化前は Number("１１０，０００") が NaN になり金額が黙って0円になっていた。
+  it("parses a full-width (全角) amount for 三井住友銀行 (smbc_bank, split withdraw column)", () => {
+    const csv = "年月日,摘要,お支払い金額,お預り金額,残高\n2026-01-19,家賃引落,１１０，０００,,900000\n";
+    const result = normalizeCsvWithBankFormat(csv, "smbc_bank");
+    expect(result.transactions[0].amount).toBe(-110000);
+  });
+
+  it("parses a full-width (全角) amount for りそな銀行 (resona_bank, split deposit column)", () => {
+    const csv = "取引日,摘要,支払金額,預り金額,残高\n2026-01-25,業務委託料入金,,１８０，０００,580000\n";
+    const result = normalizeCsvWithBankFormat(csv, "resona_bank");
+    expect(result.transactions[0].amount).toBe(180000);
+  });
+
+  it("parses a full-width (全角) amount for イオン銀行 (aeon_bank, signed column)", () => {
+    const csv = "取引日,摘要,取引金額,残高\n2026-01-27,消耗品費引落,－４２００,395800\n";
+    const result = normalizeCsvWithBankFormat(csv, "aeon_bank");
+    expect(result.transactions[0].amount).toBe(-4200);
+  });
+
+  it("parses a full-width (全角) amount for au PAYカード (au_pay_card, expense-only column)", () => {
+    const csv = "利用日,利用先,利用金額\n2026-02-08,ローソン,６５０\n";
+    const result = normalizeCsvWithBankFormat(csv, "au_pay_card");
+    expect(result.transactions[0].amount).toBe(-650);
+  });
+
+  it("parses a full-width (全角) amount for dカード (d_card, expense-only column)", () => {
+    const csv = "ご利用日,ご利用店名等,ご利用金額\n2026-02-10,ドコモショップ,５，４００\n";
+    const result = normalizeCsvWithBankFormat(csv, "d_card");
+    expect(result.transactions[0].amount).toBe(-5400);
+  });
+
+  it("marks missing columns as 未検出 for 三井住友銀行 (split mode) when the CSV doesn't match its withdraw/deposit columns", () => {
+    const csv = "foo,bar\n1,2\n";
+    const result = normalizeCsvWithBankFormat(csv, "smbc_bank");
+    expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
+  });
+
+  it("marks missing columns as 未検出 for イオン銀行 (signed mode) when the CSV doesn't match its columns", () => {
+    const csv = "foo,bar\n1,2\n";
+    const result = normalizeCsvWithBankFormat(csv, "aeon_bank");
+    expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
+  });
+
+  it("marks missing columns as 未検出 for au PAYカード when the CSV doesn't match its columns", () => {
+    const csv = "foo,bar\n1,2\n";
+    const result = normalizeCsvWithBankFormat(csv, "au_pay_card");
+    expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
+  });
+
+  it("treats a row missing its amount columns entirely (undefined cells, short row) as a zero-amount row and still emits it when date/description are present", () => {
+    // りそな銀行は5列想定だが、末尾の残高・預り金額列が欠けている（短い）行を投入する。
+    const csv = "取引日,摘要,支払金額,預り金額,残高\n2026-01-23,通信費引落\n";
+    const result = normalizeCsvWithBankFormat(csv, "resona_bank");
+    expect(result.transactions).toHaveLength(1);
+    expect(result.transactions[0]).toMatchObject({ id: "row-1", date: "2026-01-23", description: "通信費引落", amount: 0 });
+  });
+
+  it("skips a fully malformed row (no date, no description, and a non-numeric amount that parses to zero) for dカード", () => {
+    const csv = "ご利用日,ご利用店名等,ご利用金額\n,,不明な値\n";
+    const result = normalizeCsvWithBankFormat(csv, "d_card");
+    expect(result.transactions).toEqual([]);
+    expect(result.skippedRows).toBe(1);
+  });
+
+  it("still emits a row for au PAYカード when only the description is present and the amount column is blank", () => {
+    const csv = "利用日,利用先,利用金額\n,ローソン,\n";
+    const result = normalizeCsvWithBankFormat(csv, "au_pay_card");
+    expect(result.transactions).toHaveLength(1);
+    expect(result.transactions[0]).toMatchObject({ id: "row-1", date: "不明", description: "ローソン" });
+    // toNumber("") -> 0, then Math.abs(0) negated yields -0; assert numeric equality rather than
+    // toMatchObject/toBe, which would otherwise treat -0 and 0 as distinct via Object.is.
+    expect(result.transactions[0].amount === 0).toBe(true);
+  });
 });
 
 describe("detectBankFormat", () => {

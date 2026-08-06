@@ -51,6 +51,67 @@ describe("determineHighValueAssetTaxableStatus — ちょうど1,000万円（し
     expect(evaluation.acquisitionPeriod).toEqual(FISCAL_YEARS[2]);
     expect(evaluation.mandatoryTaxablePeriods).toEqual([FISCAL_YEARS[2], FISCAL_YEARS[3], FISCAL_YEARS[4]]);
   });
+
+  it("does not trigger for ¥1 below the threshold (9,999,999円)", () => {
+    const result = determineHighValueAssetTaxableStatus({
+      taxPeriods: FISCAL_YEARS,
+      acquisitions: [{ acquisitionDate: "2026-06-15", taxExcludedPrice: 9_999_999 }],
+    });
+
+    expect(result.hasHighValueAcquisition).toBe(false);
+    expect(result.evaluations[0].meetsThreshold).toBe(false);
+  });
+
+  it("triggers for ¥1 above the threshold (10,000,001円)", () => {
+    const result = determineHighValueAssetTaxableStatus({
+      taxPeriods: FISCAL_YEARS,
+      acquisitions: [{ acquisitionDate: "2026-06-15", taxExcludedPrice: 10_000_001 }],
+    });
+
+    expect(result.hasHighValueAcquisition).toBe(true);
+    expect(result.evaluations[0].meetsThreshold).toBe(true);
+  });
+
+  it("does not treat a taxExcludedPrice of ¥0 as meeting the threshold", () => {
+    const result = determineHighValueAssetTaxableStatus({
+      taxPeriods: FISCAL_YEARS,
+      acquisitions: [{ acquisitionDate: "2026-06-15", taxExcludedPrice: 0 }],
+    });
+
+    expect(result.evaluations[0].meetsThreshold).toBe(false);
+    expect(result.evaluations[0].notes.join(" ")).toContain("0円");
+  });
+});
+
+describe("determineHighValueAssetTaxableStatus — 課税期間の境界日（開始日・終了日ちょうど）", () => {
+  it("assigns an acquisition dated exactly on a period's startDate to that period, not the preceding one", () => {
+    const result = determineHighValueAssetTaxableStatus({
+      taxPeriods: FISCAL_YEARS,
+      acquisitions: [{ acquisitionDate: FISCAL_YEARS[2].startDate, taxExcludedPrice: 10_000_000 }],
+    });
+
+    expect(result.evaluations[0].acquisitionPeriod).toEqual(FISCAL_YEARS[2]);
+  });
+
+  it("assigns an acquisition dated exactly on a period's endDate to that period, not the following one", () => {
+    const result = determineHighValueAssetTaxableStatus({
+      taxPeriods: FISCAL_YEARS,
+      acquisitions: [{ acquisitionDate: FISCAL_YEARS[2].endDate, taxExcludedPrice: 10_000_000 }],
+    });
+
+    expect(result.evaluations[0].acquisitionPeriod).toEqual(FISCAL_YEARS[2]);
+  });
+
+  it("treats the day immediately after a period's endDate as belonging to the next period", () => {
+    // FISCAL_YEARS[2] ends 2026-12-31; 2027-01-01 is FISCAL_YEARS[3]'s startDate.
+    const result = determineHighValueAssetTaxableStatus({
+      taxPeriods: FISCAL_YEARS,
+      acquisitions: [{ acquisitionDate: "2027-01-01", taxExcludedPrice: 10_000_000 }],
+    });
+
+    expect(result.evaluations[0].acquisitionPeriod).toEqual(FISCAL_YEARS[3]);
+    expect(result.evaluations[0].mandatoryTaxablePeriods).toEqual([FISCAL_YEARS[3], FISCAL_YEARS[4]]);
+  });
 });
 
 describe("determineHighValueAssetTaxableStatus — しきい値超過（強制期間の計算）", () => {
