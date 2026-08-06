@@ -83,6 +83,22 @@ describe("buildGeneralLedger", () => {
     expect(ledger.rows).toHaveLength(3);
   });
 
+  it("matches an entry whose own account name has incidental surrounding whitespace (e.g. untrimmed OCR/import data), consistent with listLedgerAccounts' trimmed selector options", () => {
+    // listLedgerAccounts() trims each entry.account before offering it as a selector option
+    // (see the "returns each distinct, non-blank account exactly once" test below, which feeds
+    // it an entry with account: "  "). If a real entry's account has *some* non-blank text plus
+    // incidental whitespace (e.g. "消耗品費 " with a trailing space from an untrimmed OCR/import
+    // source), the selector shows the trimmed "消耗品費" option, so selecting it must still surface
+    // that entry's row here — not silently return an empty ledger.
+    const untrimmedEntries: CategorizedTransaction[] = [
+      tx({ id: "u1", date: "2026-04-01", amount: -1200, account: " 消耗品費" }),
+      tx({ id: "u2", date: "2026-04-02", amount: -800, account: "消耗品費\t" }),
+    ];
+    const ledger = buildGeneralLedger(untrimmedEntries, "消耗品費");
+    expect(ledger.rows.map((r) => r.id)).toEqual(["u1", "u2"]);
+    expect(ledger.totalDebit).toBe(2000);
+  });
+
   it("records a zero-amount entry as both zero debit and zero credit without affecting the running balance", () => {
     const zeroEntries: CategorizedTransaction[] = [
       tx({ id: "z1", date: "2026-03-01", amount: 0 }),

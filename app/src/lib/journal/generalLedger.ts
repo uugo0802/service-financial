@@ -85,8 +85,13 @@ export function buildGeneralLedger(
   const targetAccount = account.trim();
   const openingBalance = options.openingBalance ?? 0;
 
+  // entry.account 側も trim して比較する。listLedgerAccounts() は科目セレクタ向けに
+  // 前後の空白を trim した値を選択肢として返すため、もしここで entry.account を
+  // trim せずに厳密一致で比較すると、空白付きの科目名を持つ仕訳（例: OCR由来の
+  // ReceiptJournalCandidate.account 等、必ずしも trim 済みとは限らない入力元がある）が
+  // セレクタには表示されるのに元帳には1件も出てこない、という無言のデータ欠落を招く。
   const matched = (entries ?? []).filter(
-    (entry) => entry.account === targetAccount && matchesDateRange(entry, options)
+    (entry) => entry.account?.trim() === targetAccount && matchesDateRange(entry, options)
   );
   const sorted = [...matched].sort(compareByDate);
 
