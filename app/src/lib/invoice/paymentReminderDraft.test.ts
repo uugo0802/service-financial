@@ -90,13 +90,29 @@ describe("generatePaymentReminderDraft - firm tone", () => {
 });
 
 describe("generatePaymentReminderDraft - not yet overdue", () => {
-  it("rejects with reason 'not-overdue' when daysOverdue is 0", () => {
+  it("rejects with reason 'not-overdue' when daysOverdue is 0 (invoice due exactly today)", () => {
     const result = generatePaymentReminderDraft(overdueInvoice({ daysOverdue: 0 }), "gentle");
 
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("expected rejection");
     expect(result.reason).toBe("not-overdue");
     expect(result.message.length).toBeGreaterThan(0);
+  });
+
+  it("accepts daysOverdue of exactly 1 (the earliest day an invoice counts as overdue)", () => {
+    const result = generatePaymentReminderDraft(overdueInvoice({ daysOverdue: 1 }), "gentle");
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected ok result");
+    expect(result.draft.body).toContain("1日超過");
+  });
+
+  it("rejects with reason 'not-overdue' when daysOverdue is a fraction less than 1 (e.g. 0.5)", () => {
+    const result = generatePaymentReminderDraft(overdueInvoice({ daysOverdue: 0.5 }), "gentle");
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("expected rejection");
+    expect(result.reason).toBe("not-overdue");
   });
 
   it("rejects with reason 'not-overdue' when daysOverdue is negative", () => {
@@ -142,6 +158,60 @@ describe("generatePaymentReminderDraft - invalid invoice data", () => {
     if (zero.ok || negative.ok) throw new Error("expected rejections");
     expect(zero.reason).toBe("invalid-invoice");
     expect(negative.reason).toBe("invalid-invoice");
+  });
+
+  it("rejects with reason 'invalid-invoice' when the outstanding amount is not finite (Infinity/NaN)", () => {
+    const infinite = generatePaymentReminderDraft(overdueInvoice({ outstandingAmount: Infinity }), "gentle");
+    const notANumber = generatePaymentReminderDraft(overdueInvoice({ outstandingAmount: NaN }), "gentle");
+
+    expect(infinite.ok).toBe(false);
+    expect(notANumber.ok).toBe(false);
+    if (infinite.ok || notANumber.ok) throw new Error("expected rejections");
+    expect(infinite.reason).toBe("invalid-invoice");
+    expect(notANumber.reason).toBe("invalid-invoice");
+  });
+});
+
+describe("generatePaymentReminderDraft - multiple overdue invoices for the same client", () => {
+  it("generates independent drafts for two different overdue invoices belonging to the same client", () => {
+    const first = generatePaymentReminderDraft(
+      overdueInvoice({ invoiceNumber: "INV-20260501-0001", daysOverdue: 45, outstandingAmount: 100_000 }),
+      "gentle"
+    );
+    const second = generatePaymentReminderDraft(
+      overdueInvoice({ invoiceNumber: "INV-20260601-0002", daysOverdue: 15, outstandingAmount: 220_000 }),
+      "gentle"
+    );
+
+    expect(first.ok).toBe(true);
+    expect(second.ok).toBe(true);
+    if (!first.ok || !second.ok) throw new Error("expected ok results");
+
+    // Both drafts are addressed to the same client but each references its own invoice
+    // number, due-date wording, and amount — the function must not conflate the two.
+    expect(first.draft.clientName).toBe(second.draft.clientName);
+    expect(first.draft.invoiceNumber).not.toBe(second.draft.invoiceNumber);
+    expect(first.draft.subject).toContain("INV-20260501-0001");
+    expect(second.draft.subject).toContain("INV-20260601-0002");
+    expect(first.draft.body).toContain("45日超過");
+    expect(second.draft.body).toContain("15日超過");
+    expect(first.draft.body).not.toContain("INV-20260601-0002");
+    expect(second.draft.body).not.toContain("INV-20260501-0001");
+  });
+
+  it("escalates only the more-overdue invoice to 'firm' tone while the other stays 'gentle', for the same client", () => {
+    const older = generatePaymentReminderDraft(
+      overdueInvoice({ invoiceNumber: "INV-A", daysOverdue: 60 }),
+      "firm"
+    );
+    const newer = generatePaymentReminderDraft(
+      overdueInvoice({ invoiceNumber: "INV-B", daysOverdue: 3 }),
+      "gentle"
+    );
+
+    if (!older.ok || !newer.ok) throw new Error("expected ok results");
+    expect(older.draft.subject).toContain("至急");
+    expect(newer.draft.subject).not.toContain("至急");
   });
 });
 
