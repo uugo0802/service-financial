@@ -148,4 +148,67 @@ describe("calculateEntertainmentExpenseLimit", () => {
       })
     ).toThrow();
   });
+
+  it("throws when fiscal year months is negative", () => {
+    expect(() =>
+      calculateEntertainmentExpenseLimit({
+        totalEntertainmentExpense: 1_000_000,
+        entertainmentMealExpense: 0,
+        fiscalYearMonths: -1,
+      })
+    ).toThrow();
+  });
+
+  it("throws when fiscal year months is NaN or Infinity", () => {
+    expect(() =>
+      calculateEntertainmentExpenseLimit({
+        totalEntertainmentExpense: 1_000_000,
+        entertainmentMealExpense: 0,
+        fiscalYearMonths: NaN,
+      })
+    ).toThrow();
+    expect(() =>
+      calculateEntertainmentExpenseLimit({
+        totalEntertainmentExpense: 1_000_000,
+        entertainmentMealExpense: 0,
+        fiscalYearMonths: Infinity,
+      })
+    ).toThrow();
+  });
+
+  it("throws for a negative entertainment meal expense", () => {
+    expect(() =>
+      calculateEntertainmentExpenseLimit({
+        totalEntertainmentExpense: 1_000_000,
+        entertainmentMealExpense: -1,
+        fiscalYearMonths: 12,
+      })
+    ).toThrow();
+  });
+
+  it("picks the fixed deduction limit when both options produce exactly the same deductible amount (a documented tie-break)", () => {
+    // total=16,000,000・meal=16,000,000・12か月 -> 定額控除限度額は800万円で頭打ち(=8,000,000)、
+    // 接待飲食費の50%も floor(16,000,000×0.5)=8,000,000 で、両者が完全に一致する。
+    const result = calculateEntertainmentExpenseLimit({
+      totalEntertainmentExpense: 16_000_000,
+      entertainmentMealExpense: 16_000_000,
+      fiscalYearMonths: 12,
+    });
+
+    expect(result.fixedDeductionDeductibleAmount).toBe(8_000_000);
+    expect(result.halfOfEntertainmentMealExpenseAmount).toBe(8_000_000);
+    expect(result.favorableOption).toBe("fixed_deduction_limit");
+    expect(result.deductibleAmount).toBe(8_000_000);
+  });
+
+  it("tolerates a fiscalYearMonths value that is floating-point-epsilon below an integer (e.g. 12 represented as 11.999999999)", () => {
+    const result = calculateEntertainmentExpenseLimit({
+      totalEntertainmentExpense: 1_000_000,
+      entertainmentMealExpense: 0,
+      fiscalYearMonths: 11.999999999,
+    });
+
+    expect(result.roundedFiscalYearMonths).toBe(12);
+    expect(result.fixedDeductionLimit).toBe(8_000_000);
+  });
 });

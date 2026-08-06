@@ -143,4 +143,34 @@ describe("reconcileWithholdingTaxCredits", () => {
 
     expect(result.records[0].clientName).toBe("（クライアント不明）");
   });
+
+  it("treats a negative toleranceYen defensively as 0 (does not widen matching)", () => {
+    const result = reconcileWithholdingTaxCredits(
+      [record({ clientName: "G社", grossAmount: 300_000, recordedWithholdingTax: 30_629 })],
+      { toleranceYen: -100 }
+    );
+
+    // 差異は1円だが、負の許容値は0として扱われるため一致とはみなされない
+    expect(result.records[0].differenceYen).toBe(-1);
+    expect(result.records[0].status).toBe("discrepancy");
+  });
+
+  it("flags discrepancy just outside a custom tolerance boundary (tolerance + 1)", () => {
+    const result = reconcileWithholdingTaxCredits(
+      [record({ clientName: "H社", grossAmount: 300_000, recordedWithholdingTax: 30_628 })],
+      { toleranceYen: 1 }
+    );
+
+    expect(result.records[0].differenceYen).toBe(-2);
+    expect(result.records[0].status).toBe("discrepancy");
+  });
+
+  it("preserves an optional id/date through to the reconciled record when provided", () => {
+    const result = reconcileWithholdingTaxCredits([
+      record({ id: "pay-1", date: "2026-05-01", clientName: "I社", grossAmount: 100_000, recordedWithholdingTax: 10_210 }),
+    ]);
+
+    expect(result.records[0].id).toBe("pay-1");
+    expect(result.records[0].date).toBe("2026-05-01");
+  });
 });

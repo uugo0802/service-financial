@@ -132,6 +132,35 @@ describe("estimateIndividualResidentTax — 不正な入力はエラー", () => 
   });
 });
 
+describe("estimateIndividualResidentTax — 所得税限界税率の速算表の境界（特例控除分の計算にのみ影響）", () => {
+  it("課税所得金額が10%区分の上限（3,300,000円）ちょうどと、その1円上（20%区分）とで特例控除額が変わる", () => {
+    const atBoundary = estimateIndividualResidentTax({
+      taxableIncome: 3_300_000,
+      furusatoNozeiDonationAmount: 20_000,
+    });
+    const justAbove = estimateIndividualResidentTax({
+      taxableIncome: 3_300_001,
+      furusatoNozeiDonationAmount: 20_000,
+    });
+
+    // netDonation = 18,000円で両者共通。どちらも所得割20%上限（66,000円）は下回るため頭打ちにならない。
+    // 10%区分（限界税率10%）: floor(18,000×(0.9-0.10×1.021)) = 14,362
+    // 20%区分（限界税率20%、3,300,001円から）: floor(18,000×(0.9-0.20×1.021)) = 12,524
+    expect(atBoundary.incomeLevy.donationCredit.special).toBe(14_362);
+    expect(justAbove.incomeLevy.donationCredit.special).toBe(12_524);
+    expect(atBoundary.incomeLevy.donationCredit.special).toBeGreaterThan(justAbove.incomeLevy.donationCredit.special);
+  });
+
+  it("課税所得金額が最高税率区分（40,000,000円超）でも例外を投げずに計算する", () => {
+    const result = estimateIndividualResidentTax({
+      taxableIncome: 45_000_000,
+      furusatoNozeiDonationAmount: 100_000,
+    });
+    expect(result.taxableIncome).toBe(45_000_000);
+    expect(result.incomeLevy.donationCredit.special).toBeGreaterThanOrEqual(0);
+  });
+});
+
 describe("estimateIndividualResidentTax — 前提条件・免責文言", () => {
   it("免責文言と前提条件の一覧を結果に含める", () => {
     const result = estimateIndividualResidentTax({ taxableIncome: 4_000_000 });

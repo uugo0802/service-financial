@@ -138,6 +138,47 @@ describe("calculateProvisionalInterimTax", () => {
     expect(result.priorYearLocalCorporateTax).toBe(0);
     expect(result.required).toBe(false);
   });
+
+  it("treats a negative consumption tax input defensively as zero, not as omitted (still returns a numeric prepayment, not null)", () => {
+    const result = calculateProvisionalInterimTax({
+      corporateTax: 300_000,
+      localCorporateTax: 30_000,
+      consumptionTax: -10_000,
+    });
+    expect(result.priorYearConsumptionTax).toBe(0);
+    expect(result.consumptionTaxPrepayment).toBe(0);
+  });
+
+  it("computes a zero (not null) consumption tax prepayment when consumptionTax is explicitly 0 (distinct from omitted)", () => {
+    const result = calculateProvisionalInterimTax({
+      corporateTax: 300_000,
+      localCorporateTax: 30_000,
+      consumptionTax: 0,
+    });
+    expect(result.priorYearConsumptionTax).toBe(0);
+    expect(result.consumptionTaxPrepayment).toBe(0);
+  });
+
+  it("does not compute a consumption tax prepayment when filing is not required, even if consumptionTax is provided", () => {
+    const result = calculateProvisionalInterimTax({
+      corporateTax: 200_000,
+      localCorporateTax: 20_000,
+      consumptionTax: 500_000,
+    });
+    expect(result.required).toBe(false);
+    expect(result.priorYearConsumptionTax).toBe(500_000);
+    expect(result.consumptionTaxPrepayment).toBe(0);
+  });
+
+  it("floors a very small consumption tax prepayment (under 1 yen after halving) down to 0 yen, not the 10,000 yen unit used for corporate tax", () => {
+    const result = calculateProvisionalInterimTax({
+      corporateTax: 300_000,
+      localCorporateTax: 30_000,
+      consumptionTax: 1,
+    });
+    // 1 / 2 = 0.5 -> floor to yen -> 0 (must NOT be floored to the nearest 10,000 yen)
+    expect(result.consumptionTaxPrepayment).toBe(0);
+  });
 });
 
 describe("deriveInterimTaxFromClosing", () => {
@@ -177,6 +218,32 @@ describe("deriveInterimTaxFromClosing", () => {
 
     expect(result.corporateTax).toBe(123_456);
     expect(result.localCorporateTax).toBe(12_710);
+  });
+
+  it("defaults includeConsumptionTax to true when options is omitted entirely", () => {
+    const sixMonthEstimate = interimEstimate({
+      corporateTax: 50_000,
+      localCorporateTax: 5_150,
+      consumptionTax: { isLikelyExempt: false, salesTax: 80_000, purchaseTax: 30_000, payable: 50_000 },
+    });
+
+    const result = deriveInterimTaxFromClosing(sixMonthEstimate);
+
+    expect(result.consumptionTaxPayable).toBe(50_000);
+    expect(result.totalPrepayment).toBe(50_000 + 5_150 + 50_000);
+  });
+
+  it("floors a negative consumption tax payable at zero rather than subtracting it from the total", () => {
+    const sixMonthEstimate = interimEstimate({
+      corporateTax: 50_000,
+      localCorporateTax: 5_150,
+      consumptionTax: { isLikelyExempt: false, salesTax: 10_000, purchaseTax: 90_000, payable: -80_000 },
+    });
+
+    const result = deriveInterimTaxFromClosing(sixMonthEstimate);
+
+    expect(result.consumptionTaxPayable).toBe(0);
+    expect(result.totalPrepayment).toBe(50_000 + 5_150);
   });
 });
 
