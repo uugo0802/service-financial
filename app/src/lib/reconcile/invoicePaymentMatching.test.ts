@@ -223,6 +223,25 @@ describe("matchInvoicePayments - combined (lump-sum) payment edge cases", () => 
     expect(result.unmatchedDeposits).toHaveLength(1);
     expect(result.unmatchedInvoices).toHaveLength(2);
   });
+
+  it("prefers the client named in the deposit description when two different clients each happen to have a pair summing to the deposit amount", () => {
+    // X社・Y社のどちらの請求書ペアも合計300000円になるが、摘要は明確にY社を指している。
+    // 請求先の推定を摘要から行わず、たまたま先に見つかった請求先グループ（配列順で先のX社）を
+    // 返してしまう実装は、摘要が名指ししている請求先を無視した誤った候補を提示してしまう。
+    const invoices = [
+      invoice({ invoiceNumber: "INV-X1", clientName: "X社", grandTotal: 100000 }),
+      invoice({ invoiceNumber: "INV-X2", clientName: "X社", grandTotal: 200000 }),
+      invoice({ invoiceNumber: "INV-Y1", clientName: "Y社", grandTotal: 50000 }),
+      invoice({ invoiceNumber: "INV-Y2", clientName: "Y社", grandTotal: 250000 }),
+    ];
+    const transactions = [{ id: "tx-1", date: "2026-06-15", description: "フリコミ）Y社分", amount: 300000 }];
+
+    const result = matchInvoicePayments({ invoices, transactions });
+
+    expect(result.combinedPaymentReviewItems).toHaveLength(1);
+    expect(result.combinedPaymentReviewItems[0].clientName).toBe("Y社");
+    expect(result.combinedPaymentReviewItems[0].candidateInvoiceNumbers.sort()).toEqual(["INV-Y1", "INV-Y2"]);
+  });
 });
 
 describe("matchInvoicePayments - multiple partial-payment candidates for the same client", () => {
