@@ -128,6 +128,59 @@ describe("normalizeCsvWithBankFormat", () => {
     expect(result.detectedColumns).toEqual({ date: "取引日", description: "摘要", amount: "取引金額" });
   });
 
+  it("normalizes PayPay銀行 (split withdraw/deposit, 日付/内容 columns with short 出金/入金 amount headers)", () => {
+    const csv = "日付,内容,出金,入金,残高\n2026-01-30,家賃引落,95000,,300000\n2026-02-02,業務委託料入金,,220000,520000\n";
+    const result = normalizeCsvWithBankFormat(csv, "paypay_bank");
+    expect(result.transactions).toEqual([
+      { id: "row-1", date: "2026-01-30", description: "家賃引落", amount: -95000 },
+      { id: "row-2", date: "2026-02-02", description: "業務委託料入金", amount: 220000 },
+    ]);
+    expect(result.detectedColumns).toEqual({
+      date: "日付",
+      description: "内容",
+      amount: "出金/入金列を合成",
+    });
+  });
+
+  it("normalizes ソニー銀行 (split withdraw/deposit, 取引日/摘要 columns with 出金額/入金額 amount headers)", () => {
+    const csv = "取引日,摘要,出金額,入金額,残高\n2026-02-03,通信費引落,7200,,410000\n2026-02-05,売上入金,,320000,730000\n";
+    const result = normalizeCsvWithBankFormat(csv, "sony_bank");
+    expect(result.transactions).toEqual([
+      { id: "row-1", date: "2026-02-03", description: "通信費引落", amount: -7200 },
+      { id: "row-2", date: "2026-02-05", description: "売上入金", amount: 320000 },
+    ]);
+    expect(result.detectedColumns).toEqual({
+      date: "取引日",
+      description: "摘要",
+      amount: "出金/入金列を合成",
+    });
+  });
+
+  it("normalizes セブン銀行 (single signed 入出金額 column)", () => {
+    const csv = "取引日,摘要,入出金額,残高\n2026-02-04,ATM出金,-10000,90000\n2026-02-06,ATM入金,50000,140000\n";
+    const result = normalizeCsvWithBankFormat(csv, "seven_bank");
+    expect(result.transactions).toEqual([
+      { id: "row-1", date: "2026-02-04", description: "ATM出金", amount: -10000 },
+      { id: "row-2", date: "2026-02-06", description: "ATM入金", amount: 50000 },
+    ]);
+    expect(result.detectedColumns).toEqual({ date: "取引日", description: "摘要", amount: "入出金額" });
+  });
+
+  it("normalizes SBI新生銀行 (split withdraw/deposit, お引出し金額/お預入れ金額 amount headers)", () => {
+    const csv =
+      "取引日,摘要,お引出し金額,お預入れ金額,残高\n2026-02-07,消耗品費引落,4300,,610000\n2026-02-09,業務委託料入金,,210000,820000\n";
+    const result = normalizeCsvWithBankFormat(csv, "sbi_shinsei_bank");
+    expect(result.transactions).toEqual([
+      { id: "row-1", date: "2026-02-07", description: "消耗品費引落", amount: -4300 },
+      { id: "row-2", date: "2026-02-09", description: "業務委託料入金", amount: 210000 },
+    ]);
+    expect(result.detectedColumns).toEqual({
+      date: "取引日",
+      description: "摘要",
+      amount: "出金/入金列を合成",
+    });
+  });
+
   it("normalizes JCBカード (positive usage amount negated to an expense, ご利用先 column)", () => {
     const csv = "ご利用日,ご利用先,ご利用金額\n2026-01-18,セブンイレブン,980\n";
     const result = normalizeCsvWithBankFormat(csv, "jcb_card");
@@ -174,6 +227,13 @@ describe("normalizeCsvWithBankFormat", () => {
     const result = normalizeCsvWithBankFormat(csv, "d_card");
     expect(result.transactions).toEqual([{ id: "row-1", date: "2026-02-10", description: "ドコモショップ", amount: -5400 }]);
     expect(result.detectedColumns).toEqual({ date: "ご利用日", description: "ご利用店名等", amount: "ご利用金額" });
+  });
+
+  it("normalizes オリコカード (positive usage amount negated to an expense, 利用先名称 column)", () => {
+    const csv = "利用日,利用先名称,利用金額\n2026-02-11,ビックカメラ,32000\n";
+    const result = normalizeCsvWithBankFormat(csv, "orico_card");
+    expect(result.transactions).toEqual([{ id: "row-1", date: "2026-02-11", description: "ビックカメラ", amount: -32000 }]);
+    expect(result.detectedColumns).toEqual({ date: "利用日", description: "利用先名称", amount: "利用金額" });
   });
 
   it("still negates a usage amount that is written with an explicit minus sign (e.g. a refund row)", () => {
@@ -292,6 +352,37 @@ describe("normalizeCsvWithBankFormat", () => {
     expect(result.transactions[0].amount).toBe(-5400);
   });
 
+  // 全角数字の回帰テスト（PayPay銀行/ソニー銀行/セブン銀行/SBI新生銀行/オリコカード）。
+  it("parses a full-width (全角) amount for PayPay銀行 (paypay_bank, split withdraw column)", () => {
+    const csv = "日付,内容,出金,入金,残高\n2026-01-30,家賃引落,９５，０００,,300000\n";
+    const result = normalizeCsvWithBankFormat(csv, "paypay_bank");
+    expect(result.transactions[0].amount).toBe(-95000);
+  });
+
+  it("parses a full-width (全角) amount for ソニー銀行 (sony_bank, split deposit column)", () => {
+    const csv = "取引日,摘要,出金額,入金額,残高\n2026-02-05,売上入金,,３２０，０００,730000\n";
+    const result = normalizeCsvWithBankFormat(csv, "sony_bank");
+    expect(result.transactions[0].amount).toBe(320000);
+  });
+
+  it("parses a full-width (全角) amount for セブン銀行 (seven_bank, signed column)", () => {
+    const csv = "取引日,摘要,入出金額,残高\n2026-02-04,ATM出金,－１００００,90000\n";
+    const result = normalizeCsvWithBankFormat(csv, "seven_bank");
+    expect(result.transactions[0].amount).toBe(-10000);
+  });
+
+  it("parses a full-width (全角) amount for SBI新生銀行 (sbi_shinsei_bank, split withdraw column)", () => {
+    const csv = "取引日,摘要,お引出し金額,お預入れ金額,残高\n2026-02-07,消耗品費引落,４，３００,,610000\n";
+    const result = normalizeCsvWithBankFormat(csv, "sbi_shinsei_bank");
+    expect(result.transactions[0].amount).toBe(-4300);
+  });
+
+  it("parses a full-width (全角) amount for オリコカード (orico_card, expense-only column)", () => {
+    const csv = "利用日,利用先名称,利用金額\n2026-02-11,ビックカメラ,３２，０００\n";
+    const result = normalizeCsvWithBankFormat(csv, "orico_card");
+    expect(result.transactions[0].amount).toBe(-32000);
+  });
+
   it("marks missing columns as 未検出 for 三井住友銀行 (split mode) when the CSV doesn't match its withdraw/deposit columns", () => {
     const csv = "foo,bar\n1,2\n";
     const result = normalizeCsvWithBankFormat(csv, "smbc_bank");
@@ -307,6 +398,24 @@ describe("normalizeCsvWithBankFormat", () => {
   it("marks missing columns as 未検出 for au PAYカード when the CSV doesn't match its columns", () => {
     const csv = "foo,bar\n1,2\n";
     const result = normalizeCsvWithBankFormat(csv, "au_pay_card");
+    expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
+  });
+
+  it("marks missing columns as 未検出 for PayPay銀行 (split mode) when the CSV doesn't match its withdraw/deposit columns", () => {
+    const csv = "foo,bar\n1,2\n";
+    const result = normalizeCsvWithBankFormat(csv, "paypay_bank");
+    expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
+  });
+
+  it("marks missing columns as 未検出 for セブン銀行 (signed mode) when the CSV doesn't match its columns", () => {
+    const csv = "foo,bar\n1,2\n";
+    const result = normalizeCsvWithBankFormat(csv, "seven_bank");
+    expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
+  });
+
+  it("marks missing columns as 未検出 for オリコカード when the CSV doesn't match its columns", () => {
+    const csv = "foo,bar\n1,2\n";
+    const result = normalizeCsvWithBankFormat(csv, "orico_card");
     expect(result.detectedColumns).toEqual({ date: "未検出", description: "未検出", amount: "未検出" });
   });
 
@@ -431,6 +540,54 @@ describe("detectBankFormat", () => {
     expect(detectBankFormat(aeonHeader)).toBe("aeon_bank");
   });
 
+  it("detects PayPay銀行 from its header row", () => {
+    const header = parseCsvText("日付,内容,出金,入金,残高\n")[0];
+    expect(detectBankFormat(header)).toBe("paypay_bank");
+  });
+
+  it("distinguishes PayPay銀行 (出金/入金, no 金額 suffix) from 住信SBIネット銀行 (出金金額/入金金額) despite sharing 日付/内容", () => {
+    const paypayBankHeader = parseCsvText("日付,内容,出金,入金,残高\n")[0];
+    const sbiHeader = parseCsvText("日付,内容,出金金額,入金金額,残高\n")[0];
+    expect(detectBankFormat(paypayBankHeader)).toBe("paypay_bank");
+    expect(detectBankFormat(sbiHeader)).toBe("sbi_sumishin");
+  });
+
+  it("detects ソニー銀行 from its header row", () => {
+    const header = parseCsvText("取引日,摘要,出金額,入金額,残高\n")[0];
+    expect(detectBankFormat(header)).toBe("sony_bank");
+  });
+
+  it("distinguishes ソニー銀行 (出金額/入金額) from りそな銀行 (支払金額/預り金額) despite sharing 取引日/摘要", () => {
+    const sonyHeader = parseCsvText("取引日,摘要,出金額,入金額,残高\n")[0];
+    const resonaHeader = parseCsvText("取引日,摘要,支払金額,預り金額,残高\n")[0];
+    expect(detectBankFormat(sonyHeader)).toBe("sony_bank");
+    expect(detectBankFormat(resonaHeader)).toBe("resona_bank");
+  });
+
+  it("detects セブン銀行 from its header row", () => {
+    const header = parseCsvText("取引日,摘要,入出金額,残高\n")[0];
+    expect(detectBankFormat(header)).toBe("seven_bank");
+  });
+
+  it("distinguishes セブン銀行 (signed 入出金額) from イオン銀行 (signed 取引金額) despite sharing 取引日/摘要/残高", () => {
+    const sevenHeader = parseCsvText("取引日,摘要,入出金額,残高\n")[0];
+    const aeonHeader = parseCsvText("取引日,摘要,取引金額,残高\n")[0];
+    expect(detectBankFormat(sevenHeader)).toBe("seven_bank");
+    expect(detectBankFormat(aeonHeader)).toBe("aeon_bank");
+  });
+
+  it("detects SBI新生銀行 from its header row", () => {
+    const header = parseCsvText("取引日,摘要,お引出し金額,お預入れ金額,残高\n")[0];
+    expect(detectBankFormat(header)).toBe("sbi_shinsei_bank");
+  });
+
+  it("distinguishes SBI新生銀行 (お引出し金額/お預入れ金額) from ゆうちょ銀行 (お引出し/お預入れ) despite the shared お prefix", () => {
+    const shinseiHeader = parseCsvText("取引日,摘要,お引出し金額,お預入れ金額,残高\n")[0];
+    const yuchoHeader = parseCsvText("取扱日,お取り扱い内容,お引出し,お預入れ,残高\n")[0];
+    expect(detectBankFormat(shinseiHeader)).toBe("sbi_shinsei_bank");
+    expect(detectBankFormat(yuchoHeader)).toBe("yucho");
+  });
+
   it("detects 三井住友カード from its header row", () => {
     const header = parseCsvText("ご利用日,ご利用店名,ご利用金額\n")[0];
     expect(detectBankFormat(header)).toBe("smcc");
@@ -459,6 +616,20 @@ describe("detectBankFormat", () => {
   it("detects dカード from its header row", () => {
     const header = parseCsvText("ご利用日,ご利用店名等,ご利用金額\n")[0];
     expect(detectBankFormat(header)).toBe("d_card");
+  });
+
+  it("detects オリコカード from its header row", () => {
+    const header = parseCsvText("利用日,利用先名称,利用金額\n")[0];
+    expect(detectBankFormat(header)).toBe("orico_card");
+  });
+
+  it("distinguishes オリコカード (利用先名称) from au PAYカード (利用先) and 楽天カード (利用店名) despite sharing 利用日/利用金額", () => {
+    const oricoHeader = parseCsvText("利用日,利用先名称,利用金額\n")[0];
+    const auPayHeader = parseCsvText("利用日,利用先,利用金額\n")[0];
+    const rakutenCardHeader = parseCsvText("利用日,利用店名,利用金額\n")[0];
+    expect(detectBankFormat(oricoHeader)).toBe("orico_card");
+    expect(detectBankFormat(auPayHeader)).toBe("au_pay_card");
+    expect(detectBankFormat(rakutenCardHeader)).toBe("rakuten_card");
   });
 
   it("distinguishes 三井住友カード, JCBカード, and PayPayカード despite all sharing ご利用日/ご利用金額 columns", () => {
@@ -537,7 +708,7 @@ describe("normalizeBankCsv", () => {
 });
 
 describe("BANK_FORMATS", () => {
-  it("exposes exactly the fifteen supported institutions with Japanese labels", () => {
+  it("exposes exactly the twenty supported institutions with Japanese labels", () => {
     const ids = Object.keys(BANK_FORMATS).sort();
     expect(ids).toEqual(
       [
@@ -548,13 +719,18 @@ describe("BANK_FORMATS", () => {
         "jcb_card",
         "mizuho",
         "mufg",
+        "orico_card",
+        "paypay_bank",
         "paypay_card",
         "rakuten_bank",
         "rakuten_card",
         "resona_bank",
+        "sbi_shinsei_bank",
         "sbi_sumishin",
+        "seven_bank",
         "smbc_bank",
         "smcc",
+        "sony_bank",
         "yucho",
       ].sort()
     );
@@ -567,11 +743,16 @@ describe("BANK_FORMATS", () => {
     expect(BANK_FORMATS.smbc_bank.label).toBe("三井住友銀行");
     expect(BANK_FORMATS.resona_bank.label).toBe("りそな銀行");
     expect(BANK_FORMATS.aeon_bank.label).toBe("イオン銀行");
+    expect(BANK_FORMATS.paypay_bank.label).toBe("PayPay銀行");
+    expect(BANK_FORMATS.sony_bank.label).toBe("ソニー銀行");
+    expect(BANK_FORMATS.seven_bank.label).toBe("セブン銀行");
+    expect(BANK_FORMATS.sbi_shinsei_bank.label).toBe("SBI新生銀行");
     expect(BANK_FORMATS.smcc.label).toBe("三井住友カード");
     expect(BANK_FORMATS.rakuten_card.label).toBe("楽天カード");
     expect(BANK_FORMATS.jcb_card.label).toBe("JCBカード");
     expect(BANK_FORMATS.paypay_card.label).toBe("PayPayカード");
     expect(BANK_FORMATS.au_pay_card.label).toBe("au PAYカード");
     expect(BANK_FORMATS.d_card.label).toBe("dカード");
+    expect(BANK_FORMATS.orico_card.label).toBe("オリコカード");
   });
 });
