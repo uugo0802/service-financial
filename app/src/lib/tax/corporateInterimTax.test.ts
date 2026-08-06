@@ -159,7 +159,7 @@ describe("calculateProvisionalInterimTax", () => {
     expect(result.consumptionTaxPrepayment).toBe(0);
   });
 
-  it("does not compute a consumption tax prepayment when filing is not required, even if consumptionTax is provided", () => {
+  it("still computes a consumption tax prepayment when corporate-tax filing is not required, since consumption tax has an independent threshold the caller judges separately", () => {
     const result = calculateProvisionalInterimTax({
       corporateTax: 200_000,
       localCorporateTax: 20_000,
@@ -167,7 +167,7 @@ describe("calculateProvisionalInterimTax", () => {
     });
     expect(result.required).toBe(false);
     expect(result.priorYearConsumptionTax).toBe(500_000);
-    expect(result.consumptionTaxPrepayment).toBe(0);
+    expect(result.consumptionTaxPrepayment).toBe(250_000);
   });
 
   it("floors a very small consumption tax prepayment (under 1 yen after halving) down to 0 yen, not the 10,000 yen unit used for corporate tax", () => {
