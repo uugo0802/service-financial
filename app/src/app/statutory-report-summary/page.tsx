@@ -1,0 +1,65 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { StatutoryReportSummaryClient } from "./StatutoryReportSummaryClient";
+
+export const metadata: Metadata = {
+  title: "法定調書合計表（下書き）｜税務申告AI（ジャービス）",
+  description:
+    "支払調書・源泉徴収票の下書きデータを区分ごとに集計し、法定調書合計表（給与所得の源泉徴収票等の法定調書合計表）の下書きを確認・印刷／PDF保存できる画面（開発中プロトタイプ）。",
+};
+
+export default function StatutoryReportSummaryPage() {
+  return (
+    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
+      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 print:hidden">
+        <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
+          <Link href="/" className="font-serif text-lg tracking-wide">
+            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+          </Link>
+          <div className="text-xs text-stone-500 dark:text-stone-400">法定調書合計表（下書き）</div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-4xl px-6 py-10 flex flex-col gap-8 print:max-w-none print:px-0 print:py-0">
+        <section className="print:hidden">
+          <h1 className="text-2xl font-semibold mb-2">法定調書合計表（下書き）</h1>
+          <p className="text-sm text-stone-600 dark:text-stone-400 mb-2 max-w-2xl leading-relaxed">
+            会社（マイクロ法人・個人事業主を問わない）が税務署へ提出する必要がある個々の法定調書
+            （
+            <Link href="/withholding-slip" className="underline hover:text-stone-900 dark:hover:text-stone-100">
+              給与所得の源泉徴収票
+            </Link>
+            、
+            <Link href="/payment-report" className="underline hover:text-stone-900 dark:hover:text-stone-100">
+              報酬・料金等の支払調書
+            </Link>
+            など）を区分ごとに集計し、その「表紙」にあたる法定調書合計表の
+            <b className="font-medium">下書き</b>を作成・印刷／PDF保存できる画面です。
+          </p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 max-w-2xl leading-relaxed">
+            この画面は、他の下書き作成画面（給与所得の源泉徴収票・支払調書）ですでに作成した内容を人員数・支払金額・
+            源泉徴収税額に区分ごとへ集計し直すだけの機能であり、新たに税額や提出要否を計算するものではありません。
+            退職所得の源泉徴収票合計表・不動産の使用料等の支払調書合計表は、対応する下書き作成機能が本アプリに
+            まだないため、常に0件のまま表示されます。
+          </p>
+          <p className="text-xs text-amber-700 dark:text-amber-400 max-w-2xl leading-relaxed mt-2">
+            <b className="font-medium">
+              これは下書きです。提出はご自身の責任で行ってください。
+            </b>
+            税理士法に定める税務代理・税務書類の作成・個別具体的な税務相談には該当しません。
+          </p>
+        </section>
+
+        <StatutoryReportSummaryClient />
+      </main>
+
+      <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4 print:hidden">
+        <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+          本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
+          表示される法定調書合計表の下書きは、入力内容に基づく機械的な集計です。正式な提出前には、必ずご自身または
+          税理士等の専門家が内容をご確認ください。
+        </div>
+      </footer>
+    </div>
+  );
+}
