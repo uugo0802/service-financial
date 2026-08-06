@@ -102,6 +102,42 @@ describe("computeBulkReapplyDiff", () => {
     const result = computeBulkReapplyDiff([aiClassified], []);
     expect(result.changedCount).toBe(0);
   });
+
+  it("processes a mixed batch, reporting only the changed transactions in diffs while totalCount reflects all of them", () => {
+    const changed = tx({
+      id: "tx-mix-1",
+      description: "事務所家賃 〇〇不動産",
+      amount: -150000,
+      account: "地代家賃",
+      taxCategory: "課税仕入10%",
+      confidence: 1,
+      source: "rule",
+    });
+    const userRules: UserCategoryRule[] = [
+      createUserCategoryRule({
+        pattern: "〇〇不動産",
+        account: "地代家賃(自宅兼事務所・家事按分50%)",
+        taxCategory: "課税仕入10%",
+      }),
+    ];
+
+    // Apply the new rule only to "changed" by keeping "unchanged" already matching the new rule's output.
+    const alreadyMatching = tx({
+      id: "tx-mix-2",
+      description: "事務所家賃 〇〇不動産",
+      amount: -150000,
+      account: "地代家賃(自宅兼事務所・家事按分50%)",
+      taxCategory: "課税仕入10%",
+      confidence: 1,
+      source: "rule",
+    });
+
+    const result = computeBulkReapplyDiff([changed, alreadyMatching], userRules);
+
+    expect(result.totalCount).toBe(2);
+    expect(result.changedCount).toBe(1);
+    expect(result.diffs.map((d) => d.id)).toEqual(["tx-mix-1"]);
+  });
 });
 
 describe("recategorizeWithCurrentRules", () => {
@@ -170,6 +206,24 @@ describe("hasCategorizationChanged", () => {
     const previous = tx({ id: "tx-10", account: "社会保険料(個人)", taxCategory: "非課税", personalDeductionOnly: false });
     const next = tx({ id: "tx-10", account: "社会保険料(個人)", taxCategory: "非課税", personalDeductionOnly: true });
     expect(hasCategorizationChanged(previous, next)).toBe(true);
+  });
+
+  it("returns true when only the taxCategory differs (same account)", () => {
+    const previous = tx({ id: "tx-11", account: "消耗品費", taxCategory: "課税仕入10%" });
+    const next = tx({ id: "tx-11", account: "消耗品費", taxCategory: "課税仕入8%(軽減)" });
+    expect(hasCategorizationChanged(previous, next)).toBe(true);
+  });
+
+  it("returns true when only the excludeFromIncome flag differs", () => {
+    const previous = tx({ id: "tx-12", account: "売上高", taxCategory: "課税売上10%", excludeFromIncome: false });
+    const next = tx({ id: "tx-12", account: "売上高", taxCategory: "課税売上10%", excludeFromIncome: true });
+    expect(hasCategorizationChanged(previous, next)).toBe(true);
+  });
+
+  it("returns false when every compared field (including confidence/source) is identical", () => {
+    const previous = tx({ id: "tx-13", account: "消耗品費", taxCategory: "課税仕入10%" });
+    const next = tx({ id: "tx-13", account: "消耗品費", taxCategory: "課税仕入10%" });
+    expect(hasCategorizationChanged(previous, next)).toBe(false);
   });
 });
 

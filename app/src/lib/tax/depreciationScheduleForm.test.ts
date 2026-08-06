@@ -158,4 +158,51 @@ describe("buildDepreciationScheduleForm", () => {
     expect(form.rows[0].remarks.some((n) => n.includes("耐用年数は1年以上"))).toBe(true);
     expect(form.rows[0].usefulLifeYears).toBe(1);
   });
+
+  it("floors a fractional usefulLifeYears down to an integer (e.g. 4.9 -> 4) rather than rounding", () => {
+    const asset = makeAsset({ id: "fractional-life", usefulLifeYears: 4.9 });
+
+    const form = buildDepreciationScheduleForm([asset], period);
+
+    expect(form.rows[0].usefulLifeYears).toBe(4);
+    expect(form.rows[0].depreciationRate).toBeCloseTo(1 / 4);
+  });
+
+  it("adds a fully-depreciated remark once the asset has been written down to the ¥1 memorandum value", () => {
+    // Acquired well before the fiscal period, with a short useful life so it's fully depreciated by now.
+    const asset = makeAsset({ id: "old", acquisitionDate: "2015-01-01", acquisitionCost: 100_000, usefulLifeYears: 2 });
+
+    const form = buildDepreciationScheduleForm([asset], period);
+
+    expect(form.rows[0].endingBookValue).toBe(1);
+    expect(form.rows[0].remarks.some((n) => n.includes("備忘価額（1円）まで償却済み"))).toBe(true);
+  });
+
+  it("joins multiple excluded declining-balance/immediate-expensing asset names with the Japanese reading-point separator in the notes", () => {
+    const decliningA = makeAsset({ id: "db-a", name: "定率法資産A", method: "declining-balance" });
+    const decliningB = makeAsset({ id: "db-b", name: "定率法資産B", method: "declining-balance" });
+
+    const form = buildDepreciationScheduleForm([decliningA, decliningB], period);
+
+    expect(form.excludedDecliningBalanceAssets).toHaveLength(2);
+    expect(form.notes.some((n) => n.includes("定率法資産A、定率法資産B"))).toBe(true);
+  });
+
+  it("treats a negative acquisitionCost defensively as zero, matching depreciation.ts", () => {
+    const asset = makeAsset({ id: "negative-cost", acquisitionCost: -50_000 });
+
+    const form = buildDepreciationScheduleForm([asset], period);
+
+    expect(form.rows[0].acquisitionCost).toBe(0);
+    expect(form.rows[0].netAcquisitionCost).toBe(0);
+    expect(form.rows[0].depreciationBase).toBe(0);
+  });
+
+  it("does not add declining-balance/immediate-expensing exclusion notes when no assets are excluded", () => {
+    const asset = makeAsset({});
+    const form = buildDepreciationScheduleForm([asset], period);
+
+    expect(form.notes.some((n) => n.includes("別表十六（二）"))).toBe(false);
+    expect(form.notes.some((n) => n.includes("別表十六（七）"))).toBe(false);
+  });
 });

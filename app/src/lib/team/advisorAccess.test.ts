@@ -190,6 +190,53 @@ describe("createAdvisorAccessInvite", () => {
 
     expect(grant.inviteToken.length).toBeGreaterThan(0);
   });
+
+  it("generates an id automatically when none is provided", () => {
+    const grant = createAdvisorAccessInvite([], {
+      tenantId: TENANT_ID,
+      advisorName: "山田太郎",
+      advisorEmail: "advisor@example.com",
+      token: "fixed-token",
+    });
+
+    expect(grant.id.length).toBeGreaterThan(0);
+    expect(grant.id).toContain(TENANT_ID);
+  });
+
+  it("throws when tenantId is empty (or only whitespace)", () => {
+    expect(() =>
+      createAdvisorAccessInvite([], {
+        tenantId: "   ",
+        advisorName: "山田太郎",
+        advisorEmail: "advisor@example.com",
+      }),
+    ).toThrow(AdvisorAccessError);
+  });
+
+  it("does not treat a pending/active grant in a DIFFERENT tenant as a duplicate", () => {
+    const existing = [activeGrant({ tenantId: "other-tenant", status: "pending", advisorEmail: "advisor@example.com" })];
+
+    expect(() =>
+      createAdvisorAccessInvite(existing, {
+        tenantId: TENANT_ID,
+        advisorName: "山田太郎",
+        advisorEmail: "advisor@example.com",
+        id: "grant-2",
+        token: "fixed-token",
+      }),
+    ).not.toThrow();
+  });
+
+  it("throws when expiresInDays is negative", () => {
+    expect(() =>
+      createAdvisorAccessInvite([], {
+        tenantId: TENANT_ID,
+        advisorName: "山田太郎",
+        advisorEmail: "advisor@example.com",
+        expiresInDays: -5,
+      }),
+    ).toThrow(AdvisorAccessError);
+  });
 });
 
 describe("activateAdvisorAccessGrant", () => {
@@ -302,6 +349,15 @@ describe("expiry logic", () => {
 
   it("isAdvisorAccessGrantValid is false for a revoked grant", () => {
     expect(isAdvisorAccessGrantValid(activeGrant({ status: "revoked" }))).toBe(false);
+  });
+
+  it("is NOT expired exactly at the expiry instant (only strictly-after counts as expired)", () => {
+    expect(isAdvisorAccessGrantExpired(expiring, new Date("2026-08-31T00:00:00.000Z"))).toBe(false);
+    expect(isAdvisorAccessGrantValid(expiring, new Date("2026-08-31T00:00:00.000Z"))).toBe(true);
+  });
+
+  it("is expired one millisecond after the expiry instant", () => {
+    expect(isAdvisorAccessGrantExpired(expiring, new Date("2026-08-31T00:00:00.001Z"))).toBe(true);
   });
 });
 
