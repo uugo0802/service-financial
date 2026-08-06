@@ -145,4 +145,36 @@ describe("buildInvoiceRegistrationApplicationDraft", () => {
     expect(draft.disclaimer.length).toBeGreaterThan(0);
     expect(draft.assumptions.length).toBeGreaterThan(0);
   });
+
+  // Audit note (経過措置の期限計算): unlike invoiceValidation.ts's transitional-deduction-ratio
+  // dates, this module intentionally computes no deadline/transition-rule date logic at all (see
+  // the file header comment) - it only transcribes the user's free-text desiredEffectiveDatePreference
+  // verbatim. There is therefore no date-boundary arithmetic here to get wrong. These tests pin
+  // down that design choice: the module must never start deriving/validating a specific date from
+  // its own logic (e.g. defaulting to "today" or computing a submission deadline), regardless of
+  // which entity type or election is passed, since the applicable transitional-measure period is
+  // determined by external, changeable 国税庁 rules this module explicitly declines to encode.
+  it("never fabricates or defaults a desired effective date on its own, for any entity type or election combination", () => {
+    for (const entityType of ["individual", "corporation"] as const) {
+      for (const isTaxExemptElectingTaxableStatus of [true, false]) {
+        const draft = buildInvoiceRegistrationApplicationDraft(
+          inputs({ entityType, isTaxExemptElectingTaxableStatus })
+        );
+        const effectiveDate = findSection(draft, "登録を受けようとする年月日(希望)");
+        // No desiredEffectiveDatePreference was supplied, so the field must stay the generic
+        // "unspecified" placeholder - never a computed/defaulted calendar date.
+        expect(findField(effectiveDate, "希望日").value).toBe("（未入力）");
+      }
+    }
+  });
+
+  it("passes through an arbitrary desired-date string unmodified, without parsing or validating it as a real date", () => {
+    const draft = buildInvoiceRegistrationApplicationDraft(
+      inputs({ desiredEffectiveDatePreference: "できるだけ早く（日付未定）" })
+    );
+    const effectiveDate = findSection(draft, "登録を受けようとする年月日(希望)");
+    expect(findField(effectiveDate, "希望日").value).toBe("できるだけ早く（日付未定）");
+    // Passing a non-calendar free-text string must not throw or get silently coerced/rejected.
+    expect(draft.warnings).toEqual([]);
+  });
 });
