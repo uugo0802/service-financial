@@ -1,0 +1,237 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { CategorizedTransaction } from "@/lib/categorize/engine";
+import { EntityType } from "@/lib/filing/deadlines";
+import { ReconciliationResult } from "@/lib/reconcile/bankReconciliation";
+import { buildWeeklyDigest, IsoDate } from "@/lib/notifications/weeklyDigest";
+import { WeeklyDigestPreview } from "@/components/WeeklyDigestPreview";
+import { NotificationPreferencesForm } from "@/components/NotificationPreferencesForm";
+
+// このページ専用のサンプルデータ。実際のアップロード・記帳フロー（app/page.tsx）や
+// Supabase等の実データとは連携しない、週次ダイジェストの見え方を確認するための
+// 自己完結型のプレビュー画面（dashboard/sampleData.tsと同様の位置づけだが、
+// このページ限定のダミーデータのため共有ファイルには追加しない）。
+const SAMPLE_CATEGORIZED_TRANSACTIONS: CategorizedTransaction[] = [
+  {
+    id: "sample-rule-1",
+    date: "2026-07-05",
+    description: "サンプル: 業務委託料入金",
+    amount: 420_000,
+    account: "売上高",
+    taxCategory: "課税売上10%",
+    confidence: 1,
+    source: "rule",
+  },
+  {
+    id: "sample-rule-2",
+    date: "2026-07-08",
+    description: "サンプル: コワーキングスペース利用料",
+    amount: -32_000,
+    account: "地代家賃",
+    taxCategory: "課税仕入10%",
+    confidence: 1,
+    source: "rule",
+  },
+  {
+    id: "sample-review-1",
+    date: "2026-07-12",
+    description: "サンプル: 摘要が不明瞭な出金（要確認）",
+    amount: -18_400,
+    account: "要確認",
+    taxCategory: "要確認",
+    confidence: 0.4,
+    source: "uncategorized",
+  },
+  {
+    id: "sample-review-2",
+    date: "2026-07-18",
+    description: "サンプル: AIが低信頼で分類した交際費",
+    amount: -6_600,
+    account: "接待交際費",
+    taxCategory: "課税仕入10%",
+    confidence: 0.58,
+    source: "ai",
+    note: "領収書の記載が薄く、参加者情報が確認できないため確信度を下げています",
+  },
+  {
+    id: "sample-review-3",
+    date: "2026-07-21",
+    description: "サンプル: 新規取引先からの入金（初回のため要確認）",
+    amount: 95_000,
+    account: "要確認",
+    taxCategory: "要確認",
+    confidence: 0.3,
+    source: "uncategorized",
+  },
+];
+
+// bankReconciliation.tsは口座・期間単位の突合結果を返す設計のため、サンプルでも
+// 「連携している口座ごとに1件」の突合結果を想定する（未突合の口座が1つある状態）。
+const SAMPLE_RECONCILIATIONS: ReconciliationResult[] = [
+  {
+    transactionCount: 12,
+    netTransactionAmount: 458_400,
+    openingBalance: 1_000_000,
+    expectedClosingBalance: 1_458_400,
+    actualClosingBalance: 1_458_400,
+    discrepancy: 0,
+    toleranceYen: 1,
+    isReconciled: true,
+    hint: null,
+  },
+  {
+    transactionCount: 4,
+    netTransactionAmount: 120_000,
+    openingBalance: 300_000,
+    expectedClosingBalance: 420_000,
+    actualClosingBalance: 460_000,
+    discrepancy: 40_000,
+    toleranceYen: 1,
+    isReconciled: false,
+    hint: {
+      direction: "shortfall",
+      title: "取込漏れの可能性（不足額が示す方向）",
+      message: "実際の銀行残高が、取り込んだ取引から計算した残高より多くなっています。入金など一部の取引がまだ取り込めていない可能性があります。",
+    },
+  },
+];
+
+// ブラウザのローカル日時から "YYYY-MM-DD" 形式の基準日を作る。
+// weeklyDigest.ts側のロジックはDate.now()に依存しない設計になっており、
+// ここ（実際のアプリ実行時にのみ「今日」を決める場所）でだけ現在日時を参照する。
+function todayIsoDate(): IsoDate {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export default function NotificationsPage() {
+  const asOf = useMemo(() => todayIsoDate(), []);
+
+  const [entityType, setEntityType] = useState<EntityType>("individual");
+  const [fiscalYearEndMonth, setFiscalYearEndMonth] = useState(3);
+  const [includeReviewQueue, setIncludeReviewQueue] = useState(true);
+  const [includeReconciliation, setIncludeReconciliation] = useState(true);
+
+  const digest = useMemo(
+    () =>
+      buildWeeklyDigest({
+        asOf,
+        categorizedTransactions: includeReviewQueue ? SAMPLE_CATEGORIZED_TRANSACTIONS : [],
+        filing: { entityType, fiscalYearEndMonth },
+        reconciliations: includeReconciliation ? SAMPLE_RECONCILIATIONS : undefined,
+      }),
+    [asOf, entityType, fiscalYearEndMonth, includeReviewQueue, includeReconciliation]
+  );
+
+  return (
+    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
+      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
+          <Link href="/" className="font-serif text-lg tracking-wide">
+            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+          </Link>
+          <div className="text-xs text-stone-500 dark:text-stone-400">週次アクティビティダイジェスト（プレビュー）</div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-8">
+        <section>
+          <h1 className="text-2xl font-semibold mb-2">週次アクティビティダイジェスト</h1>
+          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+            AIカテゴライズのレビュー待ち・申告期限・銀行残高の未突合状況を1週間分にまとめたダイジェストの下書きです。
+            実際のメール配信は行わず、送信内容として組み立てられる構造化データをこの画面で確認できます。
+          </p>
+        </section>
+
+        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5 flex flex-col gap-4">
+          <div>
+            <div className="text-xs text-stone-500 dark:text-stone-400 mb-2">事業形態（申告期限の計算に使用）</div>
+            <div className="flex gap-2">
+              {(
+                [
+                  { key: "individual", label: "個人事業主" },
+                  { key: "corporate", label: "マイクロ法人" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setEntityType(opt.key)}
+                  className={`text-sm px-4 py-2 border transition-colors ${
+                    entityType === opt.key
+                      ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
+                      : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {entityType === "corporate" && (
+            <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400 w-44">
+              決算月
+              <select
+                value={fiscalYearEndMonth}
+                onChange={(e) => setFiscalYearEndMonth(Number(e.target.value))}
+                className="border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400"
+              >
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>
+                    {m}月
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
+          <div className="flex flex-col gap-2 text-sm text-stone-600 dark:text-stone-300 border-t border-stone-100 dark:border-stone-800 pt-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={includeReviewQueue}
+                onChange={(e) => setIncludeReviewQueue(e.target.checked)}
+              />
+              サンプルのレビュー待ち取引を含める（AIカテゴライズの低信頼エスカレーション）
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={includeReconciliation}
+                onChange={(e) => setIncludeReconciliation(e.target.checked)}
+              />
+              サンプルの銀行残高突合結果を含める（未連携テナントを試したい場合はオフ）
+            </label>
+          </div>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-3">ダイジェストのプレビュー</h2>
+          <WeeklyDigestPreview digest={digest} />
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-2">通知の詳細設定</h2>
+          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-3">
+            ダイジェストの配信頻度と、通知を控えたい静音時間帯（クワイエットアワー）をこの端末に保存できます。
+          </p>
+          <NotificationPreferencesForm />
+        </section>
+
+        <section className="border-t border-stone-300 dark:border-stone-700 pt-6">
+          <p className="text-xs text-stone-400 dark:text-stone-500 leading-relaxed max-w-2xl">
+            本ページは開発中のプロトタイプであり、サンプルデータを使用しています。実際のメール送信は行わず、
+            ダイジェストとして組み立てられる内容（件数・申告期限の一覧・要約文）を確認するための画面です。
+            申告期限の情報は一般的な原則ルールに基づく参考値であり、個別の税務相談ではありません。
+          </p>
+        </section>
+      </main>
+    </div>
+  );
+}

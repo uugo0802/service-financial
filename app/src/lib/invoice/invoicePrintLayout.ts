@@ -31,7 +31,19 @@ function parseIsoDate(value: string | null | undefined): { y: number; m: number;
   if (!value) return null;
   const match = ISO_DATE_RE.exec(value);
   if (!match) return null;
-  return { y: Number(match[1]), m: Number(match[2]), d: Number(match[3]) };
+  const y = Number(match[1]);
+  const m = Number(match[2]);
+  const d = Number(match[3]);
+  // "YYYY-MM-DD"の形式に一致していても、実在しない日付（例: 2月30日）である可能性があるため、
+  // ロールオーバーを利用して実在する暦日かどうかを検証する（quote.tsのisValidIsoDateと同じ考え方）。
+  // これを行わないと、例えば"2026-02-30"のような不正な日付がそのまま「2026年2月30日」と
+  // 表示されてしまい、本関数のドキュメントコメントが約束する「不正な日付の場合は『未設定』を返す」
+  // という契約に反する。
+  const rollover = new Date(Date.UTC(y, m - 1, d));
+  if (rollover.getUTCFullYear() !== y || rollover.getUTCMonth() !== m - 1 || rollover.getUTCDate() !== d) {
+    return null;
+  }
+  return { y, m, d };
 }
 
 /**

@@ -61,7 +61,12 @@ export const EXPENSE_RULES: CategoryRule[] = [
   { pattern: /\bJR\b|\bANA\b|\bJAL\b|Suica|PASMO|タクシー|新幹線|航空券|高速道路/i, account: "旅費交通費", taxCategory: "課税仕入10%" },
   { pattern: /\bETC\b/, account: "旅費交通費", taxCategory: "課税仕入10%", note: "ETC（高速道路）利用料" },
   { pattern: /Amazon|ヨドバシ|文房具|事務用品|コクヨ/i, account: "消耗品費", taxCategory: "課税仕入10%" },
-  { pattern: /AWS|Google\s?Workspace|GCP|Adobe|Slack|Zoom|GitHub|Notion|Dropbox|Microsoft|サブスクリプション/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "国外事業者のリバースチャージ対象の可能性あり、要確認" },
+  // "AWS" は \b で単語境界を必須にしている。境界なしの場合、コンビニエンスストアの
+  // "LAWSON"（ローソン）がクレジットカード明細の摘要に英字表記で現れると、
+  // 部分文字列として "AWS" を含んでしまい（L-AWS-ON）、コンビニでの買い物が
+  // ソフトウェア利用料（AWS利用料）と誤分類されてしまう（au/ANA/JR/JAL/ETCの
+  // 過去の誤分類修正と同種の、境界のない短い英字キーワードによる偽陽性）。
+  { pattern: /\bAWS\b|Google\s?Workspace|GCP|Adobe|Slack|Zoom|GitHub|Notion|Dropbox|Microsoft|サブスクリプション/i, account: "支払手数料(ソフトウェア利用料)", taxCategory: "課税仕入10%", note: "国外事業者のリバースチャージ対象の可能性あり、要確認" },
   { pattern: /振込手数料|送金手数料|PayPal|Stripe手数料|銀行手数料|口座維持手数料/i, account: "支払手数料", taxCategory: "課税仕入10%" },
   { pattern: /ヤマト|佐川|日本郵便|ゆうパック|レターパック|宅急便/, account: "荷造運賃", taxCategory: "課税仕入10%" },
   { pattern: /会議費|カフェ|喫茶|スターバックス|ドトール/i, account: "会議費", taxCategory: "課税仕入10%" },

@@ -161,6 +161,54 @@ describe("determineDeductionEligibility", () => {
     expect(result.warning).toContain("登録番号未確認のため仕入税額控除の適用に注意");
   });
 
+  // Boundary regression: the three transitional-measure cutover dates (2026-09-30/10-01 and
+  // 2029-09-30/10-01) are the exact "以降" ("until and including") edges from 国税庁's
+  // インボイス制度Q&A. transitionalDeductibleRatio() compares with "<=", so the *last* day of
+  // each higher-ratio period must still get that period's ratio, and the *first* day of the
+  // next period must already drop to the lower one. This pins that down so a future refactor
+  // (e.g. flipping "<=" to "<", or an off-by-one on the cutover string) is caught immediately.
+  describe("transitional-measure cutover date boundaries", () => {
+    it("still applies 80% on the last day of the 80% period (2026-09-30)", () => {
+      const result = determineDeductionEligibility({
+        taxCategory: "課税仕入10%",
+        invoiceNumber: null,
+        transactionDate: "2026-09-30",
+      });
+      expect(result.eligibility).toBe("transitional");
+      expect(result.deductibleRatio).toBe(80);
+    });
+
+    it("drops to 50% on the first day of the 50% period (2026-10-01)", () => {
+      const result = determineDeductionEligibility({
+        taxCategory: "課税仕入10%",
+        invoiceNumber: null,
+        transactionDate: "2026-10-01",
+      });
+      expect(result.eligibility).toBe("transitional");
+      expect(result.deductibleRatio).toBe(50);
+    });
+
+    it("still applies 50% on the last day of the 50% period (2029-09-30)", () => {
+      const result = determineDeductionEligibility({
+        taxCategory: "課税仕入10%",
+        invoiceNumber: null,
+        transactionDate: "2029-09-30",
+      });
+      expect(result.eligibility).toBe("transitional");
+      expect(result.deductibleRatio).toBe(50);
+    });
+
+    it("drops to ineligible (0%) on the first day after the transitional period ends (2029-10-01)", () => {
+      const result = determineDeductionEligibility({
+        taxCategory: "課税仕入10%",
+        invoiceNumber: null,
+        transactionDate: "2029-10-01",
+      });
+      expect(result.eligibility).toBe("ineligible");
+      expect(result.deductibleRatio).toBe(0);
+    });
+  });
+
   it("conservatively returns ineligible (ratio 0) when the transaction date is unknown", () => {
     const result = determineDeductionEligibility({
       taxCategory: "課税仕入10%",

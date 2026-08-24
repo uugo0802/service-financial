@@ -5,8 +5,12 @@ import { getCameraCaptureLabel, getFilePickerLabel, isCameraCaptureSupported } f
 import { hasRecommendedMinimumResolution, parseImageDimensions } from "@/lib/ocr/imageMeta";
 import { ReceiptJournalCandidate, recordCorrection } from "@/lib/ocr/receiptCandidate";
 import { findReceiptDuplicate } from "@/lib/ocr/receiptDuplicateDetection";
-import { TAX_CATEGORIES } from "@/lib/ocr/receiptOcr";
+import { isSupportedPdfMediaType, TAX_CATEGORIES } from "@/lib/ocr/receiptOcr";
 import { evaluateScannerStorageCompliance } from "@/lib/ocr/scannerStorageCompliance";
+
+// ファイル選択(カメラ以外)の入力は画像に加え、スキャンデータ読み込み（docs/business-plan.md 12章）
+// としてPDFも受け付ける。カメラ撮影(capture="environment")は端末カメラでの直接撮影用のため画像のみ。
+const FILE_PICKER_ACCEPT = "image/*,application/pdf";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // サーバー側(app/api/ocr/route.ts)の上限と揃える
 
@@ -24,6 +28,8 @@ export function ReceiptUpload({
   onConfirm?: (candidate: ReceiptJournalCandidate) => void;
 }) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFileName, setPreviewFileName] = useState<string | null>(null);
+  const [previewIsPdf, setPreviewIsPdf] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aiConfigured, setAiConfigured] = useState(true);
@@ -104,6 +110,8 @@ export function ReceiptUpload({
 
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
+    setPreviewFileName(file.name);
+    setPreviewIsPdf(isSupportedPdfMediaType(file.type));
 
     setLoading(true);
     try {
@@ -146,13 +154,15 @@ export function ReceiptUpload({
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
+    setPreviewFileName(null);
+    setPreviewIsPdf(false);
   }
 
   return (
     <div className="flex flex-col gap-4">
       <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
-        レシート・請求書をカメラで撮影またはファイルから選択してアップロードすると、
-        Claudeが画像から日付・金額・取引先を読み取り、勘定科目・消費税区分を自動判定します。
+        レシート・請求書をカメラで撮影、または画像ファイル・PDF（スキャンデータ、単一ページのみ対応）を選択してアップロードすると、
+        Claudeが読み取り内容から日付・金額・取引先を抽出し、勘定科目・消費税区分を自動判定します。
         <b>読み取り結果は必ずご自身で確認・修正してから確定してください。</b>
       </p>
 
@@ -194,7 +204,7 @@ export function ReceiptUpload({
           <span>{getFilePickerLabel(loading)}</span>
           <input
             type="file"
-            accept="image/*"
+            accept={FILE_PICKER_ACCEPT}
             className="hidden"
             disabled={loading}
             aria-busy={loading}
@@ -232,8 +242,22 @@ export function ReceiptUpload({
 
       {previewUrl && (
         <div className="flex flex-col sm:flex-row gap-6">
-          {/* eslint-disable-next-line @next/next/no-img-element -- ユーザーが選択したローカル画像のプレビューのため next/image の最適化対象外 */}
-          <img src={previewUrl} alt="アップロードしたレシートのプレビュー" className="max-w-xs border border-stone-300 object-contain" />
+          {previewIsPdf ? (
+            // PDFは<img>で描画できないため、ファイル名とブラウザの標準ビューアで開けるリンクのみを示す簡易プレビュー
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex max-w-xs flex-col items-center justify-center gap-2 border border-stone-300 bg-stone-50 p-6 text-center text-xs text-stone-600 hover:border-red-700"
+            >
+              <span aria-hidden className="text-3xl">📄</span>
+              <span className="break-all">{previewFileName}</span>
+              <span className="text-stone-400">クリックしてPDFを開く</span>
+            </a>
+          ) : (
+            // eslint-disable-next-line @next/next/no-img-element -- ユーザーが選択したローカル画像のプレビューのため next/image の最適化対象外
+            <img src={previewUrl} alt="アップロードしたレシートのプレビュー" className="max-w-xs border border-stone-300 object-contain" />
+          )}
 
           {candidate && (
             <div className="flex-1 flex flex-col gap-3 border border-stone-300 bg-white p-4">

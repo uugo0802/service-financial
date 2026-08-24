@@ -115,8 +115,9 @@ export function TaxableStatusChecker() {
 
         {hasBasePeriod ? (
           <div>
-            <label className={labelClass}>基準期間の課税売上高（円）</label>
+            <label className={labelClass} htmlFor="taxable-status-base-year-taxable-sales">基準期間の課税売上高（円）</label>
             <input
+              id="taxable-status-base-year-taxable-sales"
               type="number"
               min="0"
               value={baseYearTaxableSales}
@@ -127,8 +128,9 @@ export function TaxableStatusChecker() {
           </div>
         ) : showNewCompanyCapital ? (
           <div>
-            <label className={labelClass}>事業年度開始の日における資本金の額（円）</label>
+            <label className={labelClass} htmlFor="taxable-status-capital-stock-at-period-start">事業年度開始の日における資本金の額（円）</label>
             <input
+              id="taxable-status-capital-stock-at-period-start"
               type="number"
               min="0"
               value={capitalStockAtPeriodStart}
@@ -157,8 +159,9 @@ export function TaxableStatusChecker() {
         {hasSpecifiedPeriod && (
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>特定期間の課税売上高（円）</label>
+              <label className={labelClass} htmlFor="taxable-status-specified-period-taxable-sales">特定期間の課税売上高（円）</label>
               <input
+                id="taxable-status-specified-period-taxable-sales"
                 type="number"
                 min="0"
                 value={specifiedPeriodTaxableSales}
@@ -168,8 +171,9 @@ export function TaxableStatusChecker() {
               />
             </div>
             <div>
-              <label className={labelClass}>特定期間の給与等支払額（円）</label>
+              <label className={labelClass} htmlFor="taxable-status-specified-period-salary-paid">特定期間の給与等支払額（円）</label>
               <input
+                id="taxable-status-specified-period-salary-paid"
                 type="number"
                 min="0"
                 value={specifiedPeriodSalaryPaid}

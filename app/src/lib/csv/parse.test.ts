@@ -89,6 +89,16 @@ describe("normalizeCsv", () => {
     expect(result.skippedRows).toBe(0);
   });
 
+  // Regression: full-width (全角) digits/comma are used by some legacy exports and by users
+  // hand-editing a CSV on a Japanese IME. Before NFKC normalization was added,
+  // Number("１２０，０００") was NaN and toNumber() silently fell back to 0, making a real
+  // expense vanish from the ledger instead of surfacing a parse error.
+  it("parses a full-width (全角) amount with a full-width thousands comma, not silently treating it as zero", () => {
+    const csv = "日付,摘要,金額\n2026-01-05,家賃,－１２０，０００\n";
+    const result = normalizeCsv(csv);
+    expect(result.transactions[0].amount).toBe(-120000);
+  });
+
   it("combines split withdraw/deposit columns even when both have non-zero values", () => {
     const csv = "日付,摘要,お引出し,お預入れ\n2026-01-05,相殺,1000,2500\n";
     const result = normalizeCsv(csv);

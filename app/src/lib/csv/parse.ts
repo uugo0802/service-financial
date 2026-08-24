@@ -79,7 +79,10 @@ function findColumn(header: string[], candidates: string[]): number {
 }
 
 function toNumber(raw: string): number {
-  const cleaned = raw.replace(/[,¥\s]/g, "");
+  // 全角数字・全角カンマ・全角マイナス・全角スペース・全角¥（￥）はNFKC正規化で半角に
+  // 変換してから除去する（bankFormats.ts の toNumber と同じ理由）。正規化しないと
+  // Number("１２，８００") は NaN になり、金額が黙って0円として取り込まれてしまう。
+  const cleaned = raw.normalize("NFKC").replace(/[,¥\s]/g, "");
   if (cleaned === "" || cleaned === "-") return 0;
   const n = Number(cleaned);
   return Number.isFinite(n) ? n : 0;

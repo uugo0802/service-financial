@@ -167,8 +167,9 @@ export function AssetLedgerForm() {
         <form onSubmit={handleAddAsset} className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>資産名</label>
+              <label className={labelClass} htmlFor="asset-name">資産名</label>
               <input
+                id="asset-name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -177,8 +178,9 @@ export function AssetLedgerForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>取得年月日</label>
+              <label className={labelClass} htmlFor="asset-acquisition-date">取得年月日</label>
               <input
+                id="asset-acquisition-date"
                 type="date"
                 value={acquisitionDate}
                 onChange={(e) => setAcquisitionDate(e.target.value)}
@@ -186,8 +188,9 @@ export function AssetLedgerForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>取得価額（円）</label>
+              <label className={labelClass} htmlFor="asset-acquisition-cost">取得価額（円）</label>
               <input
+                id="asset-acquisition-cost"
                 type="number"
                 min="0"
                 value={acquisitionCost}
@@ -197,8 +200,9 @@ export function AssetLedgerForm() {
               />
             </div>
             <div>
-              <label className={labelClass}>耐用年数（年）</label>
+              <label className={labelClass} htmlFor="asset-useful-life-years">耐用年数（年）</label>
               <input
+                id="asset-useful-life-years"
                 type="number"
                 min="1"
                 value={usefulLifeYears}
@@ -211,8 +215,9 @@ export function AssetLedgerForm() {
               </p>
             </div>
             <div>
-              <label className={labelClass}>減価償却の方法</label>
+              <label className={labelClass} htmlFor="asset-depreciation-method">減価償却の方法</label>
               <select
+                id="asset-depreciation-method"
                 value={method}
                 onChange={(e) => setMethod(e.target.value as DepreciationMethod)}
                 className={inputClass}
@@ -381,8 +386,9 @@ export function AssetLedgerForm() {
           >
             <div className="grid sm:grid-cols-3 gap-4">
               <div>
-                <label className={labelClass}>対象資産</label>
+                <label className={labelClass} htmlFor="asset-disposal-asset-id">対象資産</label>
                 <select
+                  id="asset-disposal-asset-id"
                   value={disposalAssetId}
                   onChange={(e) => setDisposalAssetId(e.target.value)}
                   className={inputClass}
@@ -396,8 +402,9 @@ export function AssetLedgerForm() {
                 </select>
               </div>
               <div>
-                <label className={labelClass}>除却・売却年月日</label>
+                <label className={labelClass} htmlFor="asset-disposal-date">除却・売却年月日</label>
                 <input
+                  id="asset-disposal-date"
                   type="date"
                   value={disposalDate}
                   onChange={(e) => setDisposalDate(e.target.value)}
@@ -405,8 +412,9 @@ export function AssetLedgerForm() {
                 />
               </div>
               <div>
-                <label className={labelClass}>受取額・売却代金（円）</label>
+                <label className={labelClass} htmlFor="asset-disposal-proceeds">受取額・売却代金（円）</label>
                 <input
+                  id="asset-disposal-proceeds"
                   type="number"
                   min="0"
                   value={disposalProceeds}

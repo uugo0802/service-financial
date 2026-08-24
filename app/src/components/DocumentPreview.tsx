@@ -20,6 +20,8 @@ import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
 import { buildMonthlySalesTrend } from "@/lib/tax/businessOverviewForm";
 import { buildIndividualReturnForm, buildBlueReturnStatement } from "@/lib/tax/individualForms";
 import { OfficialFormFrame, OfficialSection, OfficialRow } from "@/components/OfficialForm";
+import { explainCorporateEstimateCalculation, explainIndividualEstimateCalculation } from "@/lib/explain/taxEstimateExplainer";
+import { TaxEstimateExplanationPanel } from "@/components/TaxEstimateExplanationPanel";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
@@ -313,6 +315,9 @@ function IndividualDocuments({
             ))}
           </OfficialSection>
         </OfficialFormFrame>
+        <div className="mt-3">
+          <TaxEstimateExplanationPanel steps={explainIndividualEstimateCalculation(estimate)} />
+        </div>
         {estimate.lifeInsurancePaidInfo > 0 && (
           <p className="text-xs text-amber-700 mt-3">
             生命保険料の支払い {yen.format(estimate.lifeInsurancePaidInfo)}円 は参考表示のみです。生命保険料控除（上限あり）はご自身で計算し、上記「所得から差し引かれる金額」に加算してください。
@@ -568,6 +573,9 @@ function CorpDocuments({
         <p className="text-xs text-amber-700 mt-3">
           別表二（同族会社判定）・別表五（一）（利益積立金）・別表十四（寄付金）・別表十五（交際費）・別表十六（減価償却）等の詳細な調整項目は含まれていません。所得金額の計算過程は「所得金額の計算（別表四）」タブをご覧ください。
         </p>
+        <div className="mt-3">
+          <TaxEstimateExplanationPanel steps={explainCorporateEstimateCalculation(estimate)} />
+        </div>
       </>
     );
   }
@@ -735,8 +743,9 @@ function ConsumptionTaxOfficialBody({ rows }: { rows: CategorizedTransaction[] }
     <>
       <div className="print:hidden mb-4 flex flex-wrap items-end gap-4 bg-stone-50 border border-stone-200 rounded p-4">
         <div>
-          <label className="block text-xs font-semibold text-stone-500 mb-1">課税方式</label>
+          <label className="block text-xs font-semibold text-stone-500 mb-1" htmlFor="document-preview-consumption-tax-method">課税方式</label>
           <select
+            id="document-preview-consumption-tax-method"
             className="border border-stone-300 rounded px-2 py-1.5 text-sm"
             value={method}
             onChange={(e) => setMethod(e.target.value as ConsumptionTaxMethod)}
@@ -750,8 +759,9 @@ function ConsumptionTaxOfficialBody({ rows }: { rows: CategorizedTransaction[] }
         </div>
         {method === "simplified" && (
           <div>
-            <label className="block text-xs font-semibold text-stone-500 mb-1">事業区分</label>
+            <label className="block text-xs font-semibold text-stone-500 mb-1" htmlFor="document-preview-simplified-business-category">事業区分</label>
             <select
+              id="document-preview-simplified-business-category"
               className="border border-stone-300 rounded px-2 py-1.5 text-sm"
               value={businessCategory}
               onChange={(e) => setBusinessCategory(Number(e.target.value) as SimplifiedBusinessCategory)}

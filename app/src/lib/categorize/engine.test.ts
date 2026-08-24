@@ -234,4 +234,39 @@ describe("needsEscalation", () => {
     const tx = ruleBasedCategorize({ id: "7", date: "2026-01-05", description: "AWS利用料", amount: -12000 });
     expect(needsEscalation(tx)).toBe(false);
   });
+
+  // Boundary regression: docs/cto-tech-architecture.md 3.3 warns that a low-confidence AI
+  // result must never be silently treated as high-confidence. needsEscalation() compares with
+  // strict "<", so a confidence exactly equal to CONFIDENCE_THRESHOLD (a value an AI
+  // classification could plausibly return) must NOT be escalated, while anything even a hair
+  // below it must be. This pins down that exact-equality boundary so a future refactor (e.g.
+  // accidentally flipping "<" to "<=") is caught immediately instead of silently changing which
+  // AI-classified rows skip human review.
+  it("does not escalate a confidence exactly equal to CONFIDENCE_THRESHOLD (boundary)", () => {
+    const tx = {
+      id: "8",
+      date: "2026-01-05",
+      description: "AI判定された取引",
+      amount: -5000,
+      account: "消耗品費",
+      taxCategory: "課税仕入10%" as const,
+      confidence: CONFIDENCE_THRESHOLD,
+      source: "ai" as const,
+    };
+    expect(needsEscalation(tx)).toBe(false);
+  });
+
+  it("escalates a confidence a hair below CONFIDENCE_THRESHOLD (boundary)", () => {
+    const tx = {
+      id: "9",
+      date: "2026-01-05",
+      description: "AI判定された取引",
+      amount: -5000,
+      account: "消耗品費",
+      taxCategory: "課税仕入10%" as const,
+      confidence: CONFIDENCE_THRESHOLD - 0.000001,
+      source: "ai" as const,
+    };
+    expect(needsEscalation(tx)).toBe(true);
+  });
 });

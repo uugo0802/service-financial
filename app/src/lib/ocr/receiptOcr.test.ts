@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { classifyReceiptImage, isSupportedImageMediaType, validateOcrToolInput } from "./receiptOcr";
+import {
+  classifyReceiptImage,
+  isSupportedImageMediaType,
+  isSupportedPdfMediaType,
+  isSupportedReceiptMediaType,
+  validateOcrToolInput,
+} from "./receiptOcr";
 
 function mockToolUseResponse(overrides: Record<string, unknown> = {}) {
   return {
@@ -42,6 +48,37 @@ describe("isSupportedImageMediaType", () => {
   it("is case-sensitive and rejects an empty string (documents current strict matching)", () => {
     expect(isSupportedImageMediaType("IMAGE/JPEG")).toBe(false);
     expect(isSupportedImageMediaType("")).toBe(false);
+  });
+});
+
+describe("isSupportedPdfMediaType", () => {
+  it("accepts application/pdf", () => {
+    expect(isSupportedPdfMediaType("application/pdf")).toBe(true);
+  });
+
+  it("rejects image types and other unsupported types", () => {
+    expect(isSupportedPdfMediaType("image/jpeg")).toBe(false);
+    expect(isSupportedPdfMediaType("text/csv")).toBe(false);
+    expect(isSupportedPdfMediaType("")).toBe(false);
+  });
+});
+
+describe("isSupportedReceiptMediaType", () => {
+  it("accepts every supported image type", () => {
+    expect(isSupportedReceiptMediaType("image/jpeg")).toBe(true);
+    expect(isSupportedReceiptMediaType("image/png")).toBe(true);
+    expect(isSupportedReceiptMediaType("image/gif")).toBe(true);
+    expect(isSupportedReceiptMediaType("image/webp")).toBe(true);
+  });
+
+  it("accepts PDF (scanned document upload)", () => {
+    expect(isSupportedReceiptMediaType("application/pdf")).toBe(true);
+  });
+
+  it("rejects unsupported types", () => {
+    expect(isSupportedReceiptMediaType("text/csv")).toBe(false);
+    expect(isSupportedReceiptMediaType("image/heic")).toBe(false);
+    expect(isSupportedReceiptMediaType("")).toBe(false);
   });
 });
 
@@ -199,6 +236,29 @@ describe("classifyReceiptImage", () => {
       const body = JSON.parse(init.body);
       const imageBlock = body.messages[0].content.find((c: { type: string }) => c.type === "image");
       expect(imageBlock.source).toEqual({ type: "base64", media_type: "image/jpeg", data: "ZmFrZQ==" });
+    });
+
+    it("sends a PDF as a document content block (not an image block) and returns the parsed classification", async () => {
+      const fetchMock = vi.fn().mockResolvedValue(mockToolUseResponse());
+      vi.stubGlobal("fetch", fetchMock);
+
+      const result = await classifyReceiptImage({ base64: "cGRmZmFrZQ==", mimeType: "application/pdf" });
+
+      expect(result).toEqual({
+        date: "2026-07-20",
+        counterparty: "スターバックス 渋谷店",
+        amount: 580,
+        account: "会議費",
+        taxCategory: "課税仕入10%",
+        confidence: 0.92,
+        reasoning: "カフェでの飲食のため会議費と判定",
+        rawOcrText: "スターバックス 渋谷店 コーヒー 580円",
+      });
+
+      const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+      const documentBlock = body.messages[0].content.find((c: { type: string }) => c.type === "document");
+      expect(documentBlock.source).toEqual({ type: "base64", media_type: "application/pdf", data: "cGRmZmFrZQ==" });
+      expect(body.messages[0].content.find((c: { type: string }) => c.type === "image")).toBeUndefined();
     });
 
     it("returns null when the API responds with a non-ok status", async () => {

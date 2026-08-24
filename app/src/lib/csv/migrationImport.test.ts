@@ -108,6 +108,16 @@ describe("parseMigrationCsvWithFormat", () => {
     expect(result.transactions[0].amount).toBe(-12800);
   });
 
+  // Regression: full-width (全角) digits/comma are used by some legacy exports and by users
+  // hand-editing a CSV on a Japanese IME. Before NFKC normalization was added to this module's
+  // toNumber() (matching the fix already applied in parse.ts/bankFormats.ts), Number("１２０，０００")
+  // was NaN and toNumber() silently fell back to 0, making a real migrated expense vanish.
+  it("parses a full-width (全角) 金額 value with a full-width thousands comma, not silently treating it as zero", () => {
+    const csv = "日付,借方勘定科目,貸方勘定科目,金額,摘要\n" + "2026-01-12,消耗品費,普通預金,１２０，０００,パソコン購入\n";
+    const result = parseMigrationCsvWithFormat(csv, "freee");
+    expect(result.transactions[0].amount).toBe(-120000);
+  });
+
   it("counts a fully blank data row as skipped, not as a zero-amount transaction", () => {
     const csv = "日付,借方勘定科目,貸方勘定科目,金額,摘要\n" + "2026-01-05,消耗品費,普通預金,1000,文房具\n,,,,\n";
     const result = parseMigrationCsvWithFormat(csv, "freee");

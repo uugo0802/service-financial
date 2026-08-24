@@ -91,6 +91,48 @@ function readUint32BE(bytes: Uint8Array, offset: number): number {
   return ((bytes[offset] << 24) | (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3]) >>> 0;
 }
 
+// ------------------------------------------------------------------
+// PDF（スキャンデータ読み込み対応、docs/business-plan.md 12章）のページ数判定。
+//
+// PDFのページはピクセル寸法を持たない(MediaBoxは1/72インチ単位の物理サイズであり、
+// 埋め込まれたスキャン画像自体の解像度・カラー情報はレンダリングしないと確実には分からない)ため、
+// parseImageDimensions() は意図的にPDFを非対応のまま(null)にしている。
+// 電子帳簿保存法スキャナ保存要件の解像度・カラー判定は「判定不能」として扱われ、
+// 利用者自身の確認を促す（evaluateScannerStorageCompliance の既存の非対応フォーマット時の挙動と同じ）。
+//
+// 一方でページ数だけは、PDF構造の主要オブジェクトを正規表現で走査するテキストベースの
+// ベストエフォート検出で取得できる。複数ページのPDFを弾く用途（v1では単一ページのみ対応）に使う。
+// オブジェクトストリーム(/ObjStm)でページオブジクトが圧縮されている一部のPDFでは検出できず、
+// その場合は null(判定不能)を返す — 呼び出し側は判定不能を「単一ページとして扱ってよい」とは
+// みなさず、別途エラーメッセージ等でユーザーに確認を促すこと。
+// ------------------------------------------------------------------
+
+const PDF_SIGNATURE = [0x25, 0x50, 0x44, 0x46]; // "%PDF"
+
+export function hasPdfSignature(bytes: Uint8Array): boolean {
+  return PDF_SIGNATURE.every((b, i) => bytes[i] === b);
+}
+
+const PDF_PAGE_OBJECT_PATTERN = /\/Type\s*\/Page(?!s)\b/g;
+
+/**
+ * PDFバイト列からページ数をベストエフォートで数える。
+ * PDFシグネチャが無い、またはページオブジェクトを検出できない場合は null（判定不能）を返す。
+ */
+export function getPdfPageCount(buffer: ArrayBuffer): number | null {
+  const bytes = new Uint8Array(buffer);
+  if (!hasPdfSignature(bytes)) return null;
+
+  // PDFはバイナリだが、オブジェクト辞書部分はASCII互換のため latin1 相当の文字列化で走査できる。
+  let text = "";
+  for (let i = 0; i < bytes.length; i++) {
+    text += String.fromCharCode(bytes[i]);
+  }
+
+  const matches = text.match(PDF_PAGE_OBJECT_PATTERN);
+  return matches && matches.length > 0 ? matches.length : null;
+}
+
 // レシートの長辺をおよそ15cmと仮定し、電子帳簿保存法のスキャナ保存要件の目安である
 // 200dpi相当を満たすために必要な最低限の長辺ピクセル数を概算したもの
 // （lib/ocr/receiptCandidate.ts の estimateDpi と同じ前提: 200dpi × 15cm ÷ 2.54cm/inch）。

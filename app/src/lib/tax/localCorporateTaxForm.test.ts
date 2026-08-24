@@ -64,6 +64,23 @@ describe("buildLocalCorporateTaxForm", () => {
     expect(result.businessTaxTotal).toBe(43_209 + 15_987);
   });
 
+  // Boundary regression: 400万円は「以下」がブラケット1（3.5%）の範囲であり、ブラケット2
+  // （3.5%超800万円以下、5.3%）に漏れてはならない。bracket1Base = Math.min(income, 4,000,000)
+  // なので、income がちょうど4,000,000円のときは全額がブラケット1に収まり、ブラケット2・3は
+  // 0円になるべきことを固定する。
+  it("keeps income exactly at ¥4,000,000 entirely within the first bracket (boundary)", () => {
+    const result = buildLocalCorporateTaxForm(estimate(4_000_000), taxForm(0));
+
+    expect(result.businessTaxBracket1).toBe(4_000_000);
+    expect(result.businessTaxBracket2).toBe(0);
+    expect(result.businessTaxBracket3).toBe(0);
+    expect(result.businessTaxByBracket).toEqual([
+      { base: 4_000_000, rate: 0.035, tax: 140_000 },
+      { base: 0, rate: 0.053, tax: 0 },
+      { base: 0, rate: 0.07, tax: 0 },
+    ]);
+  });
+
   it("spans all three business tax brackets when income exceeds ¥8,000,000", () => {
     const result = buildLocalCorporateTaxForm(estimate(10_000_000), taxForm(1_000_000));
 
