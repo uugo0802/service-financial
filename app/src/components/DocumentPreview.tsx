@@ -15,6 +15,7 @@ import {
 } from "@/lib/tax/consumptionTaxForm";
 import { buildCorporateTaxForm, buildFinancialStatements, buildIncomeAdjustmentForm } from "@/lib/tax/corporateForms";
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
+import { buildForm5_2 } from "@/lib/tax/form5_2TaxPaymentStatus";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
 import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
 import { buildMonthlySalesTrend } from "@/lib/tax/businessOverviewForm";
@@ -81,6 +82,7 @@ type CorpDocType =
   | "corporateTaxReturn"
   | "incomeAdjustment"
   | "localTaxReturn"
+  | "form5_2"
   | "consumptionTax";
 
 const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
@@ -97,6 +99,7 @@ const CORP_DOC_TABS: { key: CorpDocType; label: string }[] = [
   { key: "corporateTaxReturn", label: "法人税・地方法人税申告書" },
   { key: "incomeAdjustment", label: "所得金額の計算（別表四）" },
   { key: "localTaxReturn", label: "法人住民税・事業税申告書" },
+  { key: "form5_2", label: "租税公課の納付状況等に関する明細書（別表五（二））" },
   { key: "consumptionTax", label: "消費税申告書" },
 ];
 
@@ -645,6 +648,63 @@ function CorpDocuments({
             <OfficialRow label="住民税＋事業税等 総合計（概算）" amount={localTaxForm.grandTotal} strong />
           </OfficialSection>
         </OfficialFormFrame>
+      </>
+    );
+  }
+
+  if (doc === "form5_2") {
+    // このタブは初年度（前期からの未納繰越なし・中間申告なし）のケースを既定表示とする。
+    // このアプリは期首時点の未納税額や前期実績を保持していないため、前期分の入力欄は設けていない。
+    const form5_2 = buildForm5_2({
+      priorYearUnpaid: undefined,
+      interimTax: null,
+      finalNationalTax: taxForm.totalNationalTax,
+      finalPrefectureTax: localTaxForm.inhabitantTaxTotal,
+      finalMunicipalityTax: 0,
+      finalBusinessTax: localTaxForm.businessTaxTotal,
+    });
+    const taxTypeRows = [
+      form5_2.nationalTaxRow,
+      form5_2.prefectureTaxRow,
+      form5_2.municipalityTaxRow,
+      form5_2.businessTaxRow,
+    ];
+
+    return (
+      <>
+        <DocHeader
+          title="租税公課の納付状況等に関する明細書 別表五（二）（簡易版）"
+          entityName={entityName}
+          periodStart={pl.periodStart}
+          periodEnd={pl.periodEnd}
+        />
+        <p className="text-xs text-amber-700 mb-4">
+          道府県民税・市町村民税・事業税の中間納付額の計算には対応していないため、常に中間分0円として扱っています。「その他」区分（利子税・延滞金・加算税及び加算金・延滞税・過怠税）の実額計算、通算法人の通算税効果額の発生状況等の明細は対象外です。
+          期首時点の未納税額・前期実績はこのアプリで保持していないため、初年度（前期からの繰越なし）として表示しています。
+        </p>
+        <OfficialFormFrame scheduleLabel="別表五（二）" formTitle="租税公課の納付状況等に関する明細書">
+          {taxTypeRows.map((row) => (
+            <OfficialSection key={row.label} title={row.label}>
+              <OfficialRow label="期首現在未納税額" symbol="①" amount={row.openingUnpaid} />
+              <OfficialRow label="当期発生税額（中間分）" symbol="②" amount={row.interimAccrued} indent />
+              <OfficialRow label="当期発生税額（確定分）" symbol="②" amount={row.finalAccrued} indent />
+              <OfficialRow label="損金経理による納付（中間分）" symbol="⑤" amount={row.interimPaidByDeduction} />
+              <OfficialRow label="期末現在未納税額" symbol="⑥" amount={row.closingUnpaid} strong />
+            </OfficialSection>
+          ))}
+          <OfficialSection title="納税充当金の計算">
+            <OfficialRow label="期首納税充当金" amount={form5_2.taxProvision.openingProvision} />
+            <OfficialRow label="繰入額（損金経理をした納税充当金）" amount={form5_2.taxProvision.addition} indent />
+            <OfficialRow label="取崩額" amount={form5_2.taxProvision.withdrawal} indent />
+            <OfficialRow label="期末納税充当金" amount={form5_2.taxProvision.closingProvision} strong />
+          </OfficialSection>
+        </OfficialFormFrame>
+        {form5_2.taxProvision.addition !== fs.taxes && (
+          <p className="text-xs text-amber-700 mt-3">
+            納税充当金の繰入額（{yen.format(form5_2.taxProvision.addition)}円）が決算報告書の法人税等（
+            {yen.format(fs.taxes)}円）と一致していません。入力値をご確認ください。
+          </p>
+        )}
       </>
     );
   }
