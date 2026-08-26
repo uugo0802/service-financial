@@ -1,3 +1,7 @@
+import { TrendingDown, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
+
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
 export function StatTile({
@@ -15,19 +19,16 @@ export function StatTile({
 }) {
   const isGood = deltaPercent === undefined ? null : deltaGoodDirection === "up" ? deltaPercent >= 0 : deltaPercent <= 0;
   return (
-    <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-4">
-      <div className="text-xs text-stone-500 dark:text-stone-400 mb-1">{label}</div>
-      <div className="text-2xl font-semibold tabular-nums text-stone-900 dark:text-stone-50">{yen.format(value)}</div>
+    <Card className="p-4">
+      <div className="text-xs text-muted-foreground mb-1">{label}</div>
+      <div className="text-2xl font-semibold tabular-nums text-foreground">{yen.format(value)}</div>
       {deltaPercent !== undefined && (
-        <div
-          className={`mt-1 text-xs ${
-            isGood ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
-          }`}
-        >
+        <Badge tone={isGood ? "positive" : "negative"} className="mt-1">
+          {isGood ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
           前年比 {deltaPercent >= 0 ? "+" : ""}
           {deltaPercent.toFixed(1)}%
-        </div>
+        </Badge>
       )}
-    </div>
+    </Card>
   );
 }
