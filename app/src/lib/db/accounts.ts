@@ -2,13 +2,13 @@ import { getSupabaseClient, AccountRow } from "./supabaseClient";
 
 export interface NewAccountInput {
   name: string;
-  category: AccountRow["category"];
+  account_type: AccountRow["account_type"];
   code?: string | null;
 }
 
 export interface AccountPatch {
   name?: string;
-  category?: AccountRow["category"];
+  account_type?: AccountRow["account_type"];
   code?: string | null;
 }
 
@@ -34,7 +34,7 @@ export async function createAccount(tenantId: string, input: NewAccountInput): P
     .insert({
       tenant_id: tenantId,
       name: input.name,
-      category: input.category,
+      account_type: input.account_type,
       code: input.code ?? null,
     })
     .select()
@@ -50,7 +50,7 @@ export async function updateAccount(tenantId: string, id: string, patch: Account
   const supabase = getSupabaseClient();
   const updates: Record<string, unknown> = {};
   if (patch.name !== undefined) updates.name = patch.name;
-  if (patch.category !== undefined) updates.category = patch.category;
+  if (patch.account_type !== undefined) updates.account_type = patch.account_type;
   if (patch.code !== undefined) updates.code = patch.code;
 
   const { data, error } = await supabase

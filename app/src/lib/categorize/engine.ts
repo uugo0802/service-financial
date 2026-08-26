@@ -7,7 +7,10 @@ import {
   TaxCategory,
 } from "./dictionary";
 
-export type CategorySource = "rule" | "ai" | "uncategorized" | "manual";
+// "generated" は journal_entries.source の値（減価償却・借入金返済など自動生成された仕訳）を
+// deriveCategorizedTransactions() でそのまま転記できるようにするための追加（2026-08-26
+// 複式簿記台帳design docの「そのまま転記する」方針）。ruleBasedCategorize自体はこの値を返さない。
+export type CategorySource = "rule" | "ai" | "uncategorized" | "manual" | "generated";
 
 export interface Transaction {
   id: string;

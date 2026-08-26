@@ -23,7 +23,8 @@ const sampleAccount: AccountRow = {
   tenant_id: "tenant-1",
   code: null,
   name: "地代家賃",
-  category: "expense",
+  account_type: "expense",
+  tax_category: null,
   created_at: "2026-07-01T00:00:00Z",
 };
 
@@ -57,13 +58,13 @@ describe("accounts CRUD", () => {
     const from = vi.fn(() => builder);
     vi.mocked(getSupabaseClient).mockReturnValue({ from } as never);
 
-    const result = await createAccount("tenant-1", { name: "地代家賃", category: "expense" });
+    const result = await createAccount("tenant-1", { name: "地代家賃", account_type: "expense" });
 
     expect(result).toEqual(sampleAccount);
     expect(builder.insert).toHaveBeenCalledWith({
       tenant_id: "tenant-1",
       name: "地代家賃",
-      category: "expense",
+      account_type: "expense",
       code: null,
     });
   });

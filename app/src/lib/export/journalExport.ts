@@ -38,6 +38,7 @@ const JOURNAL_SOURCE_LABELS: Record<CategorySource, string> = {
   ai: "AI自動判定",
   uncategorized: "未分類",
   manual: "手入力",
+  generated: "自動生成（減価償却・借入金返済等）",
 };
 
 export const JOURNAL_ENTRY_CSV_HEADERS = [
