@@ -697,7 +697,11 @@ function CorpDocuments({
 
   if (doc === "form5_1") {
     // このタブも form5_2 タブと同じく初年度（前期からの繰越なし・中間申告なし）を既定表示とする。
-    const equityChange = buildEquityChangeForm({ capitalStock, openingCash, netIncome: fs.netIncome });
+    // 繰越損益金は貸借対照表・株主資本等変動計算書（financialStatementsタブ）と一致させる
+    // 必要があるため、消費税調整前のfs.netIncomeではなく、未払消費税等を控除した
+    // bsNetIncome相当（financialStatementsタブと同じ計算式）を使う。
+    const bsNetIncomeForRetained = fs.incomeBeforeTax - fs.taxes - consumptionForm.totalDue;
+    const equityChange = buildEquityChangeForm({ capitalStock, openingCash, netIncome: bsNetIncomeForRetained });
     const form5_2ForRetained = buildForm5_2({
       priorYearUnpaid: undefined,
       interimTax: null,
