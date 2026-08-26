@@ -3,7 +3,7 @@ import { ClientMasterTable } from "@/components/ClientMasterTable";
 import { Counterparty } from "@/lib/clients/clientMaster";
 
 export const metadata: Metadata = {
-  title: "取引先・仕入先マスタ｜税務申告AI（ジャービス）",
+  title: "取引先・仕入先マスタ｜決算書作成から税務申告までワンクリック（スグル）",
   description: "売上先（顧客）・仕入先の基本情報（名称・種別・既定の勘定科目・インボイス登録番号）を一元管理する画面（開発中プロトタイプ）。",
 };
 
@@ -48,7 +48,7 @@ export default function ClientsPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">取引先・仕入先マスタ</div>
         </div>

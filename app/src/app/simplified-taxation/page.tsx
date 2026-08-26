@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SimplifiedTaxationSimulator } from "@/components/SimplifiedTaxationSimulator";
 
 export const metadata: Metadata = {
-  title: "簡易課税 vs 原則課税 選択シミュレーター｜税務申告AI（ジャービス）",
+  title: "簡易課税 vs 原則課税 選択シミュレーター｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "当期の課税売上高（事業区分別内訳）と課税仕入高の見込みから、簡易課税・原則課税それぞれの消費税額を概算比較するシミュレーション（開発中プロトタイプ）。",
 };
@@ -13,7 +13,7 @@ export default function SimplifiedTaxationPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 簡易課税 vs 原則課税 選択シミュレーター</div>
         </div>

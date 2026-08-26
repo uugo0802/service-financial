@@ -4,7 +4,7 @@ import { AdvisorAccessPanel } from "@/components/AdvisorAccessPanel";
 import { AdvisorAccessGrant } from "@/lib/team/advisorAccess";
 
 export const metadata: Metadata = {
-  title: "顧問税理士への閲覧共有｜税務申告AI ジャービス",
+  title: "顧問税理士への閲覧共有｜決算書作成から税務申告までワンクリック スグル",
   description:
     "既にご契約中の顧問税理士に、記帳データや申告書下書きをread-onlyで共有できます（追加課金プラン）。",
 };
@@ -38,7 +38,7 @@ export default function AdvisorAccessPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">顧問税理士への閲覧共有（追加課金）</div>
         </div>

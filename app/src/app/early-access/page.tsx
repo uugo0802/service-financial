@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Cta } from "./Cta";
 
 export const metadata: Metadata = {
-  title: "税理士に毎月払う顧問料、AIに置き換えませんか｜ジャービス（早期アクセス登録）",
+  title: "税理士に毎月払う顧問料、AIに置き換えませんか｜スグル（早期アクセス登録）",
   description:
     "記帳〜仕訳〜申告書下書き〜送信ガイドまで、AIが一気通貫で伴走するセルフ申告のコパイロット。マイクロ法人・フリーランス向け早期アクセス登録受付中。",
 };
@@ -13,7 +13,7 @@ export default function EarlyAccessPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
         </div>
       </header>

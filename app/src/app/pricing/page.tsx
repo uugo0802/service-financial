@@ -4,7 +4,7 @@ import { PRICING_PLANS, TAX_ACCOUNTANT_MONTHLY_FEE_RANGE } from "@/lib/pricing/p
 import { PricingTable } from "@/components/PricingTable";
 
 export const metadata: Metadata = {
-  title: "料金プラン（仮）｜税務申告AI ジャービス",
+  title: "料金プラン（仮）｜決算書作成から税務申告までワンクリック スグル",
   description:
     "フリーランスは月額980円〜、マイクロ法人は月額2,980円〜。税理士顧問料より大幅に低い月額で、記帳〜申告書下書きまでを自動化するプランです（価格は現時点の試算で、今後変更となる可能性があります）。",
 };
@@ -17,7 +17,7 @@ export default function PricingPage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">料金プラン</div>
         </div>

@@ -5,7 +5,7 @@ import { buildTrialBalance, DEFAULT_CASH_ACCOUNT } from "@/lib/tax/trialBalance"
 import { TrialBalanceTable } from "@/components/TrialBalanceTable";
 
 export const metadata: Metadata = {
-  title: "合計残高試算表｜税務申告AI（ジャービス）",
+  title: "合計残高試算表｜決算書作成から税務申告までワンクリック（スグル）",
   description: "記帳データから勘定科目別の前期繰越高・当期発生高・残高をまとめて確認できる合計残高試算表（開発中プロトタイプ）。",
 };
 
@@ -89,7 +89,7 @@ export default function TrialBalancePage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">合計残高試算表</div>
         </div>

@@ -4,7 +4,7 @@ import { DocumentWithTransaction } from "@/lib/documents/documentSearch";
 import { DocumentSearchForm } from "@/components/DocumentSearchForm";
 
 export const metadata: Metadata = {
-  title: "証憑（レシート・請求書）検索｜税務申告AI（ジャービス）",
+  title: "証憑（レシート・請求書）検索｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "取引年月日・取引金額・取引先で証憑（レシート・請求書）を検索し、書面へ出力できる画面（開発中プロトタイプ）。",
 };
@@ -91,7 +91,7 @@ export default function DocumentsPage() {
       <header className="border-b border-stone-300 bg-white print:hidden dark:border-stone-700 dark:bg-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">証憑（レシート・請求書）一覧・検索</div>
         </div>

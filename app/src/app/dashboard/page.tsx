@@ -66,7 +66,7 @@ export default function DashboardPage() {
         <header className="border-b border-border bg-surface">
           <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
             <div className="font-sans text-lg tracking-wide">
-              税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+              決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
             </div>
             <div className="text-xs text-muted-foreground">売上・損益ダッシュボード</div>
           </div>
@@ -155,7 +155,7 @@ export default function DashboardPage() {
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-sans text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </div>
           <div className="text-xs text-muted-foreground">売上・損益ダッシュボード</div>
         </div>

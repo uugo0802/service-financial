@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ApportionmentCalculator } from "@/components/ApportionmentCalculator";
 
 export const metadata: Metadata = {
-  title: "家事按分（家事関連費按分）の計算｜税務申告AI（ジャービス）",
+  title: "家事按分（家事関連費按分）の計算｜決算書作成から税務申告までワンクリック（スグル）",
   description: "自宅の一部を事業用に使用している場合の家賃・水道光熱費・通信費等について、床面積按分または使用時間按分から必要経費となる金額を計算するツール（開発中プロトタイプ）。",
 };
 
@@ -12,7 +12,7 @@ export default function ApportionmentPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 家事按分（家事関連費按分）の計算</div>
         </div>

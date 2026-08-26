@@ -6,7 +6,7 @@ import { buildJournalExportCsv, taxEstimateSummaryRows } from "@/lib/export/jour
 import { ExportDataButton } from "@/components/ExportDataButton";
 
 export const metadata: Metadata = {
-  title: "記帳データのエクスポート｜税務申告AI（ジャービス）",
+  title: "記帳データのエクスポート｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "仕訳データと税額概算サマリーをCSVで書き出し、ご自身の保管や税理士への受け渡しに利用できる画面（開発中プロトタイプ）。",
 };
@@ -84,7 +84,7 @@ export default function ExportPage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">記帳データのエクスポート</div>
         </div>

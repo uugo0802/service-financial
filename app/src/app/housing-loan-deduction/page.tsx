@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HousingLoanDeductionForm } from "@/components/HousingLoanDeductionForm";
 
 export const metadata: Metadata = {
-  title: "住宅ローン控除シミュレーター｜税務申告AI（ジャービス）",
+  title: "住宅ローン控除シミュレーター｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "年末時点の住宅ローン残高から、住宅借入金等特別控除（住宅ローン控除）による税額控除額を概算するシミュレーション（開発中プロトタイプ）。",
 };
@@ -13,7 +13,7 @@ export default function HousingLoanDeductionPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 住宅ローン控除シミュレーター</div>
         </div>

@@ -1,4 +1,4 @@
-# 税務申告AI／ジャービス
+# 決算書作成から税務申告までワンクリック／スグル
 
 A Next.js MVP for a Japanese tax/accounting SaaS aimed at freelancers (個人事業主) and micro-corporations (マイクロ法人). The core loop: upload a bank/card CSV, auto-categorize each transaction into an accounting item (勘定科目) and consumption-tax category, then generate draft tax estimates and form-like previews (income tax, corporate tax, consumption tax, P/L, balance sheet, etc.) formatted to resemble the official NTA/local-tax paper forms. Everything produced is explicitly a **simulation/draft**, not a filed return — see the disclaimers embedded throughout `lib/tax/*`.
 

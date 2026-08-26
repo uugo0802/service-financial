@@ -3,7 +3,7 @@ import Link from "next/link";
 import { HighValueAssetStatusChecker } from "@/components/HighValueAssetStatusChecker";
 
 export const metadata: Metadata = {
-  title: "高額特定資産の取得チェッカー｜税務申告AI（ジャービス）",
+  title: "高額特定資産の取得チェッカー｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "税抜き取得価額1,000万円以上の高額特定資産を取得した場合に、免税事業者・簡易課税制度の選択が制限される課税期間（消費税法12条の4）を試算するツール（開発中プロトタイプ）。",
 };
@@ -14,7 +14,7 @@ export default function HighValueAssetStatusPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 高額特定資産の取得チェッカー</div>
         </div>

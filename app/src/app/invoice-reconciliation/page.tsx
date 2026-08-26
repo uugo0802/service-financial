@@ -5,7 +5,7 @@ import { ReceivableInvoiceInput } from "@/lib/invoice/receivables";
 import { InvoicePaymentMatchPanel } from "@/components/InvoicePaymentMatchPanel";
 
 export const metadata: Metadata = {
-  title: "入金消込（請求書マッチング）｜税務申告AI（ジャービス）",
+  title: "入金消込（請求書マッチング）｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "取り込んだ銀行の入金取引と、発行済みの未収請求書を自動で突き合わせ、どの入金がどの請求書への支払いかの候補を確認できるツール（開発中プロトタイプ）。",
 };
@@ -125,7 +125,7 @@ export default function InvoiceReconciliationPage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">入金消込（請求書マッチング）</div>
         </div>

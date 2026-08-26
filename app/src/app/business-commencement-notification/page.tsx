@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BusinessCommencementNotificationForm } from "./BusinessCommencementNotificationForm";
 
 export const metadata: Metadata = {
-  title: "個人事業の開業届（下書き作成）｜税務申告AI（ジャービス）",
+  title: "個人事業の開業届（下書き作成）｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "これから事業を開始するフリーランス・個人事業主向けに、「個人事業の開業・廃業等届出書」（開業の場合）の下書きデータを作成するツール（開発中プロトタイプ）。",
 };
@@ -13,7 +13,7 @@ export default function BusinessCommencementNotificationPage() {
       <header className="border-b border-stone-300 bg-white print:hidden">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 個人事業の開業届（下書き作成）</div>
         </div>

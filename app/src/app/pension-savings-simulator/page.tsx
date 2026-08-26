@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PensionSavingsSimulatorForm } from "@/components/PensionSavingsSimulatorForm";
 
 export const metadata: Metadata = {
-  title: "小規模企業共済・iDeCo 掛金シミュレーター｜税務申告AI（ジャービス）",
+  title: "小規模企業共済・iDeCo 掛金シミュレーター｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "小規模企業共済・iDeCoの年間想定拠出額から、小規模企業共済等掛金控除による所得税・住民税の減少額を概算するシミュレーション（開発中プロトタイプ）。",
 };
@@ -13,7 +13,7 @@ export default function PensionSavingsSimulatorPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 小規模企業共済・iDeCo 掛金シミュレーター</div>
         </div>

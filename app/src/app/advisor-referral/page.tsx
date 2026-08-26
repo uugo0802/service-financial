@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AdvisorReferralForm } from "@/components/AdvisorReferralForm";
 
 export const metadata: Metadata = {
-  title: "提携税理士への紹介（有償相談）｜税務申告AI ジャービス",
+  title: "提携税理士への紹介（有償相談）｜決算書作成から税務申告までワンクリック スグル",
   description:
     "本サービスは自動化されたセルフ申告支援であり、個別の税務相談は行いません。より複雑なケースや安心を求める方向けに、提携税理士への紹介・有償相談をご案内します。",
 };
@@ -14,7 +14,7 @@ export default function AdvisorReferralPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">提携税理士連携（追加課金プラン）</div>
         </div>

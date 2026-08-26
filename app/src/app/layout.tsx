@@ -17,10 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "税務申告AI（ジャービス）— MVP",
+  title: "決算書作成から税務申告までワンクリック（スグル）— MVP",
   description: "マイクロ法人・フリーランス向け記帳/確定申告下書き支援ツール（開発中プロトタイプ）",
   appleWebApp: {
-    title: "ジャービス",
+    title: "スグル",
     statusBarStyle: "default",
   },
 };

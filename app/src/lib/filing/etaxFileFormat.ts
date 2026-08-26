@@ -179,7 +179,7 @@ export function buildEtaxDraftCsv(input: EtaxDraftFileInput): string {
 
   sections.push(
     buildCsvBlock([
-      ["税務申告AI ジャービス - e-Tax 下書きデータファイル"],
+      ["決算書作成から税務申告までワンクリック スグル - e-Tax 下書きデータファイル"],
       [`スキーマバージョン: ${ETAX_DRAFT_SCHEMA_VERSION}`],
       [`出力日時: ${generatedAt.toISOString()}`],
       [`対象年分/事業年度: ${input.taxYear}`],

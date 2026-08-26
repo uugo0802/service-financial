@@ -3,7 +3,7 @@ import Link from "next/link";
 import { WithholdingSlipForm } from "@/components/WithholdingSlipForm";
 
 export const metadata: Metadata = {
-  title: "給与所得の源泉徴収票（下書き）｜税務申告AI（ジャービス）",
+  title: "給与所得の源泉徴収票（下書き）｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "年末調整の計算結果から、会社が役員・従業員へ交付する源泉徴収票の下書きを作成し、印刷／PDF保存できる画面（開発中プロトタイプ）。",
 };
@@ -14,7 +14,7 @@ export default function WithholdingSlipPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">給与所得の源泉徴収票（下書き）</div>
         </div>

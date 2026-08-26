@@ -5,7 +5,7 @@ import { getLegalDocument, splitParagraphs } from "@/lib/legal/content";
 const doc = getLegalDocument("tokushoho");
 
 export const metadata: Metadata = {
-  title: `${doc.title} — 税務申告AI（ジャービス）`,
+  title: `${doc.title} — 決算書作成から税務申告までワンクリック（スグル）`,
   description: doc.summary,
 };
 
@@ -15,7 +15,7 @@ export default function TokushohoPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
           <Link href="/" className="font-serif text-lg tracking-wide hover:opacity-80">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">開発中プロトタイプ</div>
         </div>

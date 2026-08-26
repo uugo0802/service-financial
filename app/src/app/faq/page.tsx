@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FaqAccordion } from "@/components/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "よくある質問（FAQ）｜税務申告AI ジャービス",
+  title: "よくある質問（FAQ）｜決算書作成から税務申告までワンクリック スグル",
   description:
     "本サービスの使い方や、青色申告・インボイス制度などの一般的な税制について、よくある質問にお答えします。個別具体の税務相談は行っておらず、必要な場合は提携税理士への紹介窓口をご案内します。",
 };
@@ -14,7 +14,7 @@ export default function FaqPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">よくある質問</div>
         </div>

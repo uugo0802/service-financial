@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { FurusatoNozeiSimulatorForm } from "@/components/FurusatoNozeiSimulatorForm";
 
 export const metadata: Metadata = {
-  title: "ふるさと納税 上限額シミュレーター｜税務申告AI（ジャービス）",
+  title: "ふるさと納税 上限額シミュレーター｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "所得税の課税所得金額・配偶者控除や扶養親族の状況から、ふるさと納税の自己負担が2,000円のままで済む年間寄附上限額を概算するシミュレーション（開発中プロトタイプ）。",
 };
@@ -13,7 +13,7 @@ export default function FurusatoNozeiPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — ふるさと納税 上限額シミュレーター</div>
         </div>

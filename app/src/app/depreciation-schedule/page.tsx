@@ -7,7 +7,7 @@ import { PrintableStatementLayout } from "@/components/PrintableStatementLayout"
 import { formatFiscalYearRange } from "@/lib/export/printLayout";
 
 export const metadata: Metadata = {
-  title: "別表十六（一）減価償却の計算に関する明細書｜税務申告AI（ジャービス）",
+  title: "別表十六（一）減価償却の計算に関する明細書｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "固定資産台帳の登録内容から、法人税申告書に添付する別表十六（一）（定額法による減価償却資産の償却額の計算に関する明細書）の下書きを確認できる画面（開発中プロトタイプ）。",
 };
@@ -72,7 +72,7 @@ export default function DepreciationSchedulePage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">
             別表十六（一）減価償却の計算に関する明細書

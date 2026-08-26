@@ -3,7 +3,7 @@ import { CrossSellRecommendations } from "@/components/CrossSellRecommendations"
 import { CrossSellInputs, getCrossSellRecommendations } from "@/lib/recommendations/crossSell";
 
 export const metadata: Metadata = {
-  title: "関連サービスの参考情報｜税務申告AI（ジャービス）",
+  title: "関連サービスの参考情報｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "年間利益・資金繰りの傾向に基づく、投資・保険・融資・不動産に関する一般的・教育的な参考情報（個別助言ではありません）。",
 };
@@ -23,7 +23,7 @@ export default function RecommendationsPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
         </div>
       </header>
