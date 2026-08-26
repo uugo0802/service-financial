@@ -1,6 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Card } from "@/components/ui/Card";
 import {
   DASHBOARD_WIDGET_LAYOUT_STORAGE_KEY,
   DashboardWidgetId,
@@ -79,7 +81,7 @@ export function useDashboardWidgetLayout(): {
 }
 
 const buttonClass =
-  "inline-flex h-7 w-7 items-center justify-center border border-stone-300 dark:border-stone-600 text-stone-600 dark:text-stone-300 text-xs hover:border-red-700 hover:text-red-700 dark:hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-stone-300 dark:disabled:hover:border-stone-600 dark:disabled:hover:text-stone-300 transition-colors";
+  "inline-flex h-7 w-7 items-center justify-center border border-border text-muted-foreground text-xs hover:border-danger hover:text-danger disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground transition-colors";
 
 /**
  * ダッシュボードの各パネルの表示順・表示/非表示を利用者が調整するための操作パネル。
@@ -89,9 +91,9 @@ export function WidgetLayoutControls() {
   const { layout, toggle, move } = useDashboardWidgetLayout();
 
   return (
-    <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-4">
+    <Card className="p-4">
       <h2 className="text-sm font-semibold mb-1">表示するウィジェットの並び替え</h2>
-      <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
+      <p className="text-xs text-muted-foreground mb-3">
         矢印で表示順を入れ替え、「表示」ボタンで各パネルの表示/非表示を切り替えられます。設定はこの端末に保存されます。
       </p>
       <ul className="flex flex-col gap-2">
@@ -100,9 +102,9 @@ export function WidgetLayoutControls() {
           return (
             <li
               key={entry.id}
-              className="flex items-center justify-between gap-3 border border-stone-200 dark:border-stone-700 rounded px-3 py-2 text-sm"
+              className="flex items-center justify-between gap-3 border border-border rounded px-3 py-2 text-sm"
             >
-              <span className={entry.visible ? "" : "text-stone-400 dark:text-stone-600 line-through"}>{label}</span>
+              <span className={entry.visible ? "" : "text-muted-foreground line-through"}>{label}</span>
               <div className="flex items-center gap-1 shrink-0">
                 <button
                   type="button"
@@ -111,7 +113,7 @@ export function WidgetLayoutControls() {
                   disabled={index === 0}
                   aria-label={`${label}を上に移動`}
                 >
-                  ↑
+                  <ChevronUp className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
@@ -120,7 +122,7 @@ export function WidgetLayoutControls() {
                   disabled={index === layout.length - 1}
                   aria-label={`${label}を下に移動`}
                 >
-                  ↓
+                  <ChevronDown className="h-4 w-4" />
                 </button>
                 <button
                   type="button"
@@ -136,6 +138,6 @@ export function WidgetLayoutControls() {
           );
         })}
       </ul>
-    </section>
+    </Card>
   );
 }

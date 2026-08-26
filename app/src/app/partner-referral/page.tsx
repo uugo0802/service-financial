@@ -4,7 +4,7 @@ import { PartnerReferralForm } from "@/components/PartnerReferralForm";
 import { PARTNER_CATEGORIES } from "@/lib/partnerReferral/partnerReferral";
 
 export const metadata: Metadata = {
-  title: "提携パートナーのご紹介（投資・保険・ローン・不動産）｜税務申告AI ジャービス",
+  title: "提携パートナーのご紹介（投資・保険・ローン・不動産）｜決算書作成から税務申告までワンクリック スグル",
   description:
     "本サービスは投資助言・保険募集・貸金業・宅建業のいずれも行いません。投資・保険・ローン・不動産分野の提携パートナーへの情報提供・送客のみを行う紹介窓口です。",
 };
@@ -15,7 +15,7 @@ export default function PartnerReferralPage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">提携パートナー連携（情報提供・送客のみ）</div>
         </div>

@@ -3,7 +3,7 @@ import { AssetLedgerForm } from "@/components/AssetLedgerForm";
 import { AssetLifecycleAlertBanner } from "@/components/AssetLifecycleAlertBanner";
 
 export const metadata: Metadata = {
-  title: "固定資産台帳・減価償却費の計算｜税務申告AI（ジャービス）",
+  title: "固定資産台帳・減価償却費の計算｜決算書作成から税務申告までワンクリック（スグル）",
   description: "固定資産を登録し、定額法による当期償却額・期末帳簿価額の概算シミュレーションを行うツール（開発中プロトタイプ）。",
 };
 
@@ -13,7 +13,7 @@ export default function AssetsPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 固定資産台帳・減価償却費の計算</div>
         </div>

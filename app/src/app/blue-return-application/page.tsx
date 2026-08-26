@@ -3,7 +3,7 @@ import Link from "next/link";
 import { BlueReturnApplicationForm } from "./BlueReturnApplicationForm";
 
 export const metadata: Metadata = {
-  title: "所得税の青色申告承認申請書（下書き作成）｜税務申告AI（ジャービス）",
+  title: "所得税の青色申告承認申請書（下書き作成）｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "これから青色申告の承認を受けようとする個人事業主向けに、所得税の青色申告承認申請書の下書きデータを作成する画面（開発中プロトタイプ）。",
 };
@@ -14,7 +14,7 @@ export default function BlueReturnApplicationPage() {
       <header className="border-b border-stone-300 bg-white print:hidden">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">MVP — 所得税の青色申告承認申請書（下書き作成）</div>
         </div>

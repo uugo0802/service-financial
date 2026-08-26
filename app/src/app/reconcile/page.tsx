@@ -4,7 +4,7 @@ import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { BankReconciliationPanel } from "@/components/BankReconciliationPanel";
 
 export const metadata: Metadata = {
-  title: "銀行残高突合チェック｜税務申告AI（ジャービス）",
+  title: "銀行残高突合チェック｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "取り込んだ銀行明細が期間全体を過不足なく反映しているかを、期首残高・実際の期末残高との突合で確認するツール（開発中プロトタイプ）。",
 };
@@ -81,7 +81,7 @@ export default function ReconcilePage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">銀行残高突合チェック</div>
         </div>

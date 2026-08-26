@@ -3,7 +3,7 @@ import { Tag, TagAssignment, TaggableTransaction } from "@/lib/tags/tagging";
 import { TagManagerClient } from "./TagManagerClient";
 
 export const metadata: Metadata = {
-  title: "タグ・収益性｜税務申告AI（ジャービス）",
+  title: "タグ・収益性｜決算書作成から税務申告までワンクリック（スグル）",
   description: "取引にクライアント/プロジェクトタグを付け、タグ別の収益性を確認する画面（開発中プロトタイプ）。",
 };
 
@@ -44,7 +44,7 @@ export default function TagsPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
         </div>
       </header>

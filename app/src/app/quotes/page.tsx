@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { QuoteForm } from "@/components/QuoteForm";
 
 export const metadata: Metadata = {
-  title: "見積書発行｜税務申告AI（ジャービス）",
+  title: "見積書発行｜決算書作成から税務申告までワンクリック（スグル）",
   description: "フリーランス・マイクロ法人が取引先に発行する見積書（御見積書）の下書きを作成するツール（開発中プロトタイプ）。",
 };
 
@@ -12,7 +12,7 @@ export default function QuotesPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 見積書（御見積書）発行</div>
         </div>

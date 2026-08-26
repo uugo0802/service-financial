@@ -59,7 +59,7 @@ export default function InvitePage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> 友達紹介プログラム
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> 友達紹介プログラム
           </div>
         </div>
       </header>

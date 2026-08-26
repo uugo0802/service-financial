@@ -4,7 +4,7 @@ import Link from "next/link";
 // Service Worker(public/sw.js)がナビゲーション失敗時にフォールバックする「オフラインシェル」。
 // 会計データには一切アクセスせず、再接続を促す静的な案内のみを表示する。
 export const metadata: Metadata = {
-  title: "オフラインです｜ジャービス",
+  title: "オフラインです｜スグル",
   description: "現在オフラインです。ネットワーク接続を確認してください。",
 };
 
@@ -13,7 +13,7 @@ export default function OfflinePage() {
     <div className="bg-stone-50 text-stone-900 min-h-screen flex items-center justify-center px-6">
       <div className="max-w-md w-full flex flex-col items-center gap-6 text-center">
         <div className="font-serif text-lg tracking-wide text-stone-500">
-          税務申告AI <span className="text-red-700">／</span> ジャービス
+          決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
         </div>
         <h1 className="font-serif text-2xl sm:text-3xl">オフラインです</h1>
         <p className="text-stone-600 leading-relaxed">

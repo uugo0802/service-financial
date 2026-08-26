@@ -15,6 +15,7 @@ import { DashboardWidgetId } from "@/lib/dashboard/widgetLayout";
 import { PartnerReferralBanner } from "@/components/PartnerReferralBanner";
 import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferral";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
+import { Card } from "@/components/ui/Card";
 import { buildSampleTransactions } from "./sampleData";
 
 // buildSampleTransactions() は売上・損益推移グラフ用に「経費合計」1科目へ
@@ -61,17 +62,17 @@ export default function DashboardPage() {
 
   if (yearlyTrend.length === 0) {
     return (
-      <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-        <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+      <div className="bg-background text-foreground min-h-screen">
+        <header className="border-b border-border bg-surface">
           <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-            <div className="font-serif text-lg tracking-wide">
-              税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            <div className="font-sans text-lg tracking-wide">
+              決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
             </div>
-            <div className="text-xs text-stone-500 dark:text-stone-400">売上・損益ダッシュボード</div>
+            <div className="text-xs text-muted-foreground">売上・損益ダッシュボード</div>
           </div>
         </header>
         <main className="mx-auto max-w-5xl px-6 py-10">
-          <p className="text-sm text-stone-500 dark:text-stone-400">
+          <p className="text-sm text-muted-foreground">
             表示できる記帳データがありません。記帳データが登録されると、ここに売上・損益の推移が表示されます。
           </p>
         </main>
@@ -123,47 +124,47 @@ export default function DashboardPage() {
       </section>
     ),
     trendLine: (
-      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+      <Card className="p-5">
         <TrendLineChart points={monthlyTrend} title="月次 売上・経費・損益の推移" />
-      </section>
+      </Card>
     ),
     trendBar: (
-      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+      <Card className="p-5">
         <TrendBarChart points={yearlyTrend} title="年度別 売上・経費・損益" />
-      </section>
+      </Card>
     ),
     kpiTrend: (
-      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+      <Card className="p-5">
         <KpiTrendPanel points={kpiTrend} title="年度別 経営指標（売上・経費率・前年比成長率）" />
-      </section>
+      </Card>
     ),
     expenseBreakdown: (
-      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+      <Card className="p-5">
         <ExpenseBreakdownChart breakdown={expenseBreakdown} title="経費内訳（勘定科目別）" />
-      </section>
+      </Card>
     ),
     benchmark: (
-      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+      <Card className="p-5">
         <BenchmarkPanel rows={transactionsWithExpenseCategories} title="経費構成の参考比較（対売上比）" />
-      </section>
+      </Card>
     ),
   };
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+          <div className="font-sans text-lg tracking-wide">
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400">売上・損益ダッシュボード</div>
+          <div className="text-xs text-muted-foreground">売上・損益ダッシュボード</div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-10">
         <section>
           <h1 className="text-2xl font-semibold mb-2">過去の売上・損益の推移</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             年度別・月次の売上と損益の推移をグラフで確認できます。
             <b className="font-medium"> 現時点ではサンプルデータを表示しています。</b>
             実際の記帳データとの連携（Supabase）は別途対応予定です。
@@ -180,7 +181,7 @@ export default function DashboardPage() {
 
         <PartnerReferralBanner categories={partnerCategories} />
 
-        <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           表示している金額はサンプルデータに基づく概算であり、実際の申告内容を示すものではありません。
         </p>
       </main>

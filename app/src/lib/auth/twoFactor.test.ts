@@ -44,7 +44,7 @@ describe("enrollTotpFactor", () => {
 
     expect(client.auth.mfa.enroll).toHaveBeenCalledWith({
       factorType: "totp",
-      issuer: "税務申告AI（ジャービス）",
+      issuer: "スグル",
     });
     expect(result).toEqual({
       data: {
@@ -73,7 +73,7 @@ describe("enrollTotpFactor", () => {
 
     expect(client.auth.mfa.enroll).toHaveBeenCalledWith({
       factorType: "totp",
-      issuer: "税務申告AI（ジャービス）",
+      issuer: "スグル",
       friendlyName: "iPhone",
     });
   });

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SideIncomeEstimateForm } from "@/components/SideIncomeEstimateForm";
 
 export const metadata: Metadata = {
-  title: "給与所得+事業所得（副業）の合算税額シミュレーション｜税務申告AI ジャービス",
+  title: "給与所得+事業所得（副業）の合算税額シミュレーション｜決算書作成から税務申告までワンクリック スグル",
   description:
     "会社員としての給与収入と、副業・個人事業の事業所得を合算した総合課税の所得税額を概算します。給与所得控除の計算を含む概算シミュレーションであり、個別の税務相談・助言ではありません。",
 };
@@ -14,7 +14,7 @@ export default function SideIncomeEstimatePage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">副業ユーザー向け・合算税額シミュレーション（試験機能）</div>
         </div>

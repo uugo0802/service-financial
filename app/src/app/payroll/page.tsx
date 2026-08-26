@@ -5,7 +5,7 @@ import { BonusWithholdingCalculator } from "@/components/BonusWithholdingCalcula
 import { YearEndAdjustmentCalculator } from "@/components/YearEndAdjustmentCalculator";
 
 export const metadata: Metadata = {
-  title: "源泉徴収・年末調整（給与・賞与）の概算計算｜税務申告AI（ジャービス）",
+  title: "源泉徴収・年末調整（給与・賞与）の概算計算｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "マイクロ法人の一人代表が自身に支払う月々の役員報酬・賞与について、源泉徴収税額の目安と、年末調整による過不足額の概算を計算する参考ツール（開発中プロトタイプ）。",
 };
@@ -16,7 +16,7 @@ export default function PayrollPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 源泉徴収・年末調整（給与・賞与）の概算計算</div>
         </div>

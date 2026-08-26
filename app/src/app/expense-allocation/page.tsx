@@ -4,7 +4,7 @@ import { ExpenseAllocationCalculator } from "@/components/ExpenseAllocationCalcu
 import { MileageAllocationCalculator } from "@/components/MileageAllocationCalculator";
 
 export const metadata: Metadata = {
-  title: "家事按分計算（個人事業主向け）｜税務申告AI ジャービス",
+  title: "家事按分計算（個人事業主向け）｜決算書作成から税務申告までワンクリック スグル",
   description:
     "自宅家賃・水道光熱費・通信費など事業用と私用が混在する経費について、入力した按分率をもとに事業経費として計上できる金額を計算します。按分率自体の妥当性についての個別税務相談は行いません。",
 };
@@ -15,7 +15,7 @@ export default function ExpenseAllocationPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">個人事業主向け・家事按分計算（試験機能）</div>
         </div>

@@ -4,7 +4,7 @@ import { PaymentReminderDraftPanel } from "@/components/PaymentReminderDraftPane
 import { ReceivableInvoiceInput, computeReceivablesSummary } from "@/lib/invoice/receivables";
 
 export const metadata: Metadata = {
-  title: "支払い督促メール下書き作成｜税務申告AI（ジャービス）",
+  title: "支払い督促メール下書き作成｜決算書作成から税務申告までワンクリック（スグル）",
   description: "期日超過の請求書から、取引先への支払い状況確認・督促メールの下書き（件名＋本文）をその場で作成するツール（開発中プロトタイプ）。",
 };
 
@@ -68,7 +68,7 @@ export default function PaymentRemindersPage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">支払い督促メール下書き作成</div>
         </div>

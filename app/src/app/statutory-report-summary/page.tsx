@@ -3,7 +3,7 @@ import Link from "next/link";
 import { StatutoryReportSummaryClient } from "./StatutoryReportSummaryClient";
 
 export const metadata: Metadata = {
-  title: "法定調書合計表（下書き）｜税務申告AI（ジャービス）",
+  title: "法定調書合計表（下書き）｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "支払調書・源泉徴収票の下書きデータを区分ごとに集計し、法定調書合計表（給与所得の源泉徴収票等の法定調書合計表）の下書きを確認・印刷／PDF保存できる画面（開発中プロトタイプ）。",
 };
@@ -14,7 +14,7 @@ export default function StatutoryReportSummaryPage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 print:hidden">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">法定調書合計表（下書き）</div>
         </div>

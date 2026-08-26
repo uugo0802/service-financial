@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FamilyEmployeeSalaryForm } from "@/components/FamilyEmployeeSalaryForm";
 
 export const metadata: Metadata = {
-  title: "青色事業専従者給与のチェック｜税務申告AI（ジャービス）",
+  title: "青色事業専従者給与のチェック｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "青色申告の家族従業員（事業専従者）に支払う給与について、届出書の上限額との比較・必要経費算入の目安・専従者要件チェックリストを確認する参考ツール（開発中プロトタイプ）。",
 };
@@ -14,7 +14,7 @@ export default function FamilyEmployeeSalaryPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">青色事業専従者給与のチェック</div>
         </div>

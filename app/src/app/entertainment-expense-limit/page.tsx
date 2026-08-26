@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { EntertainmentExpenseLimitCalculator } from "@/components/EntertainmentExpenseLimitCalculator";
 
 export const metadata: Metadata = {
-  title: "交際費等の損金不算入額計算機｜税務申告AI（ジャービス）",
+  title: "交際費等の損金不算入額計算機｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "資本金1億円以下の中小法人を対象に、交際費等の定額控除限度額（年800万円、月割り）と接待飲食費の50%相当額のうち有利な方を判定し、損金算入額・損金不算入額を試算するツール（開発中プロトタイプ）。",
 };
@@ -13,7 +13,7 @@ export default function EntertainmentExpenseLimitPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
           <div className="text-xs text-stone-500">MVP — 交際費等の損金不算入額計算機</div>
         </div>

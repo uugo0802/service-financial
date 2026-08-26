@@ -9,7 +9,7 @@ import { getSupabaseClient } from "../db/supabaseClient";
 // 業務ロジックは持たない。
 // ------------------------------------------------------------------
 
-const TOTP_ISSUER = "税務申告AI（ジャービス）";
+const TOTP_ISSUER = "スグル";
 
 /** enrollTotpFactor が返すTOTP登録情報。 */
 export interface TwoFactorEnrollment {

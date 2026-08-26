@@ -153,7 +153,7 @@ export function buildJournalExportCsv(options: JournalExportOptions): string {
 
   sections.push(
     buildCsvBlock([
-      ["税務申告AI ジャービス - 記帳データエクスポート"],
+      ["決算書作成から税務申告までワンクリック スグル - 記帳データエクスポート"],
       [`出力日時: ${generatedAt.toISOString()}`],
       [EXPORT_DISCLAIMER],
     ])

@@ -15,6 +15,9 @@ import {
 } from "@/lib/tax/consumptionTaxForm";
 import { buildCorporateTaxForm, buildFinancialStatements, buildIncomeAdjustmentForm } from "@/lib/tax/corporateForms";
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
+import { buildForm5_2 } from "@/lib/tax/form5_2TaxPaymentStatus";
+import { buildForm5_1, RetainedEarningsLine } from "@/lib/tax/form5_1RetainedEarnings";
+import { buildEquityChangeForm } from "@/lib/tax/equityChangeForm";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
 import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
 import { buildMonthlySalesTrend } from "@/lib/tax/businessOverviewForm";
@@ -59,6 +62,45 @@ function FormTable({
   );
 }
 
+// OfficialRow内部のDigitAmountはマイナス値を0として描画してしまう（マス目表示は非負の
+// 金額のみを想定しているため）。別表五（一）は未納税額をマイナス値として扱う設計のため、
+// マイナスの場合は絶対値に変換し、会計上のマイナス表記「△」をラベルに付けて表現する。
+function SignedOfficialRow({
+  label,
+  symbol,
+  amount,
+  indent,
+  strong,
+}: {
+  label: string;
+  symbol?: string;
+  amount: number;
+  indent?: boolean;
+  strong?: boolean;
+}) {
+  return (
+    <OfficialRow
+      label={amount < 0 ? `${label}　△` : label}
+      symbol={symbol}
+      amount={Math.abs(amount)}
+      indent={indent}
+      strong={strong}
+    />
+  );
+}
+
+// 別表五（一）の1行（期首現在・当期の増減・差引翌期首現在の3列）を、
+// このアプリの正味の増減1列モデル（RetainedEarningsLine）からOfficialRow3行で表現する。
+function RetainedEarningsLineRows({ line, rowNumber }: { line: RetainedEarningsLine; rowNumber: string }) {
+  return (
+    <>
+      <SignedOfficialRow label={`${line.label}（期首現在）`} symbol={rowNumber} amount={line.openingBalance} />
+      <SignedOfficialRow label={`${line.label}（当期の増減）`} amount={line.change} indent />
+      <SignedOfficialRow label={`${line.label}（差引翌期首現在）`} amount={line.closingBalance} strong />
+    </>
+  );
+}
+
 function DocHeader({ title, entityName, periodStart, periodEnd }: { title: string; entityName: string; periodStart: string; periodEnd: string }) {
   return (
     <div className="text-center mb-8 border-b-2 border-stone-800 pb-4">
@@ -81,6 +123,8 @@ type CorpDocType =
   | "corporateTaxReturn"
   | "incomeAdjustment"
   | "localTaxReturn"
+  | "form5_1"
+  | "form5_2"
   | "consumptionTax";
 
 const INDIVIDUAL_DOC_TABS: { key: IndividualDocType; label: string }[] = [
@@ -97,6 +141,8 @@ const CORP_DOC_TABS: { key: CorpDocType; label: string }[] = [
   { key: "corporateTaxReturn", label: "法人税・地方法人税申告書" },
   { key: "incomeAdjustment", label: "所得金額の計算（別表四）" },
   { key: "localTaxReturn", label: "法人住民税・事業税申告書" },
+  { key: "form5_1", label: "利益積立金額及び資本金等の額の計算に関する明細書（別表五（一））" },
+  { key: "form5_2", label: "租税公課の納付状況等に関する明細書（別表五（二））" },
   { key: "consumptionTax", label: "消費税申告書" },
 ];
 
@@ -645,6 +691,109 @@ function CorpDocuments({
             <OfficialRow label="住民税＋事業税等 総合計（概算）" amount={localTaxForm.grandTotal} strong />
           </OfficialSection>
         </OfficialFormFrame>
+      </>
+    );
+  }
+
+  if (doc === "form5_1") {
+    // このタブも form5_2 タブと同じく初年度（前期からの繰越なし・中間申告なし）を既定表示とする。
+    // 繰越損益金は貸借対照表・株主資本等変動計算書（financialStatementsタブ）と一致させる
+    // 必要があるため、消費税調整前のfs.netIncomeではなく、未払消費税等を控除した
+    // bsNetIncome相当（financialStatementsタブと同じ計算式）を使う。
+    const bsNetIncomeForRetained = fs.incomeBeforeTax - fs.taxes - consumptionForm.totalDue;
+    const equityChange = buildEquityChangeForm({ capitalStock, openingCash, netIncome: bsNetIncomeForRetained });
+    const form5_2ForRetained = buildForm5_2({
+      priorYearUnpaid: undefined,
+      interimTax: null,
+      finalNationalTax: taxForm.totalNationalTax,
+      finalPrefectureTax: localTaxForm.inhabitantTaxTotal,
+      finalMunicipalityTax: 0,
+      finalBusinessTax: localTaxForm.businessTaxTotal,
+    });
+    const form5_1 = buildForm5_1({ equityChange, form5_2: form5_2ForRetained, capitalStock });
+
+    return (
+      <>
+        <DocHeader
+          title="利益積立金額及び資本金等の額の計算に関する明細書 別表五（一）（簡易版）"
+          entityName={entityName}
+          periodStart={pl.periodStart}
+          periodEnd={pl.periodEnd}
+        />
+        <p className="text-xs text-amber-700 mb-4">
+          利益準備金・積立金等の個別の税務調整項目（row1〜24）・未払通算税効果額（row28）は対象外です。Ⅱ「資本金等の額の計算」は資本準備金・その他資本剰余金の増減（増資・減資・自己株式取得等）が当期中に発生していない前提です。期首時点の未納税額・前期実績はこのアプリで保持していないため、初年度（前期からの繰越なし）として表示しています。金額欄の「△」はマイナス（控除）を表します。
+        </p>
+        <OfficialFormFrame scheduleLabel="別表五（一）" formTitle="利益積立金額及び資本金等の額の計算に関する明細書">
+          <OfficialSection title="Ⅰ 利益積立金額の計算">
+            <RetainedEarningsLineRows line={form5_1.retainedEarningsCarriedForward} rowNumber="25" />
+            <RetainedEarningsLineRows line={form5_1.taxProvision} rowNumber="26" />
+            <RetainedEarningsLineRows line={form5_1.unpaidNationalTax} rowNumber="27" />
+            <RetainedEarningsLineRows line={form5_1.unpaidPrefectureTax} rowNumber="29" />
+            <RetainedEarningsLineRows line={form5_1.unpaidMunicipalityTax} rowNumber="30" />
+            <RetainedEarningsLineRows line={form5_1.retainedEarningsTotal} rowNumber="31" />
+          </OfficialSection>
+          <OfficialSection title="Ⅱ 資本金等の額の計算">
+            <RetainedEarningsLineRows line={form5_1.capitalStock} rowNumber="32" />
+            <RetainedEarningsLineRows line={form5_1.capitalTotal} rowNumber="36" />
+          </OfficialSection>
+        </OfficialFormFrame>
+      </>
+    );
+  }
+
+  if (doc === "form5_2") {
+    // このタブは初年度（前期からの未納繰越なし・中間申告なし）のケースを既定表示とする。
+    // このアプリは期首時点の未納税額や前期実績を保持していないため、前期分の入力欄は設けていない。
+    const form5_2 = buildForm5_2({
+      priorYearUnpaid: undefined,
+      interimTax: null,
+      finalNationalTax: taxForm.totalNationalTax,
+      finalPrefectureTax: localTaxForm.inhabitantTaxTotal,
+      finalMunicipalityTax: 0,
+      finalBusinessTax: localTaxForm.businessTaxTotal,
+    });
+    const taxTypeRows = [
+      form5_2.nationalTaxRow,
+      form5_2.prefectureTaxRow,
+      form5_2.municipalityTaxRow,
+      form5_2.businessTaxRow,
+    ];
+
+    return (
+      <>
+        <DocHeader
+          title="租税公課の納付状況等に関する明細書 別表五（二）（簡易版）"
+          entityName={entityName}
+          periodStart={pl.periodStart}
+          periodEnd={pl.periodEnd}
+        />
+        <p className="text-xs text-amber-700 mb-4">
+          道府県民税・市町村民税・事業税の中間納付額の計算には対応していないため、常に中間分0円として扱っています。「その他」区分（利子税・延滞金・加算税及び加算金・延滞税・過怠税）の実額計算、通算法人の通算税効果額の発生状況等の明細は対象外です。
+          期首時点の未納税額・前期実績はこのアプリで保持していないため、初年度（前期からの繰越なし）として表示しています。
+        </p>
+        <OfficialFormFrame scheduleLabel="別表五（二）" formTitle="租税公課の納付状況等に関する明細書">
+          {taxTypeRows.map((row) => (
+            <OfficialSection key={row.label} title={row.label}>
+              <OfficialRow label="期首現在未納税額" symbol="①" amount={row.openingUnpaid} />
+              <OfficialRow label="当期発生税額（中間分）" symbol="②" amount={row.interimAccrued} indent />
+              <OfficialRow label="当期発生税額（確定分）" symbol="②" amount={row.finalAccrued} indent />
+              <OfficialRow label="損金経理による納付（中間分）" symbol="⑤" amount={row.interimPaidByDeduction} />
+              <OfficialRow label="期末現在未納税額" symbol="⑥" amount={row.closingUnpaid} strong />
+            </OfficialSection>
+          ))}
+          <OfficialSection title="納税充当金の計算">
+            <OfficialRow label="期首納税充当金" amount={form5_2.taxProvision.openingProvision} />
+            <OfficialRow label="繰入額（損金経理をした納税充当金）" amount={form5_2.taxProvision.addition} indent />
+            <OfficialRow label="取崩額" amount={form5_2.taxProvision.withdrawal} indent />
+            <OfficialRow label="期末納税充当金" amount={form5_2.taxProvision.closingProvision} strong />
+          </OfficialSection>
+        </OfficialFormFrame>
+        {form5_2.taxProvision.addition !== fs.taxes && (
+          <p className="text-xs text-amber-700 mt-3">
+            納税充当金の繰入額（{yen.format(form5_2.taxProvision.addition)}円）が決算報告書の法人税等（
+            {yen.format(fs.taxes)}円）と一致していません。入力値をご確認ください。
+          </p>
+        )}
       </>
     );
   }

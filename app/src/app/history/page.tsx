@@ -4,7 +4,7 @@ import { YearArchiveTable } from "@/components/YearArchiveTable";
 import { YearCloseControl } from "@/components/YearCloseControl";
 
 export const metadata: Metadata = {
-  title: "過去の記帳・申告アーカイブ｜税務申告AI（ジャービス）",
+  title: "過去の記帳・申告アーカイブ｜決算書作成から税務申告までワンクリック（スグル）",
   description: "年度ごとの記帳・申告実績を一覧で振り返るアーカイブ画面（開発中プロトタイプ）。",
 };
 
@@ -60,7 +60,7 @@ export default function HistoryPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
         </div>
       </header>

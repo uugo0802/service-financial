@@ -3,7 +3,7 @@ import Link from "next/link";
 import { MonthlyCloseChecklistPanel } from "./MonthlyCloseChecklistPanel";
 
 export const metadata: Metadata = {
-  title: "月次決算チェックリスト｜税務申告AI（ジャービス）",
+  title: "月次決算チェックリスト｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "銀行残高突合・入金消込・未確定の仕訳などの状態を一覧化し、当月分の記帳が締められる状態かをセルフチェックできるツール（開発中プロトタイプ）。",
 };
@@ -14,7 +14,7 @@ export default function MonthlyCloseChecklistPage() {
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700 dark:text-red-400">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500 dark:text-stone-400">月次決算チェックリスト</div>
         </div>

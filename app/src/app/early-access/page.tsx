@@ -1,25 +1,11 @@
 import type { Metadata } from "next";
-
-const FORM_URL = "https://forms.gle/8WVJnLD9ewkRnoRE8";
+import { Cta } from "./Cta";
 
 export const metadata: Metadata = {
-  title: "税理士に毎月払う顧問料、AIに置き換えませんか｜ジャービス（早期アクセス登録）",
+  title: "税理士に毎月払う顧問料、AIに置き換えませんか｜スグル（早期アクセス登録）",
   description:
     "記帳〜仕訳〜申告書下書き〜送信ガイドまで、AIが一気通貫で伴走するセルフ申告のコパイロット。マイクロ法人・フリーランス向け早期アクセス登録受付中。",
 };
-
-function Cta({ label }: { label: string }) {
-  return (
-    <a
-      href={FORM_URL}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-block rounded-md bg-red-700 px-6 py-3 text-white font-medium hover:bg-red-800 transition-colors"
-    >
-      {label}
-    </a>
-  );
-}
 
 export default function EarlyAccessPage() {
   return (
@@ -27,7 +13,7 @@ export default function EarlyAccessPage() {
       <header className="border-b border-stone-300 bg-white">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
         </div>
       </header>
@@ -42,7 +28,7 @@ export default function EarlyAccessPage() {
             記帳・仕訳・申告書下書き・e-Tax/eLtax送信ガイドまでを、AIエージェントが一気通貫で伴走する
             「セルフ申告のコパイロット」。今なら早期アクセスに登録できます。
           </p>
-          <Cta label="早期アクセスに登録する（メールのみ・1分）" />
+          <Cta label="早期アクセスに登録する（メールのみ・1分）" segment="general" placement="hero" />
         </section>
 
         {/* Segments */}
@@ -53,7 +39,7 @@ export default function EarlyAccessPage() {
               一人社長の経理、もうあなたが仕訳を確認する必要はありません。AIが自動確定、あなたは送信ボタンを押すだけ。
               決算・法人税・消費税、まるごと一気通貫でサポートします。
             </p>
-            <Cta label="マイクロ法人向けに登録" />
+            <Cta label="マイクロ法人向けに登録" segment="corp" placement="segment-card" />
           </div>
           <div className="border border-stone-300 bg-white rounded-lg p-6 flex flex-col gap-4">
             <h2 className="font-serif text-xl">フリーランス・個人事業主の方へ</h2>
@@ -61,7 +47,7 @@ export default function EarlyAccessPage() {
               確定申告、簿記の知識はいりません。AIが仕訳から申告書下書きまで全部終わらせます。
               毎年この時期に憂鬱になるあなたへ、e-Tax送信までナビします。
             </p>
-            <Cta label="フリーランス向けに登録" />
+            <Cta label="フリーランス向けに登録" segment="freelance" placement="segment-card" />
           </div>
         </section>
 
@@ -85,7 +71,7 @@ export default function EarlyAccessPage() {
         </section>
 
         <section className="text-center">
-          <Cta label="早期アクセスに登録する（メールのみ・1分）" />
+          <Cta label="早期アクセスに登録する（メールのみ・1分）" segment="general" placement="footer" />
         </section>
       </main>
 

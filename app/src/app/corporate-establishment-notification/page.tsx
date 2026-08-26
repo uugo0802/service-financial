@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CorporateEstablishmentNotificationForm } from "./CorporateEstablishmentNotificationForm";
 
 export const metadata: Metadata = {
-  title: "法人設立時の届出書・申請書一式（下書き作成）｜税務申告AI（ジャービス）",
+  title: "法人設立時の届出書・申請書一式（下書き作成）｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "マイクロ法人の設立直後に必要となる法人設立届出書（税務署・都道府県・市町村向け）、青色申告の承認申請書（法人用）、給与支払事務所等の開設届出書の下書きをまとめて作成するツール（開発中プロトタイプ）。",
 };
@@ -14,7 +14,7 @@ export default function CorporateEstablishmentNotificationPage() {
       <header className="border-b border-stone-300 bg-white print:hidden">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
-            税務申告AI <span className="text-red-700">／</span> ジャービス
+            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
           <div className="text-xs text-stone-500">MVP — 法人設立時の届出書・申請書一式（下書き作成）</div>
         </div>
