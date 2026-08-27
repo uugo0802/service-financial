@@ -69,6 +69,35 @@ describe("buildEquityChangeForm", () => {
     expect(eq.capitalStock.closingBalance).toBe(bs.capitalStock);
   });
 
+  it("uses openingRetainedEarnings directly when provided (company_opening_balances.retained_earnings), ignoring openingCash", () => {
+    // 固定資産・借入金がある場合、openingCash - capitalStock という単純な逆算では
+    // 実際の期首繰越利益剰余金と一致しない。company_opening_balances.retained_earnings を
+    // 明示的に渡した場合はそちらを優先する。
+    const eq = buildEquityChangeForm({
+      capitalStock: 1_000_000,
+      openingCash: 3_000_000, // 逆算すると2,000,000になってしまうはずの値だが、下記を優先する
+      openingRetainedEarnings: 650_000,
+      netIncome: 100_000,
+    });
+
+    expect(eq.retainedEarnings.openingBalance).toBe(650_000);
+    expect(eq.retainedEarnings.closingBalance).toBe(750_000);
+    expect(eq.netAssetsTotal.openingBalance).toBe(1_650_000);
+  });
+
+  it("reconciles with buildBalanceSheetForm's netAssetsTotal when both use an explicit openingRetainedEarnings", () => {
+    const capitalStock = 1_000_000;
+    const openingCash = 2_000_000;
+    const openingRetainedEarnings = 650_000;
+    const netIncome = 300_000;
+
+    const bs = buildBalanceSheetForm({ capitalStock, openingCash, openingRetainedEarnings }, 0, 0, 0, 0, netIncome);
+    const eq = buildEquityChangeForm({ capitalStock, openingCash, openingRetainedEarnings, netIncome });
+
+    expect(eq.netAssetsTotal.closingBalance).toBe(bs.netAssetsTotal);
+    expect(eq.retainedEarnings.closingBalance).toBe(bs.retainedEarningsEnding);
+  });
+
   it("reconciles even when the balance sheet does not balance (e.g. inconsistent sample inputs)", () => {
     // Even if cashInflow/cashOutflow don't tie out with unpaid taxes + netIncome
     // (balanceSheetForm.balanced would be false), the equity statement's net assets

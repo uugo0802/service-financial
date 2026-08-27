@@ -1,23 +1,32 @@
 // ------------------------------------------------------------------
-// 株主資本等変動計算書の簡易生成。
+// 株主資本等変動計算書の生成。
 //
-// balanceSheetForm.ts と同じ簡易化を前提にしている：このアプリは銀行口座等の
-// 取引明細（フロー情報）しか保持しておらず、期首時点の資本構成（純資産の内訳）を
-// 単独では算出できない。そのため「資本金」と「期首現金残高」の2つだけを
-// 利用者に入力してもらい、期首時点で資産＝現金のみ・負債ゼロという単純化を置くことで、
-// 期首繰越利益剰余金＝期首現金－資本金 として算出する（balanceSheetForm.tsと同一の考え方）。
+// docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md ステージ③により、
+// balanceSheetForm.ts と同じ実残高ベースの考え方に揃えた。期首繰越利益剰余金は
+// company_opening_balances.retained_earnings をそのまま受け取る（openingRetainedEarnings）。
+// 固定資産・借入金の期首残高を持たない簡易な呼び出し元（DocumentPreview.tsx等）との
+// 後方互換のため、openingRetainedEarnings を省略した場合のみ、従来通り
+// 「期首は資産＝現金のみ・負債ゼロ」という単純化で openingCash - capitalStock から逆算する。
 //
-// また、当期中の増資・減資・自己株式の取得等の資本取引は発生していないものとして
+// 当期中の増資・減資・自己株式の取得等の資本取引は発生していないものとして
 // 扱う（資本金は期首・期末で不変）。該当する資本取引がある場合、この書類は
 // それを反映できないため、利用者側で別途調整・追記する必要がある。
 //
 // ここで算出した純資産合計（期末）は、buildBalanceSheetForm() の netAssetsTotal と
-// 必ず一致する（同じ capitalStock・openingCash・netIncome から機械的に導出しているため）。
+// 必ず一致する（同じ capitalStock・openingRetainedEarnings・netIncome から機械的に
+// 導出しているため。固定資産・借入金の期末残高はどちらも負債・資産の内訳にのみ影響し、
+// 純資産合計には影響しない）。
 // ------------------------------------------------------------------
 
 export interface EquityChangeInputs {
   capitalStock: number; // 資本金
-  openingCash: number; // 期首現金残高（＝balanceSheetFormのopeningCashと同じ入力）
+  openingCash: number; // 期首現金残高（openingRetainedEarnings省略時のみ、逆算に使用）
+  /**
+   * 期首繰越利益剰余金（company_opening_balances.retained_earnings）。
+   * 指定した場合はそのまま使用する。省略した場合は後方互換フォールバックとして
+   * openingCash - capitalStock（期首は資産＝現金のみ・負債ゼロという単純化）から逆算する。
+   */
+  openingRetainedEarnings?: number;
   netIncome: number; // 当期純利益（法人税等・消費税等すべて控除後、balanceSheetFormに渡すnetIncomeと同じ値）
 }
 
@@ -35,7 +44,7 @@ export interface EquityChangeForm {
 }
 
 export function buildEquityChangeForm(inputs: EquityChangeInputs): EquityChangeForm {
-  const openingRetainedEarnings = inputs.openingCash - inputs.capitalStock;
+  const openingRetainedEarnings = inputs.openingRetainedEarnings ?? inputs.openingCash - inputs.capitalStock;
   const closingRetainedEarnings = openingRetainedEarnings + inputs.netIncome;
 
   const openingNetAssets = inputs.capitalStock + openingRetainedEarnings;

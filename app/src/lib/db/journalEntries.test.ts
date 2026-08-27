@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getSupabaseClient, JournalEntryRow } from "./supabaseClient";
-import { listJournalEntries } from "./journalEntries";
+import { createJournalEntries, listJournalEntries } from "./journalEntries";
 
 vi.mock("./supabaseClient", async () => {
   const actual = await vi.importActual<typeof import("./supabaseClient")>("./supabaseClient");
@@ -9,7 +9,7 @@ vi.mock("./supabaseClient", async () => {
 
 function createBuilder(result: { data: unknown; error: unknown }) {
   const builder: Record<string, unknown> = {};
-  for (const method of ["select", "eq", "order"]) {
+  for (const method of ["select", "insert", "eq", "order"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.then = (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
@@ -64,5 +64,74 @@ describe("listJournalEntries", () => {
     vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
 
     await expect(listJournalEntries("tenant-1")).rejects.toThrow(/仕訳の取得に失敗しました/);
+  });
+});
+
+describe("createJournalEntries", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("does nothing and returns an empty array when given no inputs", async () => {
+    const from = vi.fn();
+    vi.mocked(getSupabaseClient).mockReturnValue({ from } as never);
+
+    const result = await createJournalEntries("tenant-1", []);
+
+    expect(result).toEqual([]);
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it("inserts rows scoped to the tenant with defaults applied", async () => {
+    const builder = createBuilder({ data: [sampleEntry], error: null });
+    const from = vi.fn(() => builder);
+    vi.mocked(getSupabaseClient).mockReturnValue({ from } as never);
+
+    const result = await createJournalEntries("tenant-1", [
+      {
+        date: "2026-12-31",
+        debit_account_id: "acc-deprexp",
+        credit_account_id: "acc-fixed",
+        amount: 120_000,
+        tax_category: "対象外",
+        source: "generated",
+      },
+    ]);
+
+    expect(result).toEqual([sampleEntry]);
+    expect(from).toHaveBeenCalledWith("journal_entries");
+    expect(builder.insert).toHaveBeenCalledWith([
+      {
+        tenant_id: "tenant-1",
+        date: "2026-12-31",
+        debit_account_id: "acc-deprexp",
+        credit_account_id: "acc-fixed",
+        amount: 120_000,
+        description: null,
+        tax_category: "対象外",
+        confidence: 1.0,
+        source: "generated",
+        personal_deduction_only: false,
+        exclude_from_income: false,
+      },
+    ]);
+  });
+
+  it("throws a Japanese error message on failure", async () => {
+    const builder = createBuilder({ data: null, error: { message: "boom" } });
+    vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
+
+    await expect(
+      createJournalEntries("tenant-1", [
+        {
+          date: "2026-12-31",
+          debit_account_id: "a",
+          credit_account_id: "b",
+          amount: 1,
+          tax_category: "対象外",
+          source: "generated",
+        },
+      ])
+    ).rejects.toThrow(/仕訳の作成に失敗しました/);
   });
 });
