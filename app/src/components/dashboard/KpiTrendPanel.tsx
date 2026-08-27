@@ -21,19 +21,19 @@ export function KpiTrendPanel({ points, title }: { points: KpiTrendPoint[]; titl
   if (points.length === 0) {
     return (
       <div className="viz-dashboard">
-        <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">{title}</h3>
-        <p className="text-sm text-stone-500">表示できるデータがありません。</p>
+        <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-sm text-muted-foreground">表示できるデータがありません。</p>
       </div>
     );
   }
 
   return (
     <div className="viz-dashboard">
-      <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">{title}</h3>
-      <div className="overflow-x-auto border border-stone-200 dark:border-stone-700 rounded-md">
+      <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
+      <div className="overflow-x-auto border border-border rounded-lg">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-200 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+            <tr className="border-b border-border text-left text-muted-foreground text-xs">
               <th className="px-3 py-2 font-normal">年度</th>
               <th className="px-3 py-2 font-normal text-right">売上</th>
               <th className="px-3 py-2 font-normal text-right">経費</th>
@@ -44,7 +44,7 @@ export function KpiTrendPanel({ points, title }: { points: KpiTrendPoint[]; titl
           </thead>
           <tbody>
             {points.map((p) => (
-              <tr key={p.key} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+              <tr key={p.key} className="border-b border-border last:border-0">
                 <td className="px-3 py-1.5 whitespace-nowrap tabular-nums">{p.key}年</td>
                 <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(p.revenue)}</td>
                 <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(p.expense)}</td>
@@ -55,7 +55,7 @@ export function KpiTrendPanel({ points, title }: { points: KpiTrendPoint[]; titl
                 <td
                   className={`px-3 py-1.5 text-right tabular-nums ${
                     p.revenueGrowth === null
-                      ? "text-stone-400 dark:text-stone-500"
+                      ? "text-muted-foreground"
                       : p.revenueGrowth >= 0
                         ? "text-emerald-700 dark:text-emerald-400"
                         : "text-red-700 dark:text-red-400"
