@@ -38,23 +38,23 @@ function ComparisonBar({ value, scaleMax, colorClass }: { value: number | null; 
 
 function CategoryRow({ category, scaleMax }: { category: BenchmarkCategoryComparison; scaleMax: number }) {
   return (
-    <tr className="border-b border-stone-100 dark:border-stone-800 last:border-0 align-top">
+    <tr className="border-b border-border last:border-0 align-top">
       <td className="px-3 py-2 whitespace-nowrap">
         {category.account}
         {category.account === OTHER_ACCOUNT_LABEL && (
-          <div className="text-xs text-stone-400 dark:text-stone-500">上位科目以外の合計</div>
+          <div className="text-xs text-muted-foreground">上位科目以外の合計</div>
         )}
       </td>
       <td className="px-3 py-2 min-w-[120px]">
         <div className="flex items-center justify-between gap-2 text-right tabular-nums mb-1">
-          <span className="text-stone-400 dark:text-stone-500 text-xs">あなた</span>
+          <span className="text-muted-foreground text-xs">あなた</span>
           <span>{formatPercent(category.userPercentOfRevenue)}</span>
         </div>
         <ComparisonBar value={category.userPercentOfRevenue} scaleMax={scaleMax} colorClass="bg-[var(--viz-series-expense)]" />
       </td>
       <td className="px-3 py-2 min-w-[120px]">
         <div className="flex items-center justify-between gap-2 text-right tabular-nums mb-1">
-          <span className="text-stone-400 dark:text-stone-500 text-xs">参考値</span>
+          <span className="text-muted-foreground text-xs">参考値</span>
           <span>{category.benchmarkPercentOfRevenue === null ? "参考値なし" : formatPercent(category.benchmarkPercentOfRevenue)}</span>
         </div>
         <ComparisonBar value={category.benchmarkPercentOfRevenue} scaleMax={scaleMax} colorClass="bg-stone-400 dark:bg-stone-500" />
@@ -62,7 +62,7 @@ function CategoryRow({ category, scaleMax }: { category: BenchmarkCategoryCompar
       <td
         className={`px-3 py-2 text-right tabular-nums whitespace-nowrap ${
           category.differencePoints === null
-            ? "text-stone-400 dark:text-stone-500"
+            ? "text-muted-foreground"
             : category.differencePoints > 0
               ? "text-red-700 dark:text-red-400"
               : "text-emerald-700 dark:text-emerald-400"
@@ -95,7 +95,7 @@ export function BenchmarkPanel({ rows, title }: { rows: CategorizedTransaction[]
   return (
     <div className="viz-dashboard">
       <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
-        <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-200">{title}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         <div className="flex items-center gap-1 text-xs">
           {BENCHMARK_SEGMENTS.map((s) => (
             <button
@@ -104,8 +104,8 @@ export function BenchmarkPanel({ rows, title }: { rows: CategorizedTransaction[]
               onClick={() => setSegment(s.id)}
               className={`rounded-full px-3 py-1 border transition-colors ${
                 segment === s.id
-                  ? "bg-stone-800 border-stone-800 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                  : "border-stone-300 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800"
+                  ? "bg-foreground border-foreground text-background"
+                  : "border-border text-muted-foreground hover:bg-surface"
               }`}
             >
               {s.label}
@@ -114,12 +114,12 @@ export function BenchmarkPanel({ rows, title }: { rows: CategorizedTransaction[]
         </div>
       </div>
 
-      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed mb-3 border-b border-stone-200 dark:border-stone-800 pb-3">
+      <p className="text-xs text-muted-foreground leading-relaxed mb-3 border-b border-border pb-3">
         {comparison.disclaimer}
       </p>
 
       {comparison.categories.length === 0 ? (
-        <p className="text-sm text-stone-500 dark:text-stone-400">
+        <p className="text-sm text-muted-foreground">
           {comparison.revenue <= 0
             ? "表示できるデータがありません。売上・経費の記帳データが増えると、ここに経費構成の参考比較が表示されます。"
             : "経費の記帳データがまだありません。経費が記帳されると、科目別の売上比を参考値と比較して表示します。"}
@@ -131,10 +131,10 @@ export function BenchmarkPanel({ rows, title }: { rows: CategorizedTransaction[]
               売上データがまだ無いため、割合（％）は算出できません。金額のみ表示しています。
             </p>
           )}
-          <div className="overflow-x-auto border border-stone-200 dark:border-stone-700 rounded-md">
+          <div className="overflow-x-auto border border-border rounded-lg">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">勘定科目</th>
                   <th className="px-3 py-2 font-normal">あなたの割合（対売上）</th>
                   <th className="px-3 py-2 font-normal">参考値（対売上）</th>

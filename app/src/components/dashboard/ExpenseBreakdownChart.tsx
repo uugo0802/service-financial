@@ -73,8 +73,8 @@ export function ExpenseBreakdownChart({ breakdown, title }: { breakdown: Expense
   if (slices.length === 0) {
     return (
       <div className="viz-dashboard">
-        <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-200 mb-2">{title}</h3>
-        <p className="text-sm text-stone-500">表示できるデータがありません。</p>
+        <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
+        <p className="text-sm text-muted-foreground">表示できるデータがありません。</p>
       </div>
     );
   }
@@ -90,15 +90,15 @@ export function ExpenseBreakdownChart({ breakdown, title }: { breakdown: Expense
   return (
     <div className="viz-dashboard">
       <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-        <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-200">{title}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
         <div className="flex items-center gap-4">
-          <span className="text-xs text-stone-500 dark:text-stone-400">
+          <span className="text-xs text-muted-foreground">
             経費合計 <span className="tabular-nums">{yen.format(total)}</span>円
           </span>
           <button
             type="button"
             onClick={() => setShowTable((v) => !v)}
-            className="text-xs text-stone-500 dark:text-stone-400 underline underline-offset-2 hover:text-stone-700 dark:hover:text-stone-200"
+            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
           >
             {showTable ? "グラフ表示に戻す" : "表で見る"}
           </button>
@@ -108,7 +108,7 @@ export function ExpenseBreakdownChart({ breakdown, title }: { breakdown: Expense
       {showTable ? (
         <BreakdownTable slices={slices} total={total} />
       ) : (
-        <div className="relative overflow-x-auto border border-stone-200 dark:border-stone-700 rounded-md bg-[var(--viz-surface)] py-2">
+        <div className="relative overflow-x-auto border border-border rounded-lg bg-[var(--viz-surface)] py-2">
           <svg width="100%" height={height} viewBox={`0 0 ${CHART_WIDTH} ${height}`} role="img" aria-label={title} className="block">
             {slices.map((s, i) => {
               const y = MARGIN.top + i * ROW_HEIGHT + (ROW_HEIGHT - BAR_HEIGHT) / 2;
@@ -153,18 +153,18 @@ export function ExpenseBreakdownChart({ breakdown, title }: { breakdown: Expense
               const s = slices[hoverIndex];
               return (
                 <div
-                  className="absolute pointer-events-none rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 px-3 py-2 text-xs shadow-sm"
+                  className="absolute pointer-events-none rounded-lg border border-border bg-surface px-3 py-2 text-xs"
                   style={{ top: MARGIN.top + hoverIndex * ROW_HEIGHT, left: MARGIN.left + 12 }}
                 >
-                  <div className="flex items-center gap-2 text-stone-700 dark:text-stone-200 font-medium mb-0.5">
+                  <div className="flex items-center gap-2 text-foreground font-medium mb-0.5">
                     <span className="inline-block w-2 h-2 rounded-full" style={{ background: colorFor(hoverIndex, s.account, isDark) }} />
                     {s.account}
                   </div>
-                  <div className="text-stone-600 dark:text-stone-300 tabular-nums">
+                  <div className="text-muted-foreground tabular-nums">
                     {yen.format(s.amount)}円（{s.percent}%）
                   </div>
                   {s.account === OTHER_ACCOUNT_LABEL && (
-                    <div className="text-stone-500 dark:text-stone-400 mt-0.5">上位科目以外の合計です</div>
+                    <div className="text-muted-foreground mt-0.5">上位科目以外の合計です</div>
                   )}
                 </div>
               );
@@ -181,10 +181,10 @@ function truncateLabel(label: string): string {
 
 function BreakdownTable({ slices, total }: { slices: ExpenseBreakdownSlice[]; total: number }) {
   return (
-    <div className="overflow-x-auto border border-stone-200 dark:border-stone-700 rounded-md">
+    <div className="overflow-x-auto border border-border rounded-lg">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-stone-200 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+          <tr className="border-b border-border text-left text-muted-foreground text-xs">
             <th className="px-3 py-2 font-normal">勘定科目</th>
             <th className="px-3 py-2 font-normal text-right">金額</th>
             <th className="px-3 py-2 font-normal text-right">割合</th>
@@ -192,13 +192,13 @@ function BreakdownTable({ slices, total }: { slices: ExpenseBreakdownSlice[]; to
         </thead>
         <tbody>
           {slices.map((s) => (
-            <tr key={s.account} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+            <tr key={s.account} className="border-b border-border last:border-0">
               <td className="px-3 py-1.5 whitespace-nowrap">{s.account}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(s.amount)}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{s.percent}%</td>
             </tr>
           ))}
-          <tr className="font-medium text-stone-700 dark:text-stone-200">
+          <tr className="font-medium text-foreground">
             <td className="px-3 py-1.5">合計</td>
             <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(total)}</td>
             <td className="px-3 py-1.5 text-right tabular-nums">100%</td>
