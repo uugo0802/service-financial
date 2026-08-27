@@ -52,12 +52,12 @@ lib/
     deadlines.ts            # 申告期限
     submissionSteps.ts      # 申告手順
 
-  supabase/               # DB接続 ← 新規追加
-    client.ts               # クライアントサイド用
-    server.ts               # サーバーサイド用（RLSバイパス）
+  db/                     # DB接続層（旧 lib/supabase/ という記載は古い）
+    supabaseClient.ts        # クライアント生成、型定義
+    tenants.ts / accounts.ts / journalEntries.ts / fixedAssets.ts / loans.ts / openingBalances.ts / generatedEntries.ts / balanceSheetData.ts など
 
 app/
-  (dashboard)/            # 各種ページ（現在SAMPLE_DATAを使用、Supabase接続TODO）
+  dashboard/ 他            # 各種ページ（多くは依然SAMPLE_DATA使用。一部（P/L・貸借対照表等）は複式簿記台帳design移行済み）
 ```
 
 > **注記**: 上記の `filing/etaxFileFormat.ts`・`filing/eltaxFileFormat.ts`・`notifications/page.tsx` は、本リポジトリの `main` ブランチには未マージです（別セッションで進めていた派生実装）。現在の `main` では `filing/` 配下は `submissionSteps.ts`・`wizardProgress.ts` 等の別実装になっています。マージ方針は別途検討中です。
@@ -66,50 +66,34 @@ app/
 
 ## 3. マルチテナント設計（SaaS必須）
 
-### Supabaseに必要なテーブル
+正確なテーブル定義は常に `app/supabase/schema.sql` を参照すること（このセクションはドリフトしやすいため概要のみに留める）。**2026-08-27時点でSupabaseプロジェクトを作成し、`schema.sql`を適用、`app/.env.local`から接続確認済み**（本番Vercel環境変数は未設定・Vercelプロジェクト自体も未作成）。
 
-#### `company_profiles`(会社プロフィール)
-```sql
-CREATE TABLE company_profiles (
-  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id          uuid REFERENCES auth.users(id),
-  company_name     text NOT NULL,
-  company_type     text DEFAULT 'godo',  -- 'godo' | 'kabushiki'
-  prefecture_city_key text DEFAULT 'kanagawa-hiratsuka',  -- taxRateMaster.tsのキー
-  fiscal_year_end_month int DEFAULT 12,  -- 決算月（1-12）
-  capital_amount   bigint DEFAULT 0,     -- 資本金（消費税免除判定に使う）
-  incorporation_date date,               -- 設立日（事業年度月割り計算に使う）
-  tax_payment_method text DEFAULT 'inclusive',  -- 'inclusive'=税込 / 'exclusive'=税抜
-  etax_taxpayer_id  text,               -- e-Tax利用者識別番号
-  eltax_user_id     text,               -- eLTax利用者ID（英数字混在の発行済みID）
-  created_at       timestamptz DEFAULT now()
-);
-```
+### データモデルの実際の姿
 
-#### `journal_entries`(仕訳帳)
-```sql
-CREATE TABLE journal_entries (
-  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  company_id   uuid REFERENCES company_profiles(id),
-  date         date NOT NULL,
-  debit_account  text NOT NULL,   -- 借方科目
-  credit_account text NOT NULL,   -- 貸方科目
-  amount       bigint NOT NULL,
-  description  text,
-  created_at   timestamptz DEFAULT now()
-);
-```
+このセクションに以前あった独立の `company_profiles` テーブル案・`journal_entries.debit_account/credit_account`（text列）案は**不採用**。実装は`docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md`の設計に沿っており、以下の点が上記の古い案と異なる:
+
+- 独立の`company_profiles`テーブルは作らず、既存の`tenants`テーブルを拡張（`company_type`・`prefecture_city_key`・`fiscal_year_end_month`・`capital_amount`・`incorporation_date`・`tax_payment_method`・`etax_taxpayer_id`・`eltax_user_id`を追加）する形にした
+- `journal_entries`は`debit_account`/`credit_account`（text）ではなく、`accounts`テーブルへの外部キー`debit_account_id`/`credit_account_id`（uuid）を持つ。1行=借方勘定・貸方勘定・金額の組で、借方＝貸方＝amountが自明に成立するため貸借バランスの検算ロジックが不要（設計理由は上記spec参照）
+- 固定資産・借入金台帳（`fixed_assets`・`loans`）、期首残高（`company_opening_balances`）も新設済み
+
+主要テーブル（全てRLS有効、`tenant_users`経由でテナントスコープ分離）: `tenants`（拡張）・`tenant_users`・`accounts`・`journal_entries`・`fixed_assets`・`loans`・`company_opening_balances`・`documents`・`audit_logs`。
+
+DBアクセス層は`lib/db/`配下（`tenants.ts`・`accounts.ts`・`journalEntries.ts`・`fixedAssets.ts`・`loans.ts`・`openingBalances.ts`・`generatedEntries.ts`・`balanceSheetData.ts`・`supabaseClient.ts`等）にあり、上記フォルダ構成の`lib/supabase/client.ts`・`server.ts`という記載は古い（現在は`lib/db/supabaseClient.ts`に一本化）。
 
 ### 計算関数への渡し方
-全ての税額計算関数は `company_profiles` の値を引数で受け取る設計済み。
+税額計算関数はテナントの値（`Tenant`/`TenantProfile`型、`lib/db/tenants.ts`の`getTenant()`等で取得）を引数で受け取る設計。`getCompanyProfile()`という関数は存在しない（`getMyTenantUser()` → `getTenant(tenantId)`の順で取得する）。
 
 ```typescript
 // 例: 地方税計算
-const profile = await getCompanyProfile(userId);
-const taxRates = TAX_RATE_CONFIGS[profile.prefecture_city_key];
-const months = calcFiscalMonths(profile.incorporation_date, fiscalYearEnd);
+const tenantUser = await getMyTenantUser();
+const tenant = tenantUser && await getTenant(tenantUser.tenant_id);
+const taxRates = TAX_RATE_CONFIGS[tenant.prefecture_city_key];
+const months = calcFiscalMonths(tenant.incorporation_date, fiscalYearEnd);
 const localTax = buildLocalCorporateTaxForm(income, nationalTax, taxRates, months);
 ```
+
+### 既知の未解決の食い違い（2026-08-27発見）
+`lib/db/tenants.ts`の`TenantProfile`型・`updateTenantProfile()`は`tenants.blue_return`（青色申告承認有無、boolean）列の存在を前提にしているが、`schema.sql`にはこの列が定義されていない。DBが未接続だった間は表面化しなかったが、接続済みとなった今は設定画面での保存が実際に失敗しうる状態。対応要否をユーザーに確認して別途修正する。
 
 ---
 
@@ -196,12 +180,12 @@ e-Tax・eLTaxとも「代理送信API」は存在しない（照会系APIのみ�
 |----|--------|--------|----------|
 | D1 | 法人税確定申告書（別表一） | e-Tax | スタブ実装済み |
 | D2 | 別表四（所得の金額の計算） | e-Tax | ロジック実装済み |
-| D3 | 別表五(一)（利益積立金額） | e-Tax | 未実装 |
+| D3 | 別表五(一)（利益積立金額） | e-Tax | 実装済み（`form5_1RetainedEarnings.ts`） |
 | D4 | 法人都道府県民税確定申告書（第六号様式） | eLTax | ドラフト出力済み |
 | D5 | 法人市町村民税確定申告書（第二十号様式） | eLTax | ドラフト出力済み |
 | D6 | 損益計算書 | 添付 | 実装済み |
-| D7 | 貸借対照表 | 添付 | 実装済み（要検証） |
-| D8 | 株主資本等変動計算書 | 添付 | 未実装 |
+| D7 | 貸借対照表 | 添付 | 実装済み（`balanceSheetForm.ts`、複式簿記台帳の実残高接続済み） |
+| D8 | 株主資本等変動計算書 | 添付 | 実装済み（`equityChangeForm.ts`） |
 | D9 | 勘定科目内訳明細書 | 添付 | ロジック実装済み |
 | D10 | 法人事業概況説明書 | 添付 | ロジック実装済み |
 | D11 | 法人番号届出書 | 税務署 | 初回のみ・手動 |
@@ -215,7 +199,7 @@ e-Tax・eLTaxとも「代理送信API」は存在しない（照会系APIのみ�
 | 税額計算ロジック | 75% | バグ修正済み、中間納付対応済み |
 | 申告書生成 | 35% | XMLスタブ、ドラフトCSVまで |
 | UI / UX | 55% | ダッシュボード・仕訳入力あり |
-| DB / Supabase接続 | 10% | 接続ファイル作成済み、テーブル未定義 |
+| DB / Supabase接続 | 40% | Supabaseプロジェクト作成・`schema.sql`適用・ローカル接続確認済み（2026-08-27）。本番Vercel環境変数は未設定。`financial-statements`等一部ページは実データ接続済みだが、`dashboard`/`history`/`notifications`含む大半のページは依然SAMPLE_DATA固定（残りのロールアウトは`docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md`のステージ④完了後、通常の並列spec運用で対応予定） |
 | e-Tax送信データ生成（送信自体は常に本人操作） | 0% | 仕様書待ち |
 | eLTax送信データ生成（送信自体は常に本人操作） | 0% | 仕様書待ち |
 | テスト | 75% | Vitest設定済み |
@@ -227,15 +211,17 @@ e-Tax・eLTaxとも「代理送信API」は存在しない（照会系APIのみ�
 
 ### 🔴 今すぐできる（仕様書不要）
 
-1. **`company_profiles` テーブルをSupabaseに作成** → 全計算関数をマルチテナント対応に
-2. **`journal_entries` テーブルをSupabaseに作成**
-3. **SAMPLE_DATA を使っているページをSupabase接続に切り替え**
-   - `dashboard/page.tsx`
-   - `financial-statements/page.tsx`
-   - `history/page.tsx`
-   - `notifications/page.tsx`
-4. **別表五(一)（利益積立金額）の実装**
-5. **株主資本等変動計算書の実装**
+1. ~~`company_profiles` テーブルをSupabaseに作成~~ → 完了（`tenants`拡張という形で。2026-08-27にSupabaseプロジェクト作成・適用も完了）
+2. ~~`journal_entries` テーブルをSupabaseに作成~~ → 完了
+3. **SAMPLE_DATA を使っているページをSupabase接続に切り替え**（進行中）
+   - `dashboard/page.tsx` — 未対応
+   - `financial-statements/page.tsx` — **対応済み**（`useLedgerTransactions`/`useBalanceSheetData`）
+   - `history/page.tsx` — 未対応
+   - `notifications/page.tsx` — 未対応
+   - 残りページの対応方針は`docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md`参照
+4. ~~別表五(一)（利益積立金額）の実装~~ → 完了
+5. ~~株主資本等変動計算書の実装~~ → 完了
+6. **`tenants.blue_return`列がschema.sqlに存在しない不整合の解消**（`lib/db/tenants.ts`参照、2026-08-27発見、要ユーザー確認）
 
 ### 🟡 ユーザーアクション待ち
 
