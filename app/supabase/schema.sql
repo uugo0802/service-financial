@@ -24,7 +24,8 @@ alter table tenants
   add column if not exists incorporation_date date,
   add column if not exists tax_payment_method text not null default 'inclusive' check (tax_payment_method in ('inclusive', 'exclusive')),
   add column if not exists etax_taxpayer_id text,
-  add column if not exists eltax_user_id text;
+  add column if not exists eltax_user_id text,
+  add column if not exists blue_return boolean not null default false; -- 青色申告の承認有無。lib/db/tenants.ts の TenantProfile が前提とする列
 
 -- ユーザー（Supabase Authのauth.usersを拡張する形。1テナントに複数ユーザーは将来拡張用）
 create table if not exists tenant_users (
