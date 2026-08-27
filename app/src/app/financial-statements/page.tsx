@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 import { FinancialStatementsClient } from "./FinancialStatementsClient";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function FinancialStatementsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-12 flex flex-col gap-10">
+      <DocumentPreviewFrame as="main" maxWidth="4xl" className="flex flex-col gap-10">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">決算書類（貸借対照表・株主資本等変動計算書・個別注記表）</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
@@ -35,7 +36,7 @@ export default function FinancialStatementsPage() {
         </section>
 
         <FinancialStatementsClient />
-      </main>
+      </DocumentPreviewFrame>
 
       <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4">
         <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

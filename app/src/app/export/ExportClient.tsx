@@ -1,4 +1,5 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
 
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { estimateForMicroCorp } from "@/lib/tax/corporateEstimate";
@@ -87,7 +88,7 @@ export function ExportClient() {
               : `記帳された仕訳データを表示しています（${transactions.length}件）`}
           </span>
         </h2>
-        <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
@@ -122,12 +123,12 @@ export function ExportClient() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
       </section>
 
       <section>
         <h2 className="text-lg font-semibold mb-3">税額概算サマリー（プレビュー）</h2>
-        <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
           <table className="w-full text-sm">
             <tbody>
               {summaryRows.map((row, i) => (
@@ -140,7 +141,7 @@ export function ExportClient() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
       </section>
 
       <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-6 flex flex-col gap-4">

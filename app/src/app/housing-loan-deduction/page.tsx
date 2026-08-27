@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { HousingLoanDeductionForm } from "@/components/HousingLoanDeductionForm";
 
@@ -19,7 +20,7 @@ export default function HousingLoanDeductionPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">住宅ローン控除（住宅借入金等特別控除）シミュレーター</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -37,7 +38,7 @@ export default function HousingLoanDeductionPage() {
         </section>
 
         <HousingLoanDeductionForm />
-      </main>
+      </PageContainer>
     </div>
   );
 }

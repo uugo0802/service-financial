@@ -16,6 +16,7 @@ import { PartnerReferralBanner } from "@/components/PartnerReferralBanner";
 import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferral";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { Card } from "@/components/ui/Card";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { buildSampleTransactions } from "./sampleData";
 
 // buildSampleTransactions() は売上・損益推移グラフ用に「経費合計」1科目へ
@@ -71,11 +72,11 @@ export default function DashboardPage() {
             <div className="text-xs text-muted-foreground">売上・損益ダッシュボード</div>
           </div>
         </header>
-        <main className="mx-auto max-w-5xl px-6 py-10">
+        <PageContainer as="main">
           <p className="text-sm text-muted-foreground">
             表示できる記帳データがありません。記帳データが登録されると、ここに売上・損益の推移が表示されます。
           </p>
-        </main>
+        </PageContainer>
       </div>
     );
   }
@@ -161,7 +162,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-10">
+      <PageContainer as="main" className="flex flex-col gap-10">
         <section>
           <h1 className="text-2xl font-semibold mb-2">過去の売上・損益の推移</h1>
           <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
@@ -184,7 +185,7 @@ export default function DashboardPage() {
         <p className="text-xs text-muted-foreground leading-relaxed">
           表示している金額はサンプルデータに基づく概算であり、実際の申告内容を示すものではありません。
         </p>
-      </main>
+      </PageContainer>
     </div>
   );
 }

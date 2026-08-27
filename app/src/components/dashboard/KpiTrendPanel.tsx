@@ -1,4 +1,5 @@
 import { KpiTrendPoint } from "@/lib/tax/kpiTrend";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
@@ -30,7 +31,7 @@ export function KpiTrendPanel({ points, title }: { points: KpiTrendPoint[]; titl
   return (
     <div className="viz-dashboard">
       <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
-      <div className="overflow-x-auto border border-border rounded-lg">
+      <TableScrollArea innerClassName="border border-border rounded-lg">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-left text-muted-foreground text-xs">
@@ -67,7 +68,7 @@ export function KpiTrendPanel({ points, title }: { points: KpiTrendPoint[]; titl
             ))}
           </tbody>
         </table>
-      </div>
+      </TableScrollArea>
     </div>
   );
 }

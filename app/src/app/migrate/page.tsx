@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { MigrationImportForm } from "@/components/MigrationImportForm";
 
@@ -18,7 +19,7 @@ export default function MigratePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">freee / マネーフォワードからの移行インポート</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -41,7 +42,7 @@ export default function MigratePage() {
         </section>
 
         <MigrationImportForm />
-      </main>
+      </PageContainer>
     </div>
   );
 }

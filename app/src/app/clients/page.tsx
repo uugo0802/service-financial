@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { ClientMasterTable } from "@/components/ClientMasterTable";
 import { Counterparty } from "@/lib/clients/clientMaster";
@@ -54,7 +55,7 @@ export default function ClientsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-6">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">取引先・仕入先マスタ</h1>
           <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
@@ -70,7 +71,7 @@ export default function ClientsPage() {
         <p className="text-xs text-stone-400">
           この画面は開発中のプロトタイプです。登録した取引先情報はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
         </p>
-      </main>
+      </PageContainer>
     </div>
   );
 }

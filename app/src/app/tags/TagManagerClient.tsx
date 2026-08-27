@@ -1,4 +1,5 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
 
 import { useMemo, useState } from "react";
 import { TagBreakdownPanel } from "@/components/TagBreakdownPanel";
@@ -250,7 +251,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
         {tags.length === 0 ? (
           <p className="text-sm text-stone-500">先にタグを1つ以上作成してください。</p>
         ) : (
-          <div className="overflow-x-auto">
+          <TableScrollArea>
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="border-b border-stone-300 text-left text-xs text-stone-500">
@@ -288,7 +289,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
                 })}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         )}
       </section>
     </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PageContainer } from "@/components/ui/PageContainer";
 import { ClientInvoiceForm } from "@/components/ClientInvoiceForm";
 import { ReceivablesAgingTable } from "@/components/ReceivablesAgingTable";
 import { RecurringInvoiceManager } from "@/components/RecurringInvoiceManager";
@@ -85,7 +86,7 @@ export default function InvoicesPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">取引先への請求書を作成する</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -128,7 +129,7 @@ export default function InvoicesPage() {
           </p>
           <ReceivablesAgingTable summary={receivablesSummary} />
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }

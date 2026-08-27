@@ -19,6 +19,7 @@ import {
 import { ClientInvoice, ClientInvoiceInput, buildClientInvoice, formatInvoiceNumber } from "@/lib/invoice/clientInvoice";
 import { InvoiceNumberBadge } from "@/components/InvoiceNumberBadge";
 import { QuotePrintLayout } from "@/components/QuotePrintLayout";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
@@ -147,7 +148,11 @@ export function QuoteForm() {
   }
 
   if (printingQuote) {
-    return <QuotePrintLayout quote={printingQuote} onClose={() => setPrintingQuote(null)} />;
+    return (
+      <DocumentPreviewFrame maxWidth="3xl">
+        <QuotePrintLayout quote={printingQuote} onClose={() => setPrintingQuote(null)} />
+      </DocumentPreviewFrame>
+    );
   }
 
   return (

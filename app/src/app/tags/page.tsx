@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { Tag, TagAssignment, TaggableTransaction } from "@/lib/tags/tagging";
 import { TagManagerClient } from "./TagManagerClient";
@@ -49,7 +50,7 @@ export default function TagsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">クライアント・プロジェクトの収益性</h1>
           <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
@@ -63,7 +64,7 @@ export default function TagsPage() {
           initialAssignments={SAMPLE_ASSIGNMENTS}
           transactions={SAMPLE_TRANSACTIONS}
         />
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white mt-4">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

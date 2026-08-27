@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ExportClient } from "./ExportClient";
@@ -20,7 +21,7 @@ export default function ExportPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-12 flex flex-col gap-10">
+      <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-10">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">記帳データをCSVで書き出す</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
@@ -33,7 +34,7 @@ export default function ExportPage() {
         </section>
 
         <ExportClient />
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4">
         <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

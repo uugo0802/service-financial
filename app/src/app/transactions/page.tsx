@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { TransactionRow } from "@/lib/db/supabaseClient";
 import { TransactionSearchForm } from "@/components/TransactionSearchForm";
@@ -110,7 +111,7 @@ export default function TransactionsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">取引を検索する</h1>
           <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
@@ -140,7 +141,7 @@ export default function TransactionsPage() {
           </p>
           <BulkCsvJournalImportForm />
         </div>
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white mt-4">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

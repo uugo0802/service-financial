@@ -1,4 +1,6 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { Fragment, useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
@@ -52,7 +54,7 @@ export default function JournalPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">仕訳を手入力する</h1>
           <p className="text-sm text-stone-600 mb-4 max-w-2xl leading-relaxed">
@@ -88,7 +90,7 @@ export default function JournalPage() {
               まだ仕訳がありません。上の「＋ 仕訳を追加」から入力してください。
             </p>
           ) : (
-            <div className="overflow-x-auto border border-stone-300 bg-white">
+            <TableScrollArea innerClassName="border border-stone-300 bg-white">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
@@ -156,10 +158,10 @@ export default function JournalPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
           )}
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { InstallPromptBanner } from "@/components/InstallPromptBanner";
 import { LegalFooterLinks } from "@/components/LegalFooterLinks";
+import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -42,7 +43,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <div className="flex-1">{children}</div>
+        <div className="flex-1">
+          <AppShell>{children}</AppShell>
+        </div>
         <LegalFooterLinks />
         <ServiceWorkerRegister />
         <InstallPromptBanner />

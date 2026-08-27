@@ -1,4 +1,5 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
 
 import { useCallback, useEffect, useState } from "react";
 import { AccountRow, FixedAssetRow, LoanRow } from "@/lib/db/supabaseClient";
@@ -134,7 +135,7 @@ export function OpeningBalancesClient() {
           登録した資産は毎期の減価償却費が自動計算され、貸借対照表に反映されます。
         </p>
         {fixedAssets.length > 0 && (
-          <div className="overflow-x-auto border border-stone-300 bg-white">
+          <TableScrollArea innerClassName="border border-stone-300 bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
@@ -155,7 +156,7 @@ export function OpeningBalancesClient() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         )}
         <FixedAssetForm
           assetAccounts={assetAccounts}
@@ -175,7 +176,7 @@ export function OpeningBalancesClient() {
           登録した借入金は毎月の元本・利息の返済仕訳が自動計算され、貸借対照表に反映されます。
         </p>
         {loans.length > 0 && (
-          <div className="overflow-x-auto border border-stone-300 bg-white">
+          <TableScrollArea innerClassName="border border-stone-300 bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
@@ -198,7 +199,7 @@ export function OpeningBalancesClient() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         )}
         <LoanForm
           liabilityAccounts={liabilityAccounts}

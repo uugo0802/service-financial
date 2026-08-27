@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { AssetLedgerForm } from "@/components/AssetLedgerForm";
 import { AssetLifecycleAlertBanner } from "@/components/AssetLifecycleAlertBanner";
@@ -19,7 +20,7 @@ export default function AssetsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         {/*
           ライブの資産一覧（AssetLedgerFormのstate）が未連携のため、このページ単体では
           空配列を渡している（AssetLedgerForm.tsxは変更せず読み取りのみに留める方針のため）。
@@ -42,7 +43,7 @@ export default function AssetsPage() {
         </section>
 
         <AssetLedgerForm />
-      </main>
+      </PageContainer>
     </div>
   );
 }

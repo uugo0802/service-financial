@@ -1,4 +1,5 @@
 "use client";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useMemo, useState } from "react";
 import {
@@ -51,7 +52,7 @@ export default function StampDutyCheckerPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">印紙税チェッカー（領収書・請負契約書）</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -196,7 +197,7 @@ export default function StampDutyCheckerPage() {
             <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
           )}
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }
