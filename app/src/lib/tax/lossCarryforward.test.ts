@@ -5,6 +5,7 @@ import {
   CORPORATE_LOSS_CARRYFORWARD_WINDOW_YEARS,
   deriveUnusedPriorLosses,
   INDIVIDUAL_LOSS_CARRYFORWARD_WINDOW_YEARS,
+  PriorYearLoss,
 } from "./lossCarryforward";
 
 describe("applyIndividualLossCarryforward", () => {

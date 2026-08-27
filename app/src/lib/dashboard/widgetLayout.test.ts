@@ -163,7 +163,6 @@ describe("toggleWidgetVisibility", () => {
 
   it("is a no-op (returns an equivalent layout) for an id not present in the layout", () => {
     const layout: DashboardWidgetLayout = [{ id: "trendLine", visible: true }];
-    // @ts-expect-error intentionally passing an id absent from this particular layout
     expect(toggleWidgetVisibility(layout, "benchmark")).toEqual(layout);
   });
 });
@@ -220,7 +219,6 @@ describe("moveWidget", () => {
 
   it("returns the same layout unchanged for an id not present in the layout", () => {
     const layout: DashboardWidgetLayout = [{ id: "trendLine", visible: true }];
-    // @ts-expect-error intentionally passing an id absent from this particular layout
     expect(moveWidget(layout, "benchmark", "up")).toEqual(layout);
   });
 });
