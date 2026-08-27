@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { TransactionRow } from "@/lib/db/supabaseClient";
 import { TransactionSearchForm } from "@/components/TransactionSearchForm";
 import { CsvColumnMapper } from "@/components/CsvColumnMapper";
+import { BulkCsvJournalImportForm } from "@/components/BulkCsvJournalImportForm";
 
 export const metadata: Metadata = {
   title: "取引検索｜決算書作成から税務申告までワンクリック（スグル）",
@@ -128,6 +129,16 @@ export default function TransactionsPage() {
             それ以外の銀行・カード会社をお使いの場合や自動判定がうまくいかない場合は、以下からCSVの列をご自身で指定して取り込めます。
           </p>
           <CsvColumnMapper />
+        </div>
+
+        <div className="flex flex-col gap-2 border-t border-stone-300 pt-6">
+          <h2 className="text-sm font-semibold text-stone-700">過去の明細CSVをまとめて記帳する（複数ファイル一括アップロード）</h2>
+          <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
+            期首以降、月をまたいで溜まっている銀行・カードの明細CSVを一度に複数ファイル選択して取り込めます。
+            ファイルごとに順番にルールベース/AI分類を行い、結果をまとめてプレビューしたうえで、
+            指定した現金・預金勘定と組み合わせて記帳データ（journal_entries）として保存します。
+          </p>
+          <BulkCsvJournalImportForm />
         </div>
       </main>
 
