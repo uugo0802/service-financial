@@ -51,6 +51,10 @@ export default function SettingsPage() {
 
         <TenantSettingsForm initialDraft={tenantProfileToDraft(profile)} onSubmit={handleSubmit} />
 
+        <Link href="/settings/opening-balances" className="text-sm text-stone-700 underline underline-offset-2 self-start">
+          期首残高・固定資産・借入金の投入はこちら →
+        </Link>
+
         <Link href="/settings/security" className="text-sm text-stone-700 underline underline-offset-2 self-start">
           二要素認証（2FA）の設定はこちら →
         </Link>

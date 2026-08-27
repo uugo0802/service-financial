@@ -199,7 +199,7 @@ e-Tax・eLTaxとも「代理送信API」は存在しない（照会系APIのみ�
 | 税額計算ロジック | 75% | バグ修正済み、中間納付対応済み |
 | 申告書生成 | 35% | XMLスタブ、ドラフトCSVまで |
 | UI / UX | 55% | ダッシュボード・仕訳入力あり |
-| DB / Supabase接続 | 40% | Supabaseプロジェクト作成・`schema.sql`適用・ローカル接続確認済み（2026-08-27）。本番Vercel環境変数は未設定。`financial-statements`等一部ページは実データ接続済みだが、`dashboard`/`history`/`notifications`含む大半のページは依然SAMPLE_DATA固定（残りのロールアウトは`docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md`のステージ④完了後、通常の並列spec運用で対応予定） |
+| DB / Supabase接続 | 45% | Supabaseプロジェクト作成・`schema.sql`適用・ローカル接続確認済み（2026-08-27）。本番Vercel環境変数は未設定。`financial-statements`等一部ページは実データ接続済み、期首残高・固定資産・借入金の投入フォーム（`settings/opening-balances/`）とCSV一括取込→journal_entries書き込み（`transactions/page.tsx`のBulkCsvJournalImportForm）もステージ④で追加済み。`dashboard`/`history`/`notifications`含む大半のページは依然SAMPLE_DATA固定（残りのロールアウトはステージ④完了後、通常の並列spec運用で対応予定） |
 | e-Tax送信データ生成（送信自体は常に本人操作） | 0% | 仕様書待ち |
 | eLTax送信データ生成（送信自体は常に本人操作） | 0% | 仕様書待ち |
 | テスト | 75% | Vitest設定済み |
@@ -222,6 +222,14 @@ e-Tax・eLTaxとも「代理送信API」は存在しない（照会系APIのみ�
 4. ~~別表五(一)（利益積立金額）の実装~~ → 完了
 5. ~~株主資本等変動計算書の実装~~ → 完了
 6. **`tenants.blue_return`列がschema.sqlに存在しない不整合の解消**（`lib/db/tenants.ts`参照、2026-08-27発見、要ユーザー確認）
+7. ~~期首残高・固定資産・借入金の投入用フォーム（ステージ④）~~ → 完了。`settings/opening-balances/`に新設。
+   `lib/db/openingBalances.ts`（`upsertCompanyOpeningBalance`）・`lib/db/fixedAssets.ts`（`createFixedAsset`）・
+   `lib/db/loans.ts`（`createLoan`）に書き込み関数を追加し、勘定科目が未整備でもその場で作成できる
+   `AccountSelect`コンポーネントを介して`accounts`のFK制約を満たす
+8. ~~2026年1〜8月分CSVの複数ファイル一括アップロード（ステージ④）~~ → 完了。`transactions/page.tsx`に
+   `BulkCsvJournalImportForm`を追加。既存の`app/api/categorize/route.ts`は無改修のまま複数ファイルへ順次呼び出し、
+   新規`lib/db/csvJournalImport.ts`（`importCategorizedTransactionsAsJournalEntries`）で現金・預金勘定と
+   組み合わせてjournal_entriesへ書き込む（勘定科目が無ければその場で作成）
 
 ### 🟡 ユーザーアクション待ち
 
