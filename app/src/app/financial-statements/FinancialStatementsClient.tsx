@@ -14,22 +14,16 @@ import { NotesToFinancialStatements } from "@/components/NotesToFinancialStateme
 import { PrintableStatementLayout } from "@/components/PrintableStatementLayout";
 import { formatFiscalYearRange } from "@/lib/export/printLayout";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { useBalanceSheetData } from "@/hooks/useBalanceSheetData";
 
-// このページ専用のサンプルデータ。実データ（journal_entries）が取得できない間、
-// または未ログイン・Supabase未設定の場合のフォールバック表示に使う
+// このページ専用のサンプルデータ。実データ（journal_entries・company_opening_balances・
+// fixed_assets・loans）が取得できない間、または未ログイン・Supabase未設定・
+// 期首残高未投入（ステージ④の期首残高投入フォーム未使用）の場合のフォールバック表示に使う
 // （history/page.tsx・export/page.tsxと同じ「今ごえん合同会社」を想定した小規模法人のデータ、金額はサンプル）。
 export const SAMPLE_ENTITY_NAME = "今ごえん合同会社";
 const SAMPLE_CAPITAL_STOCK = 1_000_000; // 資本金
 const SAMPLE_OPENING_CASH = 3_000_000; // 期首現金残高
 const SAMPLE_SHARE_COUNT = 100; // 発行済株式数（任意）
-
-// 注: 資本金・期首現金残高・貸借対照表/株主資本等変動計算書の計算ロジックそのものは、
-// docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md のステージ③
-// （balanceSheetForm.ts・equityChangeForm.tsの再設計、company_opening_balances/
-// fixed_assets/loansからの実残高積み上げ）の対象。lib/tax/balanceSheetForm.ts・
-// lib/tax/equityChangeForm.tsは本stage②では無改修のまま呼び出し、資本金・期首現金残高の
-// 入力値も従来どおりサンプル値のままとする。実データ化するのはP/L・消費税・法人税本体
-// （当期の取引明細）のみ。
 
 const SAMPLE_ENTRIES: CategorizedTransaction[] = [
   {
@@ -103,20 +97,52 @@ export function FinancialStatementsClient() {
   // （DocumentPreview.tsxの決算報告書タブと同じ考え方）。
   const bsNetIncome = fs.incomeBeforeTax - fs.taxes - consumptionForm.totalDue;
 
-  const balanceSheet = buildBalanceSheetForm(
-    { capitalStock: SAMPLE_CAPITAL_STOCK, openingCash: SAMPLE_OPENING_CASH, shareCount: SAMPLE_SHARE_COUNT },
-    pl.incomeTotal,
-    pl.expenseTotal,
-    fs.taxes,
-    consumptionForm.totalDue,
-    bsNetIncome
-  );
-
-  const equityChange = buildEquityChangeForm({
-    capitalStock: SAMPLE_CAPITAL_STOCK,
-    openingCash: SAMPLE_OPENING_CASH,
-    netIncome: bsNetIncome,
+  // 資本金・期首残高・固定資産・借入金は company_opening_balances / fixed_assets / loans /
+  // tenants.capital_amount から実データを取得する（ledgerTransactions.tsと同じ、
+  // Supabase未設定・未ログイン・期首残高未投入時はnullを返しサンプル値へフォールバックする方針）。
+  const { data: bsData, isSampleData: isSampleBalanceSheetData } = useBalanceSheetData({
+    start: pl.periodStart,
+    end: pl.periodEnd,
   });
+
+  const balanceSheet = bsData
+    ? buildBalanceSheetForm(
+        {
+          capitalStock: bsData.capitalStock,
+          openingCash: bsData.openingCash,
+          openingRetainedEarnings: bsData.openingRetainedEarnings,
+          shareCount: SAMPLE_SHARE_COUNT,
+          fixedAssets: bsData.fixedAssets,
+          loans: bsData.loans,
+          fiscalPeriod: bsData.fiscalPeriod,
+        },
+        bsData.cashInflow,
+        bsData.cashOutflow,
+        fs.taxes,
+        consumptionForm.totalDue,
+        bsNetIncome
+      )
+    : buildBalanceSheetForm(
+        { capitalStock: SAMPLE_CAPITAL_STOCK, openingCash: SAMPLE_OPENING_CASH, shareCount: SAMPLE_SHARE_COUNT },
+        pl.incomeTotal,
+        pl.expenseTotal,
+        fs.taxes,
+        consumptionForm.totalDue,
+        bsNetIncome
+      );
+
+  const equityChange = bsData
+    ? buildEquityChangeForm({
+        capitalStock: bsData.capitalStock,
+        openingCash: bsData.openingCash,
+        openingRetainedEarnings: bsData.openingRetainedEarnings,
+        netIncome: bsNetIncome,
+      })
+    : buildEquityChangeForm({
+        capitalStock: SAMPLE_CAPITAL_STOCK,
+        openingCash: SAMPLE_OPENING_CASH,
+        netIncome: bsNetIncome,
+      });
 
   const notes = buildNotesForm({
     unpaidCorporateTaxes: balanceSheet.unpaidCorporateTaxes,
@@ -131,7 +157,9 @@ export function FinancialStatementsClient() {
     <section>
       <h2 className="text-lg font-semibold mb-3">貸借対照表</h2>
       <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">
-        固定資産・売掛金・借入金等、現金以外の資産負債はこのアプリでは反映されません。
+        {bsData
+          ? "固定資産・借入金は台帳データ（減価償却・返済スケジュールの計算結果）から積み上げています。売掛金・買掛金等、これら以外の資産負債はこのアプリでは反映されません。"
+          : "固定資産・売掛金・借入金等、現金以外の資産負債はこのアプリでは反映されません。"}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
@@ -146,6 +174,12 @@ export function FinancialStatementsClient() {
                 <td className="px-3 py-2">現金及び預金</td>
                 <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.endingCash)}</td>
               </tr>
+              {balanceSheet.fixedAssetsBookValue > 0 && (
+                <tr className="border-b border-stone-100 dark:border-stone-800 print:break-inside-avoid">
+                  <td className="px-3 py-2">固定資産（期末帳簿価額）</td>
+                  <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.fixedAssetsBookValue)}</td>
+                </tr>
+              )}
               <tr className="print:break-inside-avoid">
                 <td className="px-3 py-2 font-semibold">資産の部合計</td>
                 <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.assetsTotal)}</td>
@@ -170,6 +204,12 @@ export function FinancialStatementsClient() {
                   <td className="px-3 py-2">未払消費税等</td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidConsumptionTax)}</td>
                 </tr>
+                {balanceSheet.loansBalance > 0 && (
+                  <tr className="border-b border-stone-100 dark:border-stone-800 print:break-inside-avoid">
+                    <td className="px-3 py-2">借入金</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.loansBalance)}</td>
+                  </tr>
+                )}
                 <tr className="print:break-inside-avoid">
                   <td className="px-3 py-2 font-semibold">負債の部合計</td>
                   <td className="px-3 py-2 text-right tabular-nums font-semibold">{yen.format(balanceSheet.liabilitiesTotal)}</td>
@@ -214,8 +254,10 @@ export function FinancialStatementsClient() {
     <>
       <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl -mt-6">
         {isSampleData
-          ? `${SAMPLE_ENTITY_NAME}を想定したサンプルデータで当期の損益を表示しています（資本金・期首現金残高もサンプル値）。`
-          : "記帳された実データ（当期の損益）を表示しています（資本金・期首現金残高は現時点ではサンプル値のままです）。"}
+          ? `${SAMPLE_ENTITY_NAME}を想定したサンプルデータで当期の損益を表示しています（資本金・期首残高もサンプル値）。`
+          : isSampleBalanceSheetData
+            ? "記帳された実データ（当期の損益）を表示しています（期首残高が未投入のため、資本金・期首現金残高は現時点ではサンプル値のままです）。"
+            : "記帳された実データ（当期の損益・貸借対照表とも）を表示しています。"}
       </p>
 
       <PrintableStatementLayout

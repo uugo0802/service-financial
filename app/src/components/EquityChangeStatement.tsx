@@ -23,8 +23,7 @@ export function EquityChangeStatement({ form }: { form: EquityChangeForm }) {
     <section>
       <h2 className="text-lg font-semibold mb-3">株主資本等変動計算書</h2>
       <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">
-        このアプリは資本金と期首現金残高からの簡易な逆算により作成しており、当期中に増資・減資等の資本取引は
-        発生していないものとして扱っています。該当する資本取引がある場合は、ご自身で反映してください。
+        当期中に増資・減資・自己株式の取得等の資本取引は発生していないものとして扱っています。該当する資本取引がある場合は、ご自身で反映してください。
       </p>
       <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <table className="w-full text-sm">

@@ -4,6 +4,7 @@ import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { buildTrialBalance, DEFAULT_CASH_ACCOUNT } from "@/lib/tax/trialBalance";
 import { TrialBalanceTable } from "@/components/TrialBalanceTable";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { useBalanceSheetData } from "@/hooks/useBalanceSheetData";
 
 // このページ専用のサンプルデータ。実データ（journal_entries）が取得できない間、
 // または未ログイン・Supabase未設定の場合のフォールバック表示に使う
@@ -12,12 +13,13 @@ export const SAMPLE_ENTITY_NAME = "今ごえん合同会社";
 const SAMPLE_CAPITAL_STOCK = 1_000_000; // 資本金（前期繰越高・貸方）
 const SAMPLE_OPENING_CASH = 3_000_000; // 期首現金残高（前期繰越高・借方）
 
-// 注: 期首残高（前期繰越高）は company_opening_balances テーブル（ステージ①で追加済み）
-// から本来取得すべきだが、それを実際の貸借対照表計算に反映する設計は
-// docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md のステージ③
-// （balanceSheetForm.ts等の再設計）の範囲。本ページはステージ②の範囲内に留め、
-// 期首残高は従来どおりサンプル値のまま、当期の取引明細（journal_entries由来）のみを
-// 実データに差し替える。
+// 注: 前期繰越高（資本金・期首現金残高・期首繰越利益剰余金）は company_opening_balances /
+// tenants.capital_amount から取得する（lib/db/balanceSheetData.tsのステージ③実装）。
+// このページの試算表は deriveCategorizedTransactions() が射影した単式簿記近似の
+// CategorizedTransaction[] を集計しているため（固定資産購入・借入金返済の元本部分等、
+// 資産・負債の両建て仕訳は射影対象外）、固定資産・借入金そのものを独立の科目残高としては
+// まだ表示できない。あくまで「現金及び預金・資本金・繰越利益剰余金」の前期繰越高を
+// 実データに揃えるところまでがこのページの対象（残りは今後の拡張課題）。
 
 const SAMPLE_ENTRIES: CategorizedTransaction[] = [
   {
@@ -77,15 +79,22 @@ const SAMPLE_ENTRIES: CategorizedTransaction[] = [
 export function TrialBalanceClient() {
   const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_ENTRIES);
 
-  // balanceSheetForm.ts / equityChangeForm.tsと同じ簡易化：期首時点は
-  // 「資産＝現金のみ・負債ゼロ」と仮定し、期首繰越利益剰余金＝期首現金－資本金として
-  // 前期繰越高を組み立てる。これにより前期繰越高段階から借方合計＝貸方合計になる。
-  const openingRetainedEarnings = SAMPLE_OPENING_CASH - SAMPLE_CAPITAL_STOCK;
+  const { data: bsData, isSampleData: isSampleBalanceSheetData } = useBalanceSheetData({
+    start: transactions[0]?.date ?? "-",
+    end: transactions[transactions.length - 1]?.date ?? "-",
+  });
+
+  const capitalStock = bsData?.capitalStock ?? SAMPLE_CAPITAL_STOCK;
+  const openingCash = bsData?.openingCash ?? SAMPLE_OPENING_CASH;
+  // company_opening_balances.retained_earnings が取得できた場合はそのまま使用する。
+  // 未投入（サンプル値）の場合のみ、balanceSheetForm.ts等と同じ後方互換の単純化
+  // （期首は資産＝現金のみ・負債ゼロ）で openingCash - capitalStock から逆算する。
+  const openingRetainedEarnings = bsData?.openingRetainedEarnings ?? openingCash - capitalStock;
 
   const tb = buildTrialBalance(transactions, {
     openingBalances: {
-      [DEFAULT_CASH_ACCOUNT]: { debit: SAMPLE_OPENING_CASH },
-      資本金: { credit: SAMPLE_CAPITAL_STOCK },
+      [DEFAULT_CASH_ACCOUNT]: { debit: openingCash },
+      資本金: { credit: capitalStock },
       繰越利益剰余金: { credit: openingRetainedEarnings },
     },
   });
@@ -95,7 +104,9 @@ export function TrialBalanceClient() {
       <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl -mt-6">
         {isSampleData
           ? `${SAMPLE_ENTITY_NAME}を想定したサンプルデータで当期の取引を表示しています（前期繰越高もサンプル値）。`
-          : "記帳された実データ（当期の取引）を表示しています（前期繰越高は現時点ではサンプル値のままです）。"}
+          : isSampleBalanceSheetData
+            ? "記帳された実データ（当期の取引）を表示しています（期首残高が未投入のため、前期繰越高は現時点ではサンプル値のままです）。"
+            : "記帳された実データ（当期の取引・前期繰越高とも）を表示しています。"}
       </p>
       <TrialBalanceTable tb={tb} />
     </>

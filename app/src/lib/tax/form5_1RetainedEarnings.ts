@@ -16,6 +16,16 @@ import { Form5_2Result, TaxTypeRow } from "./form5_2TaxPaymentStatus";
 //   - row31「差引合計額」＝ 上記の合計（＝利益積立金額の合計）
 //   - Ⅱ「資本金等の額の計算」＝ 資本金（増減なしの前提。equityChangeForm.tsと同じ簡易化）
 //
+// 期首繰越額の取得元について（ステージ③で確認・整合済み）:
+//   row25「繰越損益金」の期首現在額は inputs.equityChange.retainedEarnings.openingBalance を
+//   そのまま使用する。equityChangeForm.ts はステージ③の再設計により、
+//   company_opening_balances.retained_earnings を openingRetainedEarnings として明示的に
+//   受け取った場合はそれをそのまま採用する（省略時のみ openingCash - capitalStock による
+//   後方互換フォールバックを使う）。したがって、呼び出し側が buildEquityChangeForm() に
+//   company_opening_balances.retained_earnings を渡してさえいれば、この別表五（一）の
+//   期首繰越額も自動的に実データを反映する。form5_1RetainedEarnings.ts 自体が
+//   company_opening_balances を直接参照する必要はない（equityChangeForm.ts が唯一の窓口）。
+//
 // スコープ外（常に0円・空欄として扱う）:
 //   - row1〜24（利益準備金・積立金等の個別の税務調整項目、未収還付税金）。
 //     corporateForms.ts で「別表十四〜十六等の付表・調整は行っていない簡易版」と
