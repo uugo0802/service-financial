@@ -7,6 +7,7 @@ import {
   buildPaymentReportFromTransactions,
 } from "@/lib/tax/paymentReportForm";
 import { PaymentReportTable } from "@/components/PaymentReportTable";
+import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 
 // このページ専用のサンプルデータ。支払調書の動作確認用で、他ページ（general-ledger等）の
 // サンプルデータとはあえて切り離している。同一支払先への複数回の支払（合算すると
@@ -94,10 +95,11 @@ const FISCAL_YEARS = [2025, 2026, 2027];
 
 export default function PaymentReportPage() {
   const [fiscalYear, setFiscalYear] = useState<number>(2026);
+  const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_ENTRIES);
 
   const lines = useMemo(
-    () => buildPaymentReportFromTransactions(SAMPLE_ENTRIES, { fiscalYear }),
-    [fiscalYear]
+    () => buildPaymentReportFromTransactions(transactions, { fiscalYear }),
+    [transactions, fiscalYear]
   );
 
   return (
@@ -134,6 +136,9 @@ export default function PaymentReportPage() {
               給与所得の源泉徴収票
             </Link>
             をご利用ください。
+          </p>
+          <p className="text-xs text-stone-400">
+            {isSampleData ? "現在はサンプルデータを表示しています。" : "記帳された実データを表示しています。"}
           </p>
 
           <div className="mt-6 border border-stone-300 bg-white p-5 flex flex-col gap-4">
