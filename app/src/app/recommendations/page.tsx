@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { CrossSellRecommendations } from "@/components/CrossSellRecommendations";
 import { CrossSellInputs, getCrossSellRecommendations } from "@/lib/recommendations/crossSell";
@@ -28,7 +29,7 @@ export default function RecommendationsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-12 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-8">
         <div>
           <h1 className="font-serif text-2xl sm:text-3xl leading-tight">関連サービスの参考情報</h1>
           <p className="text-stone-600 mt-3 text-sm leading-relaxed">
@@ -38,7 +39,7 @@ export default function RecommendationsPage() {
         </div>
 
         <CrossSellRecommendations items={items} />
-      </main>
+      </PageContainer>
     </div>
   );
 }

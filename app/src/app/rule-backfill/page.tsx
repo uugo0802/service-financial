@@ -1,4 +1,5 @@
 "use client";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { BulkReapplyRulesPanel } from "@/components/BulkReapplyRulesPanel";
 import type { CategorizedTransaction } from "@/lib/categorize/engine";
@@ -78,7 +79,7 @@ export default function RuleBackfillPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10 flex flex-col gap-6">
+      <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">カテゴライズルールの一括再適用（バックフィル）</h1>
           <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
@@ -94,7 +95,7 @@ export default function RuleBackfillPage() {
         <p className="text-xs text-stone-400">
           この画面は開発中のプロトタイプです。表示している取引・ユーザー辞書ルールはサンプルデータであり、適用結果はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
         </p>
-      </main>
+      </PageContainer>
     </div>
   );
 }

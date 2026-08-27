@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 import { StatutoryReportSummaryClient } from "./StatutoryReportSummaryClient";
 
 export const metadata: Metadata = {
@@ -20,7 +21,11 @@ export default function StatutoryReportSummaryPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10 flex flex-col gap-8 print:max-w-none print:px-0 print:py-0">
+      <DocumentPreviewFrame
+        as="main"
+        maxWidth="4xl"
+        className="flex flex-col gap-8 print:max-w-none print:px-0 print:py-0"
+      >
         <section className="print:hidden">
           <h1 className="text-2xl font-semibold mb-2">法定調書合計表（下書き）</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 mb-2 max-w-2xl leading-relaxed">
@@ -51,7 +56,7 @@ export default function StatutoryReportSummaryPage() {
         </section>
 
         <StatutoryReportSummaryClient />
-      </main>
+      </DocumentPreviewFrame>
 
       <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4 print:hidden">
         <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

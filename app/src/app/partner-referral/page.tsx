@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PartnerReferralForm } from "@/components/PartnerReferralForm";
@@ -21,7 +22,7 @@ export default function PartnerReferralPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-12 flex flex-col gap-12">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-12">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">提携パートナーのご紹介</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
@@ -54,7 +55,7 @@ export default function PartnerReferralPage() {
           </div>
           <PartnerReferralForm />
         </section>
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
         <div className="mx-auto max-w-3xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

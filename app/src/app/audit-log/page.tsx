@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { AuditLogRow } from "@/lib/db/supabaseClient";
 import { listAuditLogs, filterAuditLogs, getDistinctEntityTypes, describeEntityType } from "@/lib/db/auditLogs";
@@ -109,7 +110,7 @@ export default async function AuditLogPage({
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-12 flex flex-col gap-6">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="font-serif text-2xl sm:text-3xl">監査ログ</h1>
           <p className="text-stone-600 text-sm leading-relaxed max-w-2xl">
@@ -176,7 +177,7 @@ export default async function AuditLogPage({
         </form>
 
         <AuditLogTable logs={filteredLogs} />
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white mt-4">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

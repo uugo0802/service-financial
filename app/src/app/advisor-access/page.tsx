@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdvisorAccessPanel } from "@/components/AdvisorAccessPanel";
@@ -44,7 +45,7 @@ export default function AdvisorAccessPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-6">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">顧問税理士への閲覧共有</h1>
           <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
@@ -74,7 +75,7 @@ export default function AdvisorAccessPage() {
         <Link href="/settings" className="text-xs text-stone-500 underline underline-offset-2 self-start">
           ← 事業者設定に戻る
         </Link>
-      </main>
+      </PageContainer>
     </div>
   );
 }

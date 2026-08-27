@@ -1,4 +1,6 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useMemo, useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
@@ -115,7 +117,7 @@ export default function BudgetPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-10">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-10">
         <section>
           <h1 className="text-2xl font-semibold mb-2">経費科目ごとの月間予算 vs 実績</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 max-w-2xl leading-relaxed">
@@ -160,7 +162,7 @@ export default function BudgetPage() {
           <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
             科目は記帳の自動仕訳ルール（categorize辞書）に登録済みのものと同じです。0円のまま・未入力にしておくと「支出しない想定の枠」として扱われ、少額でも実績が発生すると超過フラグが立ちます。
           </p>
-          <div className="overflow-x-auto">
+          <TableScrollArea>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
@@ -199,7 +201,7 @@ export default function BudgetPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         </section>
 
         <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
@@ -250,7 +252,7 @@ export default function BudgetPage() {
             </div>
           )}
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }

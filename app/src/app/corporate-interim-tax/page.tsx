@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import { CorporateInterimTaxForm } from "@/components/CorporateInterimTaxForm";
 
 export default function CorporateInterimTaxPage() {
@@ -12,7 +13,7 @@ export default function CorporateInterimTaxPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">法人の中間申告 概算計算</h1>
           <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
@@ -54,7 +55,7 @@ export default function CorporateInterimTaxPage() {
             ご自身の判断と責任で申告・納付を行ってください。
           </p>
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
 
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { estimateForMicroCorp } from "@/lib/tax/corporateEstimate";
@@ -162,7 +163,7 @@ export function FinancialStatementsClient() {
           : "固定資産・売掛金・借入金等、現金以外の資産負債はこのアプリでは反映されません。"}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
@@ -186,9 +187,9 @@ export function FinancialStatementsClient() {
               </tr>
             </tbody>
           </table>
-        </div>
+        </TableScrollArea>
         <div className="flex flex-col gap-4">
-          <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+          <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
@@ -216,8 +217,8 @@ export function FinancialStatementsClient() {
                 </tr>
               </tbody>
             </table>
-          </div>
-          <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+          </TableScrollArea>
+          <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
@@ -239,7 +240,7 @@ export function FinancialStatementsClient() {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         </div>
       </div>
       <p className={`text-xs mt-3 ${balanceSheet.balanced ? "text-stone-400" : "text-red-700"}`}>

@@ -1,4 +1,6 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useMemo, useState } from "react";
 import { EstimatedTaxReminder } from "@/components/EstimatedTaxReminder";
@@ -35,7 +37,7 @@ export default function EstimatedTaxPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">予定納税リマインダー</h1>
           <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
@@ -115,7 +117,7 @@ export default function EstimatedTaxPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-3">判定結果の内訳</h2>
-          <div className="border border-stone-300 bg-white overflow-x-auto">
+          <TableScrollArea innerClassName="border border-stone-300 bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
@@ -148,7 +150,7 @@ export default function EstimatedTaxPage() {
                 </tr>
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         </section>
 
         <section className="border-t border-stone-300 pt-6">
@@ -160,7 +162,7 @@ export default function EstimatedTaxPage() {
             国税庁・税務署・税理士等の専門家にご確認ください。
           </p>
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }

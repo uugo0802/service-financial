@@ -1,4 +1,5 @@
 "use client";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -139,7 +140,7 @@ export default function NotificationsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">週次アクティビティダイジェスト</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
@@ -231,7 +232,7 @@ export default function NotificationsPage() {
             申告期限の情報は一般的な原則ルールに基づく参考値であり、個別の税務相談ではありません。
           </p>
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ExpenseAllocationCalculator } from "@/components/ExpenseAllocationCalculator";
@@ -21,7 +22,7 @@ export default function ExpenseAllocationPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-12 flex flex-col gap-10">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-10">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">家事按分の計算</h1>
           <p className="text-sm text-stone-600 leading-relaxed">
@@ -57,7 +58,7 @@ export default function ExpenseAllocationPage() {
         <section className="border border-stone-300 bg-white p-6">
           <MileageAllocationCalculator />
         </section>
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PaymentReminderDraftPanel } from "@/components/PaymentReminderDraftPanel";
@@ -74,7 +75,7 @@ export default function PaymentRemindersPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">支払い督促メールの下書きを作成する</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
@@ -91,7 +92,7 @@ export default function PaymentRemindersPage() {
         </section>
 
         <PaymentReminderDraftPanel overdueInvoices={summary.overdueInvoices} />
-      </main>
+      </PageContainer>
     </div>
   );
 }

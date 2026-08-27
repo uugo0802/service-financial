@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SideIncomeEstimateForm } from "@/components/SideIncomeEstimateForm";
@@ -20,7 +21,7 @@ export default function SideIncomeEstimatePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-12 flex flex-col gap-10">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-10">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">給与所得 + 事業所得（副業）の合算税額シミュレーション</h1>
           <p className="text-sm text-stone-600 leading-relaxed">
@@ -56,7 +57,7 @@ export default function SideIncomeEstimatePage() {
             <li>住民税・事業税は別途計算されるため、このページの金額には含まれていません。</li>
           </ul>
         </section>
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

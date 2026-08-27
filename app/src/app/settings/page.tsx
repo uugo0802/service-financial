@@ -1,4 +1,5 @@
 "use client";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -37,7 +38,7 @@ export default function SettingsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-6">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">事業者設定</h1>
           <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
@@ -64,7 +65,7 @@ export default function SettingsPage() {
             この画面は開発中のプロトタイプです。保存内容はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
           </p>
         )}
-      </main>
+      </PageContainer>
     </div>
   );
 }

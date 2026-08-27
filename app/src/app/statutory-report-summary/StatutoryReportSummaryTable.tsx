@@ -1,3 +1,4 @@
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
 import { StatutoryReportSummaryForm } from "@/lib/tax/statutoryReportSummaryForm";
 
 // ------------------------------------------------------------------
@@ -62,7 +63,7 @@ export function StatutoryReportSummaryTable({ form }: { form: StatutoryReportSum
               {section.supported ? "該当する集計対象データがありません。" : "本アプリではこの区分の下書きを作成できません。"}
             </p>
           ) : (
-            <div className="overflow-x-auto">
+            <TableScrollArea>
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-stone-400 dark:border-stone-600 text-left text-stone-500 dark:text-stone-400 text-xs">
@@ -99,7 +100,7 @@ export function StatutoryReportSummaryTable({ form }: { form: StatutoryReportSum
                   </tr>
                 </tfoot>
               </table>
-            </div>
+            </TableScrollArea>
           )}
 
           {section.notes.length > 0 && (

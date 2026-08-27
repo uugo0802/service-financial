@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { buildYearArchive, YearlyFilingRecord } from "@/lib/tax/yearArchive";
 import { YearArchiveTable } from "@/components/YearArchiveTable";
@@ -65,7 +66,7 @@ export default function HistoryPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-12 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="font-serif text-2xl sm:text-3xl">過去の記帳・申告アーカイブ</h1>
           <p className="text-stone-600 text-sm leading-relaxed max-w-2xl">
@@ -88,7 +89,7 @@ export default function HistoryPage() {
             ))}
           </div>
         </div>
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white mt-4">
         <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

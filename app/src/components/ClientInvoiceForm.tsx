@@ -11,6 +11,7 @@ import {
 } from "@/lib/invoice/clientInvoice";
 import { InvoiceNumberBadge } from "@/components/InvoiceNumberBadge";
 import { InvoicePrintLayout } from "@/components/InvoicePrintLayout";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
@@ -122,7 +123,11 @@ export function ClientInvoiceForm() {
   }
 
   if (printingInvoice) {
-    return <InvoicePrintLayout invoice={printingInvoice} onClose={() => setPrintingInvoice(null)} />;
+    return (
+      <DocumentPreviewFrame maxWidth="3xl">
+        <InvoicePrintLayout invoice={printingInvoice} onClose={() => setPrintingInvoice(null)} />
+      </DocumentPreviewFrame>
+    );
   }
 
   return (

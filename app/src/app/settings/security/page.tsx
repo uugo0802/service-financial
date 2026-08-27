@@ -1,4 +1,5 @@
 "use client";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -67,7 +68,7 @@ export default function SecuritySettingsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-6">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">二要素認証（2FA）</h1>
           <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
@@ -131,7 +132,7 @@ export default function SecuritySettingsPage() {
         <Link href="/settings" className="text-xs text-stone-500 underline underline-offset-2 self-start">
           ← 事業者設定に戻る
         </Link>
-      </main>
+      </PageContainer>
     </div>
   );
 }

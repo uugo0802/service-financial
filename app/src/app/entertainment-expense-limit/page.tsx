@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { EntertainmentExpenseLimitCalculator } from "@/components/EntertainmentExpenseLimitCalculator";
 
@@ -19,7 +20,7 @@ export default function EntertainmentExpenseLimitPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">交際費等の損金不算入額計算機</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -39,7 +40,7 @@ export default function EntertainmentExpenseLimitPage() {
         </section>
 
         <EntertainmentExpenseLimitCalculator />
-      </main>
+      </PageContainer>
     </div>
   );
 }

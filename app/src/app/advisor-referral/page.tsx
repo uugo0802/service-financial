@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdvisorReferralForm } from "@/components/AdvisorReferralForm";
@@ -20,7 +21,7 @@ export default function AdvisorReferralPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-12 flex flex-col gap-12">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-12">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">提携税理士への紹介・有償相談</h1>
           <p className="text-sm text-stone-600 leading-relaxed">
@@ -54,7 +55,7 @@ export default function AdvisorReferralPage() {
           </div>
           <AdvisorReferralForm />
         </section>
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white">
         <div className="mx-auto max-w-3xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

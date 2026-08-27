@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FamilyEmployeeSalaryForm } from "@/components/FamilyEmployeeSalaryForm";
@@ -20,7 +21,7 @@ export default function FamilyEmployeeSalaryPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">青色事業専従者給与のチェック</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -45,7 +46,7 @@ export default function FamilyEmployeeSalaryPage() {
         </section>
 
         <FamilyEmployeeSalaryForm />
-      </main>
+      </PageContainer>
     </div>
   );
 }

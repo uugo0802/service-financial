@@ -1,4 +1,5 @@
 "use client";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -293,7 +294,7 @@ export default function SearchPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">取引・証憑・取引先を横断検索する</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
@@ -394,7 +395,7 @@ export default function SearchPage() {
             )}
           </div>
         )}
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white mt-4 dark:border-stone-700 dark:bg-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { PageContainer } from "@/components/ui/PageContainer";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
 import { PRICING_PLANS } from "@/lib/pricing/plans";
 import { PrintableField } from "@/lib/export/printLayout";
 import {
@@ -152,11 +155,9 @@ export default function BillingSettingsPage() {
 
   if (printingReceipt) {
     return (
-      <div className="bg-stone-50 text-stone-900 min-h-screen">
-        <main className="mx-auto max-w-3xl px-6 py-10">
-          <ReceiptPrintView entry={printingReceipt} onClose={() => setPrintingReceiptId(null)} />
-        </main>
-      </div>
+      <DocumentPreviewFrame as="main" maxWidth="3xl">
+        <ReceiptPrintView entry={printingReceipt} onClose={() => setPrintingReceiptId(null)} />
+      </DocumentPreviewFrame>
     );
   }
 
@@ -171,7 +172,7 @@ export default function BillingSettingsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-6">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">プラン・お支払い</h1>
           <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
@@ -232,7 +233,7 @@ export default function BillingSettingsPage() {
           {!summary.hasHistory && <p className="text-sm text-stone-500">まだ請求履歴がありません。</p>}
 
           {summary.hasHistory && (
-            <div className="overflow-x-auto">
+            <TableScrollArea>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
@@ -265,7 +266,7 @@ export default function BillingSettingsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableScrollArea>
           )}
         </section>
 
@@ -276,7 +277,7 @@ export default function BillingSettingsPage() {
         <Link href="/settings" className="text-xs text-stone-500 underline underline-offset-2 self-start">
           ← 事業者設定に戻る
         </Link>
-      </main>
+      </PageContainer>
     </div>
   );
 }

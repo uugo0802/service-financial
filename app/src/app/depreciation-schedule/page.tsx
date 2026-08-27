@@ -4,6 +4,7 @@ import { Asset, FiscalPeriod } from "@/lib/tax/depreciation";
 import { buildDepreciationScheduleForm } from "@/lib/tax/depreciationScheduleForm";
 import { DepreciationScheduleTable } from "@/components/DepreciationScheduleTable";
 import { PrintableStatementLayout } from "@/components/PrintableStatementLayout";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 import { formatFiscalYearRange } from "@/lib/export/printLayout";
 
 export const metadata: Metadata = {
@@ -80,7 +81,7 @@ export default function DepreciationSchedulePage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <DocumentPreviewFrame as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">別表十六（一）減価償却の計算に関する明細書</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
@@ -110,7 +111,7 @@ export default function DepreciationSchedulePage() {
           printButtonLabel="印刷 / PDFで保存（別表十六（一））"
           sections={[{ id: "depreciation-schedule", content: <DepreciationScheduleTable form={form} /> }]}
         />
-      </main>
+      </DocumentPreviewFrame>
 
       <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

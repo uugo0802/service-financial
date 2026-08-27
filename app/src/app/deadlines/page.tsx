@@ -1,4 +1,6 @@
 "use client";
+import { TableScrollArea } from "@/components/ui/TableScrollArea";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useCallback, useMemo, useState } from "react";
 import { DeadlineReminderBanner } from "@/components/DeadlineReminderBanner";
@@ -47,7 +49,7 @@ export default function DeadlinesPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">申告期限リマインダー</h1>
           <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
@@ -126,7 +128,7 @@ export default function DeadlinesPage() {
               カレンダーに追加 (.ics)
             </button>
           </div>
-          <div className="border border-stone-300 bg-white overflow-x-auto">
+          <TableScrollArea innerClassName="border border-stone-300 bg-white">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
@@ -149,7 +151,7 @@ export default function DeadlinesPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScrollArea>
         </section>
 
         <section className="border-t border-stone-300 pt-6">
@@ -159,7 +161,7 @@ export default function DeadlinesPage() {
             土日祝日により実際の期限は前後する場合があります。個別の状況に応じた判断は必ず国税庁・お住まいの自治体・税理士等の専門家にご確認ください。
           </p>
         </section>
-      </main>
+      </PageContainer>
     </div>
   );
 }

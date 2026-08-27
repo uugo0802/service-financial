@@ -1,3 +1,4 @@
+import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DocumentWithTransaction } from "@/lib/documents/documentSearch";
@@ -97,7 +98,7 @@ export default function DocumentsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2 print:hidden">
           <h1 className="text-2xl font-semibold">証憑（レシート・請求書）を検索する</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
@@ -109,7 +110,7 @@ export default function DocumentsPage() {
         </div>
 
         <DocumentSearchForm documents={SAMPLE_DOCUMENTS} />
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white mt-4 print:hidden dark:border-stone-700 dark:bg-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">

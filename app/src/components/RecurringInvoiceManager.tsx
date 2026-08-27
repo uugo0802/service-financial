@@ -24,6 +24,7 @@ import {
   validateRecurringInvoiceTemplateDraft,
 } from "@/lib/invoice/recurringInvoice";
 import { InvoicePrintLayout } from "@/components/InvoicePrintLayout";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 
 // ------------------------------------------------------------------
 // 定期請求書（サブスクリプション/顧問料クライアント向け）テンプレートの管理と、
@@ -127,7 +128,11 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
   }
 
   if (printingInvoice) {
-    return <InvoicePrintLayout invoice={printingInvoice} onClose={() => setPrintingInvoice(null)} />;
+    return (
+      <DocumentPreviewFrame maxWidth="3xl">
+        <InvoicePrintLayout invoice={printingInvoice} onClose={() => setPrintingInvoice(null)} />
+      </DocumentPreviewFrame>
+    );
   }
 
   return (

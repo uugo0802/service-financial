@@ -1,4 +1,5 @@
 "use client";
+import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useMemo, useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
@@ -133,7 +134,7 @@ export default function GeneralLedgerPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
+      <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">総勘定元帳</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -198,7 +199,7 @@ export default function GeneralLedgerPage() {
         <section>
           <GeneralLedgerTable result={ledger} />
         </section>
-      </main>
+      </PageContainer>
 
       <footer className="border-t border-stone-300 bg-white mt-4">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 leading-relaxed">

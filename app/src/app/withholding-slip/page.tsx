@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { WithholdingSlipForm } from "@/components/WithholdingSlipForm";
+import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 
 export const metadata: Metadata = {
   title: "給与所得の源泉徴収票（下書き）｜決算書作成から税務申告までワンクリック（スグル）",
@@ -20,7 +21,11 @@ export default function WithholdingSlipPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-10 flex flex-col gap-8 print:max-w-none print:px-0 print:py-0">
+      <DocumentPreviewFrame
+        as="main"
+        maxWidth="4xl"
+        className="flex flex-col gap-8 print:max-w-none print:px-0 print:py-0"
+      >
         <section className="print:hidden">
           <h1 className="text-2xl font-semibold mb-2">給与所得の源泉徴収票（下書き）</h1>
           <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
@@ -45,7 +50,7 @@ export default function WithholdingSlipPage() {
         </section>
 
         <WithholdingSlipForm />
-      </main>
+      </DocumentPreviewFrame>
     </div>
   );
 }
