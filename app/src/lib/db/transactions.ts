@@ -1,4 +1,5 @@
 import { getSupabaseClient, TransactionRow } from "./supabaseClient";
+import { getMyTenantUser } from "./tenants";
 
 export interface NewTransactionInput {
   date: string;
@@ -117,5 +118,30 @@ export async function deleteTransaction(tenantId: string, id: string): Promise<v
 
   if (error) {
     throw new Error(`取引データの削除に失敗しました: ${error.message}`);
+  }
+}
+
+// ------------------------------------------------------------------
+// ログイン中ユーザーの所属テナントの取引明細（transactions）を取得する。
+// hooks/useLedgerTransactions.ts が呼ぶ lib/db/ledgerTransactions.ts の
+// loadLedgerTransactionsForCurrentTenant() と同じ方針: 呼び出し側（各ページ）は
+// null が返ってきた場合にそのページ専用の SAMPLE_TRANSACTIONS へフォールバックする。
+// null を返すケース:
+//   - Supabase未設定（getSupabaseClient()が例外を投げる）
+//   - 未ログイン、またはログイン中ユーザーの所属テナントが見つからない
+//   - 取得自体には成功したが、該当テナントの取引明細が1件もない
+//   - 取得中に何らかのエラーが発生した
+// ------------------------------------------------------------------
+export async function loadTransactionsForCurrentTenant(): Promise<TransactionRow[] | null> {
+  try {
+    const tenantUser = await getMyTenantUser();
+    if (!tenantUser) return null;
+
+    const rows = await listTransactions(tenantUser.tenant_id);
+    if (rows.length === 0) return null;
+
+    return rows;
+  } catch {
+    return null;
   }
 }
