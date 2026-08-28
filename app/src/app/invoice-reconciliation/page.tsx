@@ -1,15 +1,21 @@
+"use client";
+
 import { PageContainer } from "@/components/ui/PageContainer";
-import type { Metadata } from "next";
 import Link from "next/link";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { ReceivableInvoiceInput } from "@/lib/invoice/receivables";
 import { InvoicePaymentMatchPanel } from "@/components/InvoicePaymentMatchPanel";
+import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 
-export const metadata: Metadata = {
-  title: "入金消込（請求書マッチング）｜決算書作成から税務申告までワンクリック（スグル）",
-  description:
-    "取り込んだ銀行の入金取引と、発行済みの未収請求書を自動で突き合わせ、どの入金がどの請求書への支払いかの候補を確認できるツール（開発中プロトタイプ）。",
-};
+// このページは`next/dist/docs/01-app/03-api-reference/04-functions/generate-metadata.md`が
+// 定める通り「metadata exportはServer Componentのみ」という制約があるため、
+// useLedgerTransactions（Client Componentフック）を使うこのファイル自体では
+// 静的な`export const metadata`を持てなくなった（不足分はルートlayout.tsxの
+// デフォルトmetadataにフォールバックする）。reconcile/trial-balance等のように
+// ページ専用のClientコンポーネントファイルへ分離する手もあるが、本スペックの担当範囲が
+// このpage.tsx 1ファイルに限定されているため、ここでは分離せずページ全体をClient
+// Componentにする方針を採った（要ユーザー確認: ページ専用metadataの復活を優先する場合は
+// 別ファイルへの分離が必要）。
 
 // このページ専用のサンプルデータ。実際のアップロード・請求書発行フローとは独立した
 // 自己完結型のプロトタイプ画面であり、Supabase等の実データとは連携しない（reconcile/page.tsx と同様の方針）。
@@ -67,6 +73,9 @@ const SAMPLE_INVOICES: ReceivableInvoiceInput[] = [
   },
 ];
 
+// SAMPLE_INVOICESとは異なり、こちらは対応するDBテーブル（journal_entries）が既に実装済みのため、
+// useLedgerTransactions経由で実データに接続する（reconcile/trial-balance等と同じパターン）。
+// 実データ取得前・未ログイン・Supabase未設定時のフォールバック表示として引き続き利用する。
 const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = [
   {
     id: "sample-tx-1",
@@ -121,6 +130,8 @@ const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = [
 ];
 
 export default function InvoiceReconciliationPage() {
+  const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
+
   return (
     <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
       <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
@@ -148,12 +159,23 @@ export default function InvoiceReconciliationPage() {
             それぞれ誤って「一致」と扱わないよう区別しています。
           </p>
           <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
-            本ページは開発中のプロトタイプであり、サンプルデータを使用しています。実際のアップロード・請求書発行フローとは連携していません。
+            発行済み請求書のデータは本ページ専用のサンプルであり、実際の請求書発行フローとは連携していません。
+          </p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
+            {isSampleData
+              ? "銀行の入金取引データも、現時点ではサンプルデータを表示しています。記帳データが登録されると、自動的に実際のデータへ切り替わります。"
+              : "銀行の入金取引データは、記帳された実データ（当期の取引）を表示しています。"}
           </p>
         </section>
 
         <section>
-          <InvoicePaymentMatchPanel invoices={SAMPLE_INVOICES} transactions={SAMPLE_TRANSACTIONS} />
+          {/*
+            InvoicePaymentMatchPanelはmatchInvoicePayments()の結果をuseMemo(..., [invoices, transactions])で
+            算出しており（BulkReapplyRulesPanelのようにpropsをuseStateの初期値として一度だけ取り込む作りでは
+            ない）、transactionsが変化すれば自動的に再計算される。そのためrule-backfill/page.tsxのような
+            isSampleDataをkeyにした強制リマウントは不要と判断した。
+          */}
+          <InvoicePaymentMatchPanel invoices={SAMPLE_INVOICES} transactions={transactions} />
         </section>
       </PageContainer>
 
