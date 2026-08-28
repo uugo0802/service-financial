@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
@@ -12,6 +12,34 @@ import DashboardPage from "./page";
 vi.mock("@/hooks/useLedgerTransactions", () => ({
   useLedgerTransactions: vi.fn(),
 }));
+
+// Vitest 4のjsdom環境はpopulateGlobal時にjsdom自体が実装するlocalStorageを
+// 引き継がない既知のギャップがあり、window.localStorageがundefinedのままになる
+// （lib/settings/themePreference.test.ts等が元々window全体を手動スタブしているのも
+// 同じ理由）。WidgetLayoutControls.tsxがgetItem/setItem/clearを使うため最小限スタブする。
+function createLocalStorageStub() {
+  const store = new Map<string, string>();
+  return {
+    getItem: (key: string) => store.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      store.set(key, value);
+    },
+    removeItem: (key: string) => {
+      store.delete(key);
+    },
+    clear: () => {
+      store.clear();
+    },
+  };
+}
+
+beforeEach(() => {
+  Object.defineProperty(window, "localStorage", {
+    value: createLocalStorageStub(),
+    configurable: true,
+    writable: true,
+  });
+});
 
 // このプロジェクトはvitest.config.tsでtest.globalsを有効化していないため、
 // @testing-library/reactの自動クリーンアップが効かない（AppShell.test.tsxと同じ理由で明示的に行う）。
