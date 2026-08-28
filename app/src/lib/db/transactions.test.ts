@@ -1,11 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getSupabaseClient, TransactionRow } from "./supabaseClient";
-import { createTransaction, deleteTransaction, getTransaction, listTransactions, updateTransaction } from "./transactions";
+import { getSupabaseClient, TenantUser, TransactionRow } from "./supabaseClient";
+import {
+  createTransaction,
+  deleteTransaction,
+  getTransaction,
+  listTransactions,
+  loadTransactionsForCurrentTenant,
+  updateTransaction,
+} from "./transactions";
+import { getMyTenantUser } from "./tenants";
 
 vi.mock("./supabaseClient", async () => {
   const actual = await vi.importActual<typeof import("./supabaseClient")>("./supabaseClient");
   return { ...actual, getSupabaseClient: vi.fn() };
 });
+
+vi.mock("./tenants", () => ({ getMyTenantUser: vi.fn() }));
 
 /**
  * supabase-js のクエリビルダーを模した最小限のチェーン可能モック。
@@ -149,5 +159,54 @@ describe("transactions CRUD", () => {
     vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
 
     await expect(deleteTransaction("tenant-1", "tx-1")).rejects.toThrow(/取引データの削除に失敗しました/);
+  });
+});
+
+const tenantUser: TenantUser = {
+  user_id: "user-1",
+  tenant_id: "tenant-1",
+  role: "owner",
+  created_at: "2026-01-01T00:00:00Z",
+};
+
+describe("loadTransactionsForCurrentTenant", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns null when there is no logged-in tenant user (unconfigured/unauthenticated)", async () => {
+    vi.mocked(getMyTenantUser).mockResolvedValue(null);
+
+    await expect(loadTransactionsForCurrentTenant()).resolves.toBeNull();
+    expect(getSupabaseClient).not.toHaveBeenCalled();
+  });
+
+  it("returns null when the tenant has no transactions yet", async () => {
+    vi.mocked(getMyTenantUser).mockResolvedValue(tenantUser);
+    const builder = createBuilder({ data: [], error: null });
+    vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
+
+    await expect(loadTransactionsForCurrentTenant()).resolves.toBeNull();
+  });
+
+  it("returns null (rather than throwing) when the fetch fails", async () => {
+    vi.mocked(getMyTenantUser).mockResolvedValue(tenantUser);
+    const builder = createBuilder({ data: null, error: { message: "boom" } });
+    vi.mocked(getSupabaseClient).mockReturnValue({ from: vi.fn(() => builder) } as never);
+
+    await expect(loadTransactionsForCurrentTenant()).resolves.toBeNull();
+  });
+
+  it("returns the tenant's transactions scoped by tenant_id when data exists", async () => {
+    vi.mocked(getMyTenantUser).mockResolvedValue(tenantUser);
+    const builder = createBuilder({ data: [sampleRow], error: null });
+    const from = vi.fn(() => builder);
+    vi.mocked(getSupabaseClient).mockReturnValue({ from } as never);
+
+    const result = await loadTransactionsForCurrentTenant();
+
+    expect(result).toEqual([sampleRow]);
+    expect(from).toHaveBeenCalledWith("transactions");
+    expect(builder.eq).toHaveBeenCalledWith("tenant_id", "tenant-1");
   });
 });
