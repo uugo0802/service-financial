@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CategorizedTransaction, needsEscalation } from "@/lib/categorize/engine";
 import { reconcileBankBalance } from "@/lib/reconcile/bankReconciliation";
 import { matchInvoicePayments } from "@/lib/reconcile/invoicePaymentMatching";
 import { ReceivableInvoiceInput } from "@/lib/invoice/receivables";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { getMyTenantUser } from "@/lib/db/tenants";
+import { listInvoices } from "@/lib/db/invoices";
 import {
   buildMonthlyCloseChecklist,
   MonthlyCloseChecklistItemStatus,
@@ -16,8 +18,8 @@ import {
 // （reconcile/trial-balance等と同じuseLedgerTransactionsフック経由）。
 // 意図的に、うち2件を低信頼度（要確認）の分類にして「未確定の仕訳」が残っている状態を
 // 再現できるようにしている。
-// 一方、請求書データ（SAMPLE_INVOICES、下記）は対応するDBテーブル（invoices）が
-// 未実装のため、引き続きこのパネル専用のサンプルデータのまま
+// 請求書データ（SAMPLE_INVOICES、下記）は、invoices テーブル（lib/db/invoices.ts）接続後は
+// テナント未解決（未ログイン・Supabase未設定）時のフォールバック表示として使う。
 // （未入金・端数入金を混在させて「入金消込」の要確認状態を再現できるようにしている）。
 const TARGET_MONTH = "2026-07";
 
@@ -132,8 +134,9 @@ const labelClass = "block text-xs text-stone-500 dark:text-stone-400 mb-1";
  * 実際に計算した結果を使う（＝実際のロジックから状態を導出する）。取引データは
  * useLedgerTransactionsフック経由で記帳済みの実データ（journal_entries）を取得し、
  * 取得できるまで・取得できなかった場合はSAMPLE_TRANSACTIONSにフォールバックする
- * （reconcile/trial-balance等と同じパターン）。請求書データ（SAMPLE_INVOICES）は
- * 対応するDBテーブル（invoices）が未実装のため、引き続きサンプルデータのまま。
+ * （reconcile/trial-balance等と同じパターン）。請求書データも同様にlib/db/invoices.ts
+ * 経由で実データに接続し、取得できるまで・取得できなかった場合はSAMPLE_INVOICESに
+ * フォールバックする。
  * 年度確定ロックの状態のみ、本ページ単体のデモ用トグルとして手動で切り替える
  * （closeFiscalYear/reopenFiscalYear の監査ログ連携は行わない、表示用の簡易な状態）。
  *
@@ -147,6 +150,32 @@ export function MonthlyCloseChecklistPanel() {
   const [paymentMatchingDone, setPaymentMatchingDone] = useState(true);
   const [fiscalYearClosed, setFiscalYearClosed] = useState(false);
   const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
+
+  // 請求書一覧（invoices テーブル。lib/db/invoices.ts）はここで実データに接続する。
+  const [invoices, setInvoices] = useState<ReceivableInvoiceInput[]>(SAMPLE_INVOICES);
+  const [isSampleInvoices, setIsSampleInvoices] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    // login/page.tsx・settings/security/page.tsx と同様、getSupabaseClient() の
+    // 同期的な例外をエフェクト本体で直接投げさせないよう、マイクロタスク経由で呼び出す。
+    Promise.resolve().then(async () => {
+      try {
+        const tenantUser = await getMyTenantUser();
+        if (!tenantUser || cancelled) return; // 未ログイン・未所属の場合はサンプルのまま
+        const records = await listInvoices(tenantUser.tenant_id);
+        if (!cancelled) {
+          setInvoices(records);
+          setIsSampleInvoices(false);
+        }
+      } catch {
+        // Supabaseが未設定（開発中のプロトタイプ）。サンプルデータのまま表示する。
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const openingBalance = Number(openingBalanceInput);
   const actualClosingBalance = Number(actualClosingBalanceInput);
@@ -168,8 +197,8 @@ export function MonthlyCloseChecklistPanel() {
 
   const invoicePaymentMatching = useMemo(() => {
     if (!paymentMatchingDone) return null;
-    return matchInvoicePayments({ invoices: SAMPLE_INVOICES, transactions });
-  }, [paymentMatchingDone, transactions]);
+    return matchInvoicePayments({ invoices, transactions });
+  }, [paymentMatchingDone, invoices, transactions]);
 
   const checklist = useMemo(
     () =>
@@ -193,7 +222,9 @@ export function MonthlyCloseChecklistPanel() {
           {isSampleData
             ? "銀行残高突合・未確定の仕訳件数の計算には、現在サンプルの取引データを使用しています。"
             : "銀行残高突合・未確定の仕訳件数の計算には、記帳された実データ（当期の取引）を使用しています。"}
-          請求書データ（入金消込の照合先）は引き続きこのページ専用のサンプルデータです。
+          {isSampleInvoices
+            ? "請求書データ（入金消込の照合先）も、現時点ではサンプルデータを使用しています。"
+            : "請求書データ（入金消込の照合先）は、登録済みの内容（Supabase）を使用しています。"}
         </p>
         <div className="grid sm:grid-cols-2 gap-4">
           <label className="flex items-center gap-2 text-sm">

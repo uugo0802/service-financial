@@ -1,16 +1,17 @@
 "use client";
 import { PageContainer } from "@/components/ui/PageContainer";
 
+import { useEffect, useState } from "react";
 import { BulkReapplyRulesPanel } from "@/components/BulkReapplyRulesPanel";
 import type { CategorizedTransaction } from "@/lib/categorize/engine";
 import { createUserCategoryRule, UserCategoryRule } from "@/lib/categorize/userRules";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { getMyTenantUser } from "@/lib/db/tenants";
+import { listCategorizeRules } from "@/lib/db/categorizeRules";
 
 // このページ専用のサンプルデータ。実データ（journal_entries）が取得できない間、
 // または未ログイン・Supabase未設定の場合のフォールバック表示に使う
 // （reconcile/trial-balance等と同じuseLedgerTransactionsフック経由）。
-// 一方、ユーザー辞書ルール（SAMPLE_USER_RULES、下記）は対応するDBテーブル
-// （user_categorize_rules）が未実装のため、引き続きサンプルデータのまま。
 const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = [
   {
     id: "tx-1",
@@ -57,6 +58,8 @@ const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = [
 
 // クライアントA社を売上高ではなく専用科目で管理したい、という編集を後から行ったケースを想定した
 // サンプルユーザー辞書ルール。このルールを一括再適用すると、tx-2 の分類が変わって見えるはず。
+// user_categorize_rules テーブル・lib/db/categorizeRules.ts への接続後も、
+// テナント未解決（未ログイン・Supabase未設定）時のフォールバック表示として利用する。
 const SAMPLE_USER_RULES: UserCategoryRule[] = [
   createUserCategoryRule(
     {
@@ -71,6 +74,33 @@ const SAMPLE_USER_RULES: UserCategoryRule[] = [
 
 export default function RuleBackfillPage() {
   const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
+  const [userRules, setUserRules] = useState<UserCategoryRule[]>(SAMPLE_USER_RULES);
+  const [isSampleUserRules, setIsSampleUserRules] = useState(true);
+
+  // ユーザー辞書ルール（categorize-rules 画面で編集される内容）は、
+  // lib/db/categorizeRules.ts（user_categorize_rules テーブル）が実装済みのため、
+  // ここで実データに接続する。
+  useEffect(() => {
+    let cancelled = false;
+    // login/page.tsx・settings/security/page.tsx と同様、getSupabaseClient() の
+    // 同期的な例外をエフェクト本体で直接投げさせないよう、マイクロタスク経由で呼び出す。
+    Promise.resolve().then(async () => {
+      try {
+        const tenantUser = await getMyTenantUser();
+        if (!tenantUser || cancelled) return; // 未ログイン・未所属の場合はサンプルのまま
+        const rules = await listCategorizeRules(tenantUser.tenant_id);
+        if (!cancelled) {
+          setUserRules(rules);
+          setIsSampleUserRules(false);
+        }
+      } catch {
+        // Supabaseが未設定（開発中のプロトタイプ）。サンプルデータのまま表示する。
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="bg-stone-50 text-stone-900 min-h-screen">
@@ -108,11 +138,16 @@ export default function RuleBackfillPage() {
         <BulkReapplyRulesPanel
           key={isSampleData ? "sample" : "real"}
           initialTransactions={transactions}
-          userRules={SAMPLE_USER_RULES}
+          userRules={userRules}
         />
 
         <p className="text-xs text-stone-400">
-          この画面は開発中のプロトタイプです。表示しているユーザー辞書ルールはサンプルデータであり、適用結果はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
+          この画面は開発中のプロトタイプです。適用結果はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
+        </p>
+        <p className="text-xs text-stone-400">
+          {isSampleUserRules
+            ? "ユーザー辞書ルールもサンプルデータを表示しています（Supabase未接続、または未ログインのため）。"
+            : "ユーザー辞書ルールは登録済みの内容（Supabase）を表示しています。"}
         </p>
       </PageContainer>
     </div>

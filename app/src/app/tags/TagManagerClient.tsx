@@ -1,7 +1,7 @@
 "use client";
 import { TableScrollArea } from "@/components/ui/TableScrollArea";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TagBreakdownPanel } from "@/components/TagBreakdownPanel";
 import {
   DEFAULT_MATERIALITY_THRESHOLD,
@@ -19,6 +19,16 @@ import {
   unassignTag,
   validateTagLabel,
 } from "@/lib/tags/tagging";
+import { getMyTenantUser } from "@/lib/db/tenants";
+import {
+  assignTag as dbAssignTag,
+  createTag as dbCreateTag,
+  deleteTag as dbDeleteTag,
+  listTagAssignments as dbListTagAssignments,
+  listTags as dbListTags,
+  unassignTag as dbUnassignTag,
+  upsertTag as dbUpsertTag,
+} from "@/lib/db/tags";
 
 // RecurringEntryManager.tsx（app/src/components/）と同じ「フォームのバリデーション →
 // リストへの純粋な追加/削除 → 画面state更新」という流儀に合わせたクライアント側の
@@ -44,6 +54,13 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
   const [tags, setTags] = useState<Tag[]>(initialTags);
   const [assignments, setAssignments] = useState<TagAssignment[]>(initialAssignments);
 
+  // テナントが解決できた場合は、タグ・タグ付け（tag_assignments）をSupabase
+  // （lib/db/tags.ts）に永続化する。テナント未解決（未ログイン・Supabase未設定）の間は、
+  // 引き続きページから渡されたサンプルデータに対するローカルstate操作のみで動作する
+  // （取引一覧 transactions 自体は本コンポーネントの対応範囲外のため、常に呼び出し側から渡された値をそのまま使う）。
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isSampleData, setIsSampleData] = useState(true);
+
   const [newLabel, setNewLabel] = useState("");
   const [newColor, setNewColor] = useState(TAG_COLOR_CHOICES[0]);
   const [createError, setCreateError] = useState<string | undefined>(undefined);
@@ -54,6 +71,33 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
 
   const [thresholdInput, setThresholdInput] = useState(String(DEFAULT_MATERIALITY_THRESHOLD));
 
+  useEffect(() => {
+    let cancelled = false;
+    // login/page.tsx・settings/security/page.tsx と同様、getSupabaseClient() の
+    // 同期的な例外をエフェクト本体で直接投げさせないよう、マイクロタスク経由で呼び出す。
+    Promise.resolve().then(async () => {
+      try {
+        const tenantUser = await getMyTenantUser();
+        if (!tenantUser || cancelled) return; // 未ログイン・未所属の場合はサンプルのまま
+        const [realTags, realAssignments] = await Promise.all([
+          dbListTags(tenantUser.tenant_id),
+          dbListTagAssignments(tenantUser.tenant_id),
+        ]);
+        if (!cancelled) {
+          setTenantId(tenantUser.tenant_id);
+          setTags(realTags);
+          setAssignments(realAssignments);
+          setIsSampleData(false);
+        }
+      } catch {
+        // Supabaseが未設定（開発中のプロトタイプ）。サンプルデータのまま表示する。
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const profitability = useMemo(() => computeTagProfitability(tags, assignments, transactions), [tags, assignments, transactions]);
 
   const threshold = Number(thresholdInput);
@@ -63,7 +107,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
     [transactions, assignments, validThreshold]
   );
 
-  function handleCreateTag(e: React.FormEvent) {
+  async function handleCreateTag(e: React.FormEvent) {
     e.preventDefault();
     const errors = validateTagLabel(newLabel, tags);
     if (hasTagFieldErrors(errors)) {
@@ -71,7 +115,18 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
       return;
     }
     setCreateError(undefined);
-    setTags((prev) => addTag(prev, { label: newLabel, color: newColor }));
+
+    if (tenantId) {
+      try {
+        const created = await dbCreateTag(tenantId, { label: newLabel, color: newColor });
+        setTags((prev) => [...prev, created]);
+      } catch (err) {
+        setCreateError(err instanceof Error ? err.message : "タグの作成に失敗しました");
+        return;
+      }
+    } else {
+      setTags((prev) => addTag(prev, { label: newLabel, color: newColor }));
+    }
     setNewLabel("");
   }
 
@@ -87,7 +142,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
     setEditError(undefined);
   }
 
-  function handleRenameTag(e: React.FormEvent) {
+  async function handleRenameTag(e: React.FormEvent) {
     e.preventDefault();
     if (!editingTagId) return;
     const errors = validateTagLabel(editingLabel, tags, editingTagId);
@@ -95,18 +150,48 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
       setEditError(errors.label);
       return;
     }
+
+    if (tenantId) {
+      const existing = tags.find((t) => t.id === editingTagId);
+      try {
+        await dbUpsertTag(tenantId, { label: editingLabel, color: existing?.color }, editingTagId);
+      } catch (err) {
+        setEditError(err instanceof Error ? err.message : "タグの更新に失敗しました");
+        return;
+      }
+    }
     setTags((prev) => renameTag(prev, editingTagId, editingLabel));
     cancelEditing();
   }
 
-  function handleDeleteTag(tagId: string) {
+  async function handleDeleteTag(tagId: string) {
+    if (tenantId) {
+      try {
+        await dbDeleteTag(tenantId, tagId);
+      } catch {
+        // 削除失敗時も、ユーザーが再操作できるようローカル表示は変更しない
+        return;
+      }
+    }
     const result = removeTagAndAssignments(tags, assignments, tagId);
     setTags(result.tags);
     setAssignments(result.assignments);
     if (editingTagId === tagId) cancelEditing();
   }
 
-  function handleToggleAssignment(tagId: string, transactionId: string, checked: boolean) {
+  async function handleToggleAssignment(tagId: string, transactionId: string, checked: boolean) {
+    if (tenantId) {
+      try {
+        if (checked) {
+          await dbAssignTag(tagId, transactionId);
+        } else {
+          await dbUnassignTag(tagId, transactionId);
+        }
+      } catch {
+        // 永続化に失敗した場合は画面表示も変更しない（再操作を促す）
+        return;
+      }
+    }
     setAssignments((prev) => (checked ? assignTag(prev, tagId, transactionId) : unassignTag(prev, tagId, transactionId)));
   }
 
@@ -292,6 +377,12 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
           </TableScrollArea>
         )}
       </section>
+
+      <p className="text-xs text-stone-400">
+        {isSampleData
+          ? "タグ・タグ付けはサンプルデータを表示しています（Supabase未接続、または未ログインのため）。取引一覧は開発中のプロトタイプのためサンプルデータのままです。"
+          : "タグ・タグ付けは登録済みの内容（Supabase）を表示・保存しています。取引一覧は開発中のプロトタイプのためサンプルデータのままです。"}
+      </p>
     </div>
   );
 }

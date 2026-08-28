@@ -139,6 +139,73 @@ create table if not exists audit_logs (
   created_at timestamptz not null default now()
 );
 
+-- ユーザー辞書ルール（テナントごとのカスタム分類ルール。
+-- app/src/lib/categorize/userRules.ts の UserCategoryRule に対応。
+-- app/src/lib/db/categorizeRules.ts が読み書きする）
+create table if not exists user_categorize_rules (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references tenants (id) on delete cascade,
+  pattern text not null,
+  account text not null,
+  tax_category text not null,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+-- タグ（プロジェクト/クライアント別の収益性集計用。
+-- app/src/lib/tags/tagging.ts の Tag に対応。app/src/lib/db/tags.ts が読み書きする）
+create table if not exists tags (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references tenants (id) on delete cascade,
+  label text not null,
+  color text,
+  created_at timestamptz not null default now(),
+  unique (tenant_id, label)
+);
+
+-- タグと取引の紐付け（多対多。app/src/lib/tags/tagging.ts の TagAssignment に対応）。
+-- transaction_id は複式簿記台帳の仕訳（journal_entries）を参照する想定だが、
+-- journal_entries テーブルは本ファイルにまだ定義がない
+-- （docs/superpowers/specs/2026-08-26-double-entry-ledger-design.md 側のマイグレーションで
+-- 別途追加される想定。このファイルを実際のSupabaseプロジェクトへ適用する際は、
+-- journal_entries を先に作成してから本テーブルを作成すること）。
+create table if not exists tag_assignments (
+  tag_id uuid not null references tags (id) on delete cascade,
+  transaction_id uuid not null references journal_entries (id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (tag_id, transaction_id)
+);
+
+-- 取引先マスタ（売上先/仕入先。
+-- app/src/lib/clients/clientMaster.ts の Counterparty に対応。app/src/lib/db/clients.ts が読み書きする）
+create table if not exists counterparties (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references tenants (id) on delete cascade,
+  name text not null,
+  kind text not null check (kind in ('client', 'vendor')),
+  default_account_name text,
+  invoice_registration_number text,
+  notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- 請求書（未収入金集計用。
+-- app/src/lib/invoice/receivables.ts の ReceivableInvoiceInput に対応。app/src/lib/db/invoices.ts が読み書きする）
+create table if not exists invoices (
+  id uuid primary key default gen_random_uuid(),
+  tenant_id uuid not null references tenants (id) on delete cascade,
+  invoice_number text not null,
+  client_name text not null,
+  issue_date date not null,
+  due_date date,
+  grand_total bigint not null,
+  paid_at date,
+  paid_amount bigint,
+  created_at timestamptz not null default now(),
+  unique (tenant_id, invoice_number)
+);
+
 -- ------------------------------------------------------------------
 -- Row Level Security: テナントごとにデータアクセスを強制分離する。
 -- 実運用開始前に、実際のSupabaseプロジェクトでポリシーの動作確認が必要。
@@ -153,6 +220,11 @@ alter table loans enable row level security;
 alter table company_opening_balances enable row level security;
 alter table documents enable row level security;
 alter table audit_logs enable row level security;
+alter table user_categorize_rules enable row level security;
+alter table tags enable row level security;
+alter table tag_assignments enable row level security;
+alter table counterparties enable row level security;
+alter table invoices enable row level security;
 
 create policy "tenant members can read their tenant" on tenants
   for select using (id in (select tenant_id from tenant_users where user_id = auth.uid()));
@@ -181,3 +253,23 @@ create policy "tenant members can access their documents" on documents
 create policy "tenant members can read their audit logs" on audit_logs
   for select using (tenant_id in (select tenant_id from tenant_users where user_id = auth.uid()));
 -- audit_logs へのINSERTはサーバー側（service role）からのみ許可し、クライアントからの直接INSERTは意図的に許可しない。
+
+create policy "tenant members can access their user categorize rules" on user_categorize_rules
+  for all using (tenant_id in (select tenant_id from tenant_users where user_id = auth.uid()));
+
+create policy "tenant members can access their tags" on tags
+  for all using (tenant_id in (select tenant_id from tenant_users where user_id = auth.uid()));
+
+-- tag_assignments 自体にはtenant_idが無いため、紐づくtags経由でテナントスコープを判定する。
+create policy "tenant members can access their tag assignments" on tag_assignments
+  for all using (
+    tag_id in (
+      select id from tags where tenant_id in (select tenant_id from tenant_users where user_id = auth.uid())
+    )
+  );
+
+create policy "tenant members can access their counterparties" on counterparties
+  for all using (tenant_id in (select tenant_id from tenant_users where user_id = auth.uid()));
+
+create policy "tenant members can access their invoices" on invoices
+  for all using (tenant_id in (select tenant_id from tenant_users where user_id = auth.uid()));

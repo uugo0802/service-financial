@@ -12,6 +12,17 @@ vi.mock("@/hooks/useLedgerTransactions", () => ({
   useLedgerTransactions: (sampleData: CategorizedTransaction[]) => mockUseLedgerTransactions(sampleData),
 }));
 
+// 請求書一覧（invoices テーブル）は、getMyTenantUser()・listInvoices()を直接モックし、
+// テナント未解決（サンプルのまま）／実データ取得済みの2状態を決定的に検証する。
+const mockGetMyTenantUser = vi.fn();
+vi.mock("@/lib/db/tenants", () => ({
+  getMyTenantUser: () => mockGetMyTenantUser(),
+}));
+const mockListInvoices = vi.fn();
+vi.mock("@/lib/db/invoices", () => ({
+  listInvoices: (tenantId: string) => mockListInvoices(tenantId),
+}));
+
 // このプロジェクトはvitest.config.tsでtest.globalsを有効化していないため、
 // @testing-library/reactの自動クリーンアップが効かない。AppShell.test.tsxと同様、
 // 各テスト間で明示的にクリーンアップする。
@@ -56,6 +67,7 @@ describe("InvoiceReconciliationClient", () => {
       transactions: TRANSACTIONS_MATCHING_F_TRANSPORT,
       isSampleData: true,
     });
+    mockGetMyTenantUser.mockResolvedValue(null); // 未ログイン・未所属の場合はSAMPLE_INVOICESのまま
 
     const { InvoiceReconciliationClient } = await import("./InvoiceReconciliationClient");
     render(<InvoiceReconciliationClient />);
@@ -65,12 +77,43 @@ describe("InvoiceReconciliationClient", () => {
         "銀行の入金取引データも、現時点ではサンプルデータを表示しています。記帳データが登録されると、自動的に実際のデータへ切り替わります。"
       )
     ).toBeTruthy();
-    // SAMPLE_INVOICES（未変更）に関する注記は常に表示される
     expect(
-      screen.getByText("発行済み請求書のデータは本ページ専用のサンプルであり、実際の請求書発行フローとは連携していません。")
+      await screen.findByText(
+        "発行済み請求書のデータは、現時点ではサンプルデータを表示しています（Supabase未接続、または未ログインのため）。"
+      )
     ).toBeTruthy();
     // フック経由のtransactionsがパネルに渡り、F運輸株式会社(88,000円)への高信頼度マッチとして表示される
     expect(screen.getByText("フリコミ）テストニユウキンA")).toBeTruthy();
+  });
+
+  it("テナント解決後はinvoicesの実データに切り替わり、その旨を表示する", async () => {
+    mockUseLedgerTransactions.mockReturnValue({
+      transactions: TRANSACTIONS_MATCHING_F_TRANSPORT,
+      isSampleData: true,
+    });
+    mockGetMyTenantUser.mockResolvedValue({
+      tenant_id: "tenant-1",
+      user_id: "user-1",
+      role: "owner",
+      created_at: "2026-08-01T00:00:00Z",
+    });
+    mockListInvoices.mockResolvedValue([
+      {
+        invoiceNumber: "INV-REAL-0001",
+        clientName: "実データ商事",
+        issueDate: "2026-06-01",
+        dueDate: "2026-06-30",
+        grandTotal: 88000,
+      },
+    ]);
+
+    const { InvoiceReconciliationClient } = await import("./InvoiceReconciliationClient");
+    render(<InvoiceReconciliationClient />);
+
+    expect(
+      await screen.findByText("発行済み請求書のデータは、登録済みの内容（Supabase）を表示しています。")
+    ).toBeTruthy();
+    expect(mockListInvoices).toHaveBeenCalledWith("tenant-1");
   });
 
   it("isSampleDataがfalseの場合は実データ表示である旨を表示し、フック経由の実データがパネルに反映される", async () => {
@@ -78,6 +121,7 @@ describe("InvoiceReconciliationClient", () => {
       transactions: TRANSACTIONS_MATCHING_D_SHOP,
       isSampleData: false,
     });
+    mockGetMyTenantUser.mockResolvedValue(null);
 
     const { InvoiceReconciliationClient } = await import("./InvoiceReconciliationClient");
     render(<InvoiceReconciliationClient />);
@@ -101,6 +145,7 @@ describe("InvoiceReconciliationClient", () => {
       transactions: [],
       isSampleData: true,
     });
+    mockGetMyTenantUser.mockResolvedValue(null);
 
     const { InvoiceReconciliationClient } = await import("./InvoiceReconciliationClient");
     render(<InvoiceReconciliationClient />);

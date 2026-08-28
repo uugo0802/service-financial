@@ -6,6 +6,8 @@ import Link from "next/link";
 import { TransactionRow } from "@/lib/db/supabaseClient";
 import { DocumentWithTransaction } from "@/lib/documents/documentSearch";
 import { Counterparty } from "@/lib/clients/clientMaster";
+import { getMyTenantUser } from "@/lib/db/tenants";
+import { listCounterparties } from "@/lib/db/clients";
 import {
   ClientSearchResult,
   DocumentSearchResultItem,
@@ -257,8 +259,36 @@ export default function SearchPage() {
   const [queryInput, setQueryInput] = useState("");
   const [query, setQuery] = useState("");
 
+  // 取引先マスタ（counterparties テーブル）は lib/db/clients.ts が実装済みのため、
+  // ここで実データに接続する。取引・証憑は対応する記帳データ・証憑データの実データ接続
+  // （このページの対応範囲外）が済むまでサンプルのままとする。
+  const [clients, setClients] = useState<Counterparty[]>(SAMPLE_CLIENTS);
+  const [isSampleClients, setIsSampleClients] = useState(true);
+
   useEffect(() => {
     document.title = "横断検索｜決算書作成から税務申告までワンクリック（スグル）";
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    // login/page.tsx・settings/security/page.tsx と同様、getSupabaseClient() の
+    // 同期的な例外をエフェクト本体で直接投げさせないよう、マイクロタスク経由で呼び出す。
+    Promise.resolve().then(async () => {
+      try {
+        const tenantUser = await getMyTenantUser();
+        if (!tenantUser || cancelled) return; // 未ログイン・未所属の場合はサンプルのまま
+        const records = await listCounterparties(tenantUser.tenant_id);
+        if (!cancelled) {
+          setClients(records);
+          setIsSampleClients(false);
+        }
+      } catch {
+        // Supabaseが未設定（開発中のプロトタイプ）。サンプルデータのまま表示する。
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const results = useMemo(
@@ -266,9 +296,9 @@ export default function SearchPage() {
       globalSearch(query, {
         transactions: SAMPLE_TRANSACTIONS,
         documents: SAMPLE_DOCUMENTS,
-        clients: SAMPLE_CLIENTS,
+        clients,
       }),
-    [query]
+    [query, clients]
   );
   const grouped = useMemo(() => groupSearchResultsByKind(results), [results]);
   const hasSearched = query.trim().length > 0;
@@ -401,6 +431,8 @@ export default function SearchPage() {
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される内容は記帳データ・証憑データ・取引先データの下書き・概算シミュレーションです。個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
+          取引・証憑はサンプルデータです。取引先は
+          {isSampleClients ? "サンプルデータを表示しています（Supabase未接続、または未ログインのため）。" : "登録済みの内容（Supabase）を表示しています。"}
         </div>
       </footer>
     </div>

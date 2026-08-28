@@ -1,14 +1,17 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { PageContainer } from "@/components/ui/PageContainer";
 import Link from "next/link";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { ReceivableInvoiceInput } from "@/lib/invoice/receivables";
 import { InvoicePaymentMatchPanel } from "@/components/InvoicePaymentMatchPanel";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { getMyTenantUser } from "@/lib/db/tenants";
+import { listInvoices } from "@/lib/db/invoices";
 
-// このページ専用のサンプルデータ。実際のアップロード・請求書発行フローとは独立した
-// 自己完結型のプロトタイプ画面であり、Supabase等の実データとは連携しない（reconcile/page.tsx と同様の方針）。
+// このページ専用のサンプルデータ。invoices テーブル（lib/db/invoices.ts）への接続後は、
+// テナント未解決（未ログイン・Supabase未設定）時のフォールバック表示として引き続き使う。
 // 意図的に、高信頼度（金額のみで一意）・中信頼度（同額のため摘要の名寄せで絞込）・
 // 部分入金・まとめ入金・未消込のパターンをそれぞれ1件以上含めている。
 const SAMPLE_INVOICES: ReceivableInvoiceInput[] = [
@@ -121,6 +124,31 @@ const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = [
 
 export function InvoiceReconciliationClient() {
   const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
+  const [invoices, setInvoices] = useState<ReceivableInvoiceInput[]>(SAMPLE_INVOICES);
+  const [isSampleInvoices, setIsSampleInvoices] = useState(true);
+
+  // 請求書一覧（invoices テーブル。lib/db/invoices.ts）はここで実データに接続する。
+  useEffect(() => {
+    let cancelled = false;
+    // login/page.tsx・settings/security/page.tsx と同様、getSupabaseClient() の
+    // 同期的な例外をエフェクト本体で直接投げさせないよう、マイクロタスク経由で呼び出す。
+    Promise.resolve().then(async () => {
+      try {
+        const tenantUser = await getMyTenantUser();
+        if (!tenantUser || cancelled) return; // 未ログイン・未所属の場合はサンプルのまま
+        const records = await listInvoices(tenantUser.tenant_id);
+        if (!cancelled) {
+          setInvoices(records);
+          setIsSampleInvoices(false);
+        }
+      } catch {
+        // Supabaseが未設定（開発中のプロトタイプ）。サンプルデータのまま表示する。
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
@@ -149,7 +177,9 @@ export function InvoiceReconciliationClient() {
             それぞれ誤って「一致」と扱わないよう区別しています。
           </p>
           <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
-            発行済み請求書のデータは本ページ専用のサンプルであり、実際の請求書発行フローとは連携していません。
+            {isSampleInvoices
+              ? "発行済み請求書のデータは、現時点ではサンプルデータを表示しています（Supabase未接続、または未ログインのため）。"
+              : "発行済み請求書のデータは、登録済みの内容（Supabase）を表示しています。"}
           </p>
           <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
             {isSampleData
@@ -162,10 +192,10 @@ export function InvoiceReconciliationClient() {
           {/*
             InvoicePaymentMatchPanelはmatchInvoicePayments()の結果をuseMemo(..., [invoices, transactions])で
             算出しており（BulkReapplyRulesPanelのようにpropsをuseStateの初期値として一度だけ取り込む作りでは
-            ない）、transactionsが変化すれば自動的に再計算される。そのためrule-backfill/page.tsxのような
+            ない）、invoices/transactionsが変化すれば自動的に再計算される。そのためrule-backfill/page.tsxのような
             isSampleDataをkeyにした強制リマウントは不要と判断した。
           */}
-          <InvoicePaymentMatchPanel invoices={SAMPLE_INVOICES} transactions={transactions} />
+          <InvoicePaymentMatchPanel invoices={invoices} transactions={transactions} />
         </section>
       </PageContainer>
 

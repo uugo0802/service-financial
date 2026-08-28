@@ -12,11 +12,23 @@ vi.mock("@/hooks/useLedgerTransactions", () => ({
   useLedgerTransactions: () => mockState,
 }));
 
+// 請求書一覧（invoices テーブル）は、getMyTenantUser()・listInvoices()を直接モックし、
+// テナント未解決（サンプルのまま）／実データ取得済みの2状態を決定的に検証する。
+const mockGetMyTenantUser = vi.fn();
+vi.mock("@/lib/db/tenants", () => ({
+  getMyTenantUser: () => mockGetMyTenantUser(),
+}));
+const mockListInvoices = vi.fn();
+vi.mock("@/lib/db/invoices", () => ({
+  listInvoices: (tenantId: string) => mockListInvoices(tenantId),
+}));
+
 // このプロジェクトはvitest.config.tsでtest.globalsを有効化していないため、
 // @testing-library/reactの自動クリーンアップが効かない。AppShell.test.tsxと同様、
 // テスト間でJSDOMのdocumentが残らないよう明示的にクリーンアップする。
 afterEach(() => {
   cleanup();
+  vi.clearAllMocks();
 });
 
 // 全件confidence:1（要確認なし）の実データ。パネルが依然SAMPLE_TRANSACTIONS
@@ -35,26 +47,30 @@ const REAL_TRANSACTIONS: CategorizedTransaction[] = [
 ];
 
 describe("MonthlyCloseChecklistPanel", () => {
-  it("isSampleDataがtrueの間はサンプルの取引データを使用している旨を案内する", () => {
+  it("isSampleDataがtrueの間はサンプルの取引データを使用している旨を案内する", async () => {
     mockState = { transactions: [], isSampleData: true };
+    mockGetMyTenantUser.mockResolvedValue(null); // 未ログイン・未所属の場合はSAMPLE_INVOICESのまま
     render(<MonthlyCloseChecklistPanel />);
 
     expect(
-      screen.getByText(
+      await screen.findByText(
         (_, node) =>
-          node?.textContent === "銀行残高突合・未確定の仕訳件数の計算には、現在サンプルの取引データを使用しています。請求書データ（入金消込の照合先）は引き続きこのページ専用のサンプルデータです。"
+          node?.textContent ===
+          "銀行残高突合・未確定の仕訳件数の計算には、現在サンプルの取引データを使用しています。請求書データ（入金消込の照合先）も、現時点ではサンプルデータを使用しています。"
       )
     ).toBeTruthy();
   });
 
-  it("isSampleDataがfalseになったら実データ使用中の案内に切り替わる", () => {
+  it("isSampleDataがfalseになったら実データ使用中の案内に切り替わる", async () => {
     mockState = { transactions: REAL_TRANSACTIONS, isSampleData: false };
+    mockGetMyTenantUser.mockResolvedValue(null);
     render(<MonthlyCloseChecklistPanel />);
 
     expect(
-      screen.getByText(
+      await screen.findByText(
         (_, node) =>
-          node?.textContent === "銀行残高突合・未確定の仕訳件数の計算には、記帳された実データ（当期の取引）を使用しています。請求書データ（入金消込の照合先）は引き続きこのページ専用のサンプルデータです。"
+          node?.textContent ===
+          "銀行残高突合・未確定の仕訳件数の計算には、記帳された実データ（当期の取引）を使用しています。請求書データ（入金消込の照合先）も、現時点ではサンプルデータを使用しています。"
       )
     ).toBeTruthy();
     expect(
@@ -64,16 +80,38 @@ describe("MonthlyCloseChecklistPanel", () => {
 
   it("未確定の仕訳件数はフックが返した実データから算出され、SAMPLE_TRANSACTIONSは使われない", () => {
     mockState = { transactions: REAL_TRANSACTIONS, isSampleData: false };
+    mockGetMyTenantUser.mockResolvedValue(null);
     render(<MonthlyCloseChecklistPanel />);
 
     expect(screen.getByText("未確定の仕訳はありません。")).toBeTruthy();
   });
 
-  it("入金消込チェックは引き続きSAMPLE_INVOICES（請求書データ）を使うため、取引データが空でも3件の請求書が未消込として検出される", () => {
-    // Wave3（invoicesテーブル未実装）のため、SAMPLE_INVOICESは意図的にこのまま。
+  it("テナントが未解決の間は入金消込チェックがSAMPLE_INVOICES（請求書データ）を使うため、取引データが空でも3件の請求書が未消込として検出される", () => {
     mockState = { transactions: [], isSampleData: false };
+    mockGetMyTenantUser.mockResolvedValue(null);
     render(<MonthlyCloseChecklistPanel />);
 
     expect(screen.getByText(/要確認の入金・請求書が3件あります/)).toBeTruthy();
+  });
+
+  it("テナント解決後はinvoicesの実データに切り替わり、その旨を案内する", async () => {
+    mockState = { transactions: [], isSampleData: false };
+    mockGetMyTenantUser.mockResolvedValue({
+      tenant_id: "tenant-1",
+      user_id: "user-1",
+      role: "owner",
+      created_at: "2026-08-01T00:00:00Z",
+    });
+    mockListInvoices.mockResolvedValue([]);
+    render(<MonthlyCloseChecklistPanel />);
+
+    expect(
+      await screen.findByText(
+        (_, node) =>
+          node?.textContent ===
+          "銀行残高突合・未確定の仕訳件数の計算には、記帳された実データ（当期の取引）を使用しています。請求書データ（入金消込の照合先）は、登録済みの内容（Supabase）を使用しています。"
+      )
+    ).toBeTruthy();
+    expect(mockListInvoices).toHaveBeenCalledWith("tenant-1");
   });
 });
