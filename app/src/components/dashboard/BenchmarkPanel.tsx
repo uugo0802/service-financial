@@ -64,8 +64,8 @@ function CategoryRow({ category, scaleMax }: { category: BenchmarkCategoryCompar
           category.differencePoints === null
             ? "text-muted-foreground"
             : category.differencePoints > 0
-              ? "text-red-700 dark:text-red-400"
-              : "text-emerald-700 dark:text-emerald-400"
+              ? "text-danger"
+              : "text-accent"
         }`}
       >
         {formatDifference(category.differencePoints)}
@@ -127,7 +127,7 @@ export function BenchmarkPanel({ rows, title }: { rows: CategorizedTransaction[]
       ) : (
         <>
           {comparison.revenue <= 0 && (
-            <p className="text-xs text-amber-700 dark:text-amber-400 mb-2">
+            <p className="text-xs text-danger mb-2">
               売上データがまだ無いため、割合（％）は算出できません。金額のみ表示しています。
             </p>
           )}

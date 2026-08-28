@@ -49,7 +49,7 @@ export function KpiTrendPanel({ points, title }: { points: KpiTrendPoint[]; titl
                 <td className="px-3 py-1.5 whitespace-nowrap tabular-nums">{p.key}年</td>
                 <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(p.revenue)}</td>
                 <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(p.expense)}</td>
-                <td className={`px-3 py-1.5 text-right tabular-nums ${p.netIncome < 0 ? "text-red-700 dark:text-red-400" : ""}`}>
+                <td className={`px-3 py-1.5 text-right tabular-nums ${p.netIncome < 0 ? "text-danger" : ""}`}>
                   {yen.format(p.netIncome)}
                 </td>
                 <td className="px-3 py-1.5 text-right tabular-nums">{formatRatio(p.expenseRatio)}</td>
@@ -58,8 +58,8 @@ export function KpiTrendPanel({ points, title }: { points: KpiTrendPoint[]; titl
                     p.revenueGrowth === null
                       ? "text-muted-foreground"
                       : p.revenueGrowth >= 0
-                        ? "text-emerald-700 dark:text-emerald-400"
-                        : "text-red-700 dark:text-red-400"
+                        ? "text-accent"
+                        : "text-danger"
                   }`}
                 >
                   {formatPercent(p.revenueGrowth)}
