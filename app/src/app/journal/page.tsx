@@ -2,8 +2,12 @@
 import { TableScrollArea } from "@/components/ui/TableScrollArea";
 import { PageContainer } from "@/components/ui/PageContainer";
 
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
+import { AccountRow } from "@/lib/db/supabaseClient";
+import { getMyTenantUser } from "@/lib/db/tenants";
+import { listAccounts, createAccount } from "@/lib/db/accounts";
+import { importCategorizedTransactionsAsJournalEntries } from "@/lib/db/csvJournalImport";
 import {
   EMPTY_JOURNAL_DRAFT,
   JournalEntryDraft,
@@ -14,25 +18,68 @@ import {
 } from "@/lib/journal/entries";
 import { JournalEntryForm } from "@/components/JournalEntryForm";
 import { CategorizationRationale } from "@/components/CategorizationRationale";
+import { AccountSelect } from "@/components/AccountSelect";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
 type FormState = { mode: "closed" } | { mode: "create" } | { mode: "edit"; id: string };
 
+// 記帳（保存）操作のためのテナント・勘定科目の読み込み状態。
+// BulkCsvJournalImportForm（transactions/page.tsx配下、同じCSV分類済みデータを
+// journal_entriesへ書き込む処理）と同じ4状態にしている。
+type SaveSetupState = "loading" | "unconfigured" | "unauthenticated" | "ready";
+
 export default function JournalPage() {
   const [entries, setEntries] = useState<CategorizedTransaction[]>([]);
   const [formState, setFormState] = useState<FormState>({ mode: "closed" });
+
+  const [saveSetupState, setSaveSetupState] = useState<SaveSetupState>("loading");
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [accounts, setAccounts] = useState<AccountRow[]>([]);
+  const [cashAccountId, setCashAccountId] = useState("");
+
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveResult, setSaveResult] = useState<{ created: number; createdAccountCount: number } | null>(null);
+
+  useEffect(() => {
+    // 他の書き込み系フォーム（settings/opening-balances/OpeningBalancesClient.tsx等）と同様、
+    // エフェクト本体での同期的なsetStateを避けるためマイクロタスク経由で呼び出す
+    let cancelled = false;
+    Promise.resolve().then(async () => {
+      try {
+        const tenantUser = await getMyTenantUser();
+        if (cancelled) return;
+        if (!tenantUser) {
+          setSaveSetupState("unauthenticated");
+          return;
+        }
+        const rows = await listAccounts(tenantUser.tenant_id);
+        if (cancelled) return;
+        setTenantId(tenantUser.tenant_id);
+        setAccounts(rows);
+        setSaveSetupState("ready");
+      } catch {
+        if (!cancelled) setSaveSetupState("unconfigured");
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const editingEntry = formState.mode === "edit" ? entries.find((e) => e.id === formState.id) : undefined;
 
   function handleCreate(draft: JournalEntryDraft) {
     setEntries((prev) => addJournalEntry(prev, draft));
+    setSaveResult(null);
   }
 
   function handleUpdate(id: string) {
     return (draft: JournalEntryDraft) => {
       setEntries((prev) => updateJournalEntry(prev, id, draft));
       setFormState({ mode: "closed" });
+      setSaveResult(null);
     };
   }
 
@@ -41,7 +88,35 @@ export default function JournalPage() {
     if (formState.mode === "edit" && formState.id === id) {
       setFormState({ mode: "closed" });
     }
+    setSaveResult(null);
   }
+
+  async function handleCreateAccount(name: string, accountType: AccountRow["account_type"]): Promise<AccountRow> {
+    if (!tenantId) throw new Error("テナント情報が取得できていません");
+    const account = await createAccount(tenantId, { name, account_type: accountType });
+    setAccounts((prev) => [...prev, account]);
+    return account;
+  }
+
+  async function handleSave() {
+    if (!tenantId || !cashAccountId || entries.length === 0) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      // 手入力の仕訳もCSV取込と同じ CategorizedTransaction 形なので、
+      // csvJournalImport.ts の変換ロジック（勘定科目未整備時のその場作成含む）をそのまま再利用する。
+      const result = await importCategorizedTransactionsAsJournalEntries(tenantId, entries, cashAccountId);
+      setSaveResult({ created: result.created.length, createdAccountCount: result.createdAccountCount });
+      setEntries([]);
+      setFormState({ mode: "closed" });
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "記帳に失敗しました");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const cashAccounts = accounts.filter((a) => a.account_type === "asset");
 
   return (
     <div className="bg-stone-50 text-stone-900 min-h-screen">
@@ -159,6 +234,70 @@ export default function JournalPage() {
                 </tbody>
               </table>
             </TableScrollArea>
+          )}
+        </section>
+
+        <section>
+          <h2 className="text-lg font-semibold mb-3">記帳する</h2>
+          <p className="text-sm text-stone-600 mb-4 max-w-2xl leading-relaxed">
+            上の一覧の内容を、指定した現金・預金勘定と組み合わせて仕訳台帳（journal_entries）へ保存します。
+            保存が完了すると上の一覧はクリアされます。
+          </p>
+
+          {saveSetupState === "loading" && <p className="text-sm text-stone-500">読み込み中…</p>}
+
+          {saveSetupState === "unconfigured" && (
+            <div className="border border-amber-300 bg-amber-50 text-amber-800 text-sm p-4">
+              Supabaseが未設定のため、この機能はまだ利用できません（開発中のプロトタイプです）。
+            </div>
+          )}
+
+          {saveSetupState === "unauthenticated" && (
+            <div className="border border-stone-300 bg-white text-sm p-4 text-stone-600">
+              ログインすると入力した仕訳を保存できます。
+            </div>
+          )}
+
+          {saveSetupState === "ready" && (
+            <div className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
+              <div className="max-w-sm">
+                <AccountSelect
+                  label="記帳先の現金・預金勘定"
+                  accounts={cashAccounts}
+                  value={cashAccountId}
+                  onChange={setCashAccountId}
+                  onCreate={(name) => handleCreateAccount(name, "asset")}
+                />
+              </div>
+
+              <div>
+                <button
+                  type="button"
+                  disabled={!cashAccountId || entries.length === 0 || saving}
+                  onClick={handleSave}
+                  className={`text-sm px-5 py-2.5 border transition-colors ${
+                    !cashAccountId || entries.length === 0 || saving
+                      ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
+                      : "border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+                  }`}
+                >
+                  {saving ? "記帳中…" : `この内容で記帳する（${entries.length}件）`}
+                </button>
+                {entries.length === 0 && (
+                  <span className="ml-3 text-xs text-stone-400">保存する仕訳がありません</span>
+                )}
+                {entries.length > 0 && !cashAccountId && (
+                  <span className="ml-3 text-xs text-stone-400">記帳先の現金・預金勘定を選択してください</span>
+                )}
+                {saveError && <span className="ml-3 text-xs text-red-700">{saveError}</span>}
+                {saveResult && (
+                  <span className="ml-3 text-xs text-emerald-700">
+                    {saveResult.created}件を記帳しました
+                    {saveResult.createdAccountCount > 0 && `（新規勘定科目 ${saveResult.createdAccountCount}件を作成）`}
+                  </span>
+                )}
+              </div>
+            </div>
           )}
         </section>
       </PageContainer>
