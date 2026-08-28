@@ -176,7 +176,7 @@ function TrendTable({ points }: { points: TrendPoint[] }) {
               <td className="px-3 py-1.5 whitespace-nowrap tabular-nums">{p.key}年</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(p.income)}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(p.expense)}</td>
-              <td className={`px-3 py-1.5 text-right tabular-nums ${p.profit < 0 ? "text-red-700 dark:text-red-400" : ""}`}>
+              <td className={`px-3 py-1.5 text-right tabular-nums ${p.profit < 0 ? "text-danger" : ""}`}>
                 {yen.format(p.profit)}
               </td>
             </tr>
