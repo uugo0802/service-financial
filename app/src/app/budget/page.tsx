@@ -4,6 +4,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 
 import { useMemo, useState } from "react";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
+import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import {
   CategoryBudget,
   BudgetTrackingStatus,
@@ -18,8 +19,11 @@ import {
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 const percent = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
 
-// 実際の記帳データ連携（他ルートで対応予定）までのデモ用サンプル。
-// 選択した期間（YYYY-MM）にあわせて日付を差し替え、期間を切り替えても実績が表示されるようにする。
+// 実データ（journal_entries）が取得できない間・未ログイン・Supabase未設定の場合の
+// フォールバック表示用サンプルデータ。reconcile/trial-balance等と同じパターンで
+// useLedgerTransactions()にこの定数を渡す。日付はページ読み込み時点の「対象月」の
+// 初期値（=当月）に揃え、サンプル表示時に初期状態のまま実績が見えるようにする。
+const SAMPLE_PERIOD = formatPeriod(new Date());
 const SAMPLE_SPEND: { account: string; day: string; amount: number }[] = [
   { account: "地代家賃", day: "01", amount: -180000 },
   { account: "通信費", day: "03", amount: -18000 },
@@ -34,18 +38,16 @@ const SAMPLE_SPEND: { account: string; day: string; amount: number }[] = [
   { account: "広告宣伝費", day: "25", amount: -45000 },
 ];
 
-function buildSampleTransactions(period: string): CategorizedTransaction[] {
-  return SAMPLE_SPEND.map((row, i) => ({
-    id: `sample-${i}`,
-    date: `${period}-${row.day}`,
-    description: `サンプル: ${row.account}`,
-    amount: row.amount,
-    account: row.account,
-    taxCategory: "課税仕入10%" as const,
-    confidence: 1,
-    source: "rule" as const,
-  }));
-}
+const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = SAMPLE_SPEND.map((row, i) => ({
+  id: `sample-${i}`,
+  date: `${SAMPLE_PERIOD}-${row.day}`,
+  description: `サンプル: ${row.account}`,
+  amount: row.amount,
+  account: row.account,
+  taxCategory: "課税仕入10%" as const,
+  confidence: 1,
+  source: "rule" as const,
+}));
 
 const DEFAULT_BUDGETS: CategoryBudget[] = [
   { account: "地代家賃", monthlyBudgetYen: 180000 },
@@ -84,7 +86,7 @@ export default function BudgetPage() {
   const [period, setPeriod] = useState(() => formatPeriod(new Date()));
   const [budgets, setBudgets] = useState<CategoryBudget[]>(DEFAULT_BUDGETS);
   const categories = useMemo(() => knownExpenseCategories(), []);
-  const transactions = useMemo(() => buildSampleTransactions(period), [period]);
+  const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
 
   const result = useMemo(() => compareBudgetToActual(budgets, transactions, period), [budgets, transactions, period]);
 
@@ -125,8 +127,11 @@ export default function BudgetPage() {
             <b className="font-medium">
             これは記帳データに基づく中立的な比較・警告表示であり、個別の節税・支出削減の助言ではありません。
             </b>
-            <b className="font-medium"> 現時点ではサンプルの実績データを表示しています。</b>
-            実際の記帳データとの連携は別途対応予定です。
+          </p>
+          <p className="text-xs text-stone-500 dark:text-stone-400 max-w-2xl leading-relaxed mt-2">
+            {isSampleData
+              ? "本ページは開発中のプロトタイプであり、サンプルの実績データを使用しています。"
+              : "記帳された実データ（当期の取引）をもとに実績を集計しています。"}
           </p>
         </section>
 
