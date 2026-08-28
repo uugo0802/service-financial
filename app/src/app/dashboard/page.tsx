@@ -17,6 +17,7 @@ import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferra
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { Card } from "@/components/ui/Card";
 import { PageContainer } from "@/components/ui/PageContainer";
+import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import { buildSampleTransactions } from "./sampleData";
 
 // buildSampleTransactions() は売上・損益推移グラフ用に「経費合計」1科目へ
@@ -46,13 +47,17 @@ function percentDelta(current: number, previous: number): number | undefined {
 }
 
 export default function DashboardPage() {
-  const transactions = useMemo(() => buildSampleTransactions(), []);
+  const sampleTransactions = useMemo(() => buildSampleTransactions(), []);
+  const { transactions, isSampleData } = useLedgerTransactions(sampleTransactions);
   const monthlyTrend = useMemo(() => buildMonthlyTrend(transactions), [transactions]);
   const yearlyTrend = useMemo(() => buildYearlyTrend(transactions), [transactions]);
   const partnerCategories = useMemo(() => recommendPartnerCategories(yearlyTrend), [yearlyTrend]);
+  // SAMPLE_EXPENSE_CATEGORY_ROWSはbuildSampleTransactions()専用の補完データ（上記コメント参照）。
+  // 実データ（isSampleData === false）はjournal_entries由来の科目別行をすでに持っているため、
+  // ダミー行を混ぜると経費内訳チャートが不正確になる。サンプル表示中のみ補完する。
   const transactionsWithExpenseCategories = useMemo(
-    () => [...transactions, ...SAMPLE_EXPENSE_CATEGORY_ROWS],
-    [transactions]
+    () => (isSampleData ? [...transactions, ...SAMPLE_EXPENSE_CATEGORY_ROWS] : transactions),
+    [transactions, isSampleData]
   );
   const expenseBreakdown = useMemo(
     () => buildExpenseBreakdown(transactionsWithExpenseCategories),
@@ -167,8 +172,14 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold mb-2">過去の売上・損益の推移</h1>
           <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             年度別・月次の売上と損益の推移をグラフで確認できます。
-            <b className="font-medium"> 現時点ではサンプルデータを表示しています。</b>
-            実際の記帳データとの連携（Supabase）は別途対応予定です。
+            {isSampleData ? (
+              <>
+                <b className="font-medium"> 現時点ではサンプルデータを表示しています。</b>
+                記帳データが登録されると、自動的に実際のデータへ切り替わります。
+              </>
+            ) : (
+              " 記帳された実データ（当期・過去の取引）に基づいて表示しています。"
+            )}
           </p>
         </section>
 
@@ -183,7 +194,9 @@ export default function DashboardPage() {
         <PartnerReferralBanner categories={partnerCategories} />
 
         <p className="text-xs text-muted-foreground leading-relaxed">
-          表示している金額はサンプルデータに基づく概算であり、実際の申告内容を示すものではありません。
+          {isSampleData
+            ? "表示している金額はサンプルデータに基づく概算であり、実際の申告内容を示すものではありません。"
+            : "表示している金額は記帳データに基づく概算であり、実際の申告内容を示すものではありません。"}
         </p>
       </PageContainer>
     </div>
