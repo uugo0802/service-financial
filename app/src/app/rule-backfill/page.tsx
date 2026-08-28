@@ -4,11 +4,13 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { BulkReapplyRulesPanel } from "@/components/BulkReapplyRulesPanel";
 import type { CategorizedTransaction } from "@/lib/categorize/engine";
 import { createUserCategoryRule, UserCategoryRule } from "@/lib/categorize/userRules";
+import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 
-// このページ専用のサンプルデータ（開発中プロトタイプ用）。
-// 実際の運用では、テナントに紐づく「分類済み取引一覧」と「現在登録されているユーザー辞書ルール」を
-// それぞれのデータストアから取得して BulkReapplyRulesPanel に渡す（categorize-rules 画面で
-// 編集されるユーザー辞書ルールと同じ保存先を想定）。
+// このページ専用のサンプルデータ。実データ（journal_entries）が取得できない間、
+// または未ログイン・Supabase未設定の場合のフォールバック表示に使う
+// （reconcile/trial-balance等と同じuseLedgerTransactionsフック経由）。
+// 一方、ユーザー辞書ルール（SAMPLE_USER_RULES、下記）は対応するDBテーブル
+// （user_categorize_rules）が未実装のため、引き続きサンプルデータのまま。
 const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = [
   {
     id: "tx-1",
@@ -68,6 +70,8 @@ const SAMPLE_USER_RULES: UserCategoryRule[] = [
 ];
 
 export default function RuleBackfillPage() {
+  const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
+
   return (
     <div className="bg-stone-50 text-stone-900 min-h-screen">
       <header className="border-b border-stone-300 bg-white">
@@ -88,12 +92,27 @@ export default function RuleBackfillPage() {
           <p className="text-xs text-amber-700 max-w-2xl leading-relaxed mt-2">
             このツールが提示する勘定科目・税区分はルールに基づく簡易な自動判定であり、正式な税務判断ではありません。反映する場合も、最終的な内容は必ずご自身でご確認ください（本サービスは税理士法上の税務代理・個別税務相談を行うものではなく、本人申告を支援するツールです）。
           </p>
+          <p className="text-xs text-stone-400 mt-2">
+            {isSampleData ? "現在は取引データもサンプルデータを表示しています。" : "記帳された実データ（当期の取引）を表示しています。"}
+          </p>
         </section>
 
-        <BulkReapplyRulesPanel initialTransactions={SAMPLE_TRANSACTIONS} userRules={SAMPLE_USER_RULES} />
+        {/*
+          BulkReapplyRulesPanelはinitialTransactionsをuseStateの初期値として一度だけ
+          取り込み、以降は内部状態（選択中の行・適用結果）として保持する作りのため、
+          useLedgerTransactionsの非同期取得がマウント後に完了して実データへ差し替わっても、
+          initialTransactionsの変化だけではパネルの内部状態は更新されない。
+          isSampleDataをkeyに使い、サンプル→実データの切り替わり時（trueからfalseへの
+          一度きりの遷移）にパネルを再マウントさせることで、実データが確実に反映されるようにする。
+        */}
+        <BulkReapplyRulesPanel
+          key={isSampleData ? "sample" : "real"}
+          initialTransactions={transactions}
+          userRules={SAMPLE_USER_RULES}
+        />
 
         <p className="text-xs text-stone-400">
-          この画面は開発中のプロトタイプです。表示している取引・ユーザー辞書ルールはサンプルデータであり、適用結果はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
+          この画面は開発中のプロトタイプです。表示しているユーザー辞書ルールはサンプルデータであり、適用結果はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
         </p>
       </PageContainer>
     </div>
