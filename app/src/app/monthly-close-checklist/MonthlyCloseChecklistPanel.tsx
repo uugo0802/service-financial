@@ -5,15 +5,20 @@ import { CategorizedTransaction, needsEscalation } from "@/lib/categorize/engine
 import { reconcileBankBalance } from "@/lib/reconcile/bankReconciliation";
 import { matchInvoicePayments } from "@/lib/reconcile/invoicePaymentMatching";
 import { ReceivableInvoiceInput } from "@/lib/invoice/receivables";
+import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import {
   buildMonthlyCloseChecklist,
   MonthlyCloseChecklistItemStatus,
 } from "@/lib/journal/monthlyCloseChecklist";
 
-// このパネル専用のサンプルデータ。実際のアップロード・記帳フロー、請求書発行フローとは
-// 独立した自己完結型のプロトタイプ画面であり、Supabase等の実データとは連携しない。
-// 意図的に、うち2件を低信頼度（要確認）の分類にして「未確定の仕訳」が残っている状態を、
-// 請求書側にも未入金・端数入金を混在させて「入金消込」の要確認状態を再現できるようにしている。
+// 取引データ（SAMPLE_TRANSACTIONS）は実データ（journal_entries）が取得できない間・
+// 未ログイン・Supabase未設定の場合のフォールバック表示に使う
+// （reconcile/trial-balance等と同じuseLedgerTransactionsフック経由）。
+// 意図的に、うち2件を低信頼度（要確認）の分類にして「未確定の仕訳」が残っている状態を
+// 再現できるようにしている。
+// 一方、請求書データ（SAMPLE_INVOICES、下記）は対応するDBテーブル（invoices）が
+// 未実装のため、引き続きこのパネル専用のサンプルデータのまま
+// （未入金・端数入金を混在させて「入金消込」の要確認状態を再現できるようにしている）。
 const TARGET_MONTH = "2026-07";
 
 const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = [
@@ -124,7 +129,11 @@ const labelClass = "block text-xs text-stone-500 dark:text-stone-400 mb-1";
  *
  * 銀行残高突合（bankReconciliation.ts）、入金消込（invoicePaymentMatching.ts）、
  * 未確定の仕訳件数（categorize/engine.ts の needsEscalation）は、いずれも本パネルが
- * サンプルデータに対して実際に計算した結果を使う（＝実際のロジックから状態を導出する）。
+ * 実際に計算した結果を使う（＝実際のロジックから状態を導出する）。取引データは
+ * useLedgerTransactionsフック経由で記帳済みの実データ（journal_entries）を取得し、
+ * 取得できるまで・取得できなかった場合はSAMPLE_TRANSACTIONSにフォールバックする
+ * （reconcile/trial-balance等と同じパターン）。請求書データ（SAMPLE_INVOICES）は
+ * 対応するDBテーブル（invoices）が未実装のため、引き続きサンプルデータのまま。
  * 年度確定ロックの状態のみ、本ページ単体のデモ用トグルとして手動で切り替える
  * （closeFiscalYear/reopenFiscalYear の監査ログ連携は行わない、表示用の簡易な状態）。
  *
@@ -137,6 +146,7 @@ export function MonthlyCloseChecklistPanel() {
   const [reconciliationDone, setReconciliationDone] = useState(true);
   const [paymentMatchingDone, setPaymentMatchingDone] = useState(true);
   const [fiscalYearClosed, setFiscalYearClosed] = useState(false);
+  const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
 
   const openingBalance = Number(openingBalanceInput);
   const actualClosingBalance = Number(actualClosingBalanceInput);
@@ -147,19 +157,19 @@ export function MonthlyCloseChecklistPanel() {
     Number.isFinite(actualClosingBalance);
 
   const pendingCategorizationCount = useMemo(
-    () => SAMPLE_TRANSACTIONS.filter(needsEscalation).length,
-    [],
+    () => transactions.filter(needsEscalation).length,
+    [transactions],
   );
 
   const bankReconciliation = useMemo(() => {
     if (!reconciliationDone || !hasValidBalanceInputs) return null;
-    return reconcileBankBalance({ transactions: SAMPLE_TRANSACTIONS, openingBalance, actualClosingBalance });
-  }, [reconciliationDone, hasValidBalanceInputs, openingBalance, actualClosingBalance]);
+    return reconcileBankBalance({ transactions, openingBalance, actualClosingBalance });
+  }, [reconciliationDone, hasValidBalanceInputs, openingBalance, actualClosingBalance, transactions]);
 
   const invoicePaymentMatching = useMemo(() => {
     if (!paymentMatchingDone) return null;
-    return matchInvoicePayments({ invoices: SAMPLE_INVOICES, transactions: SAMPLE_TRANSACTIONS });
-  }, [paymentMatchingDone]);
+    return matchInvoicePayments({ invoices: SAMPLE_INVOICES, transactions });
+  }, [paymentMatchingDone, transactions]);
 
   const checklist = useMemo(
     () =>
@@ -176,9 +186,15 @@ export function MonthlyCloseChecklistPanel() {
   return (
     <div className="flex flex-col gap-8">
       <section className="bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 rounded p-4">
-        <h3 className="text-sm font-semibold mb-3">
-          {TARGET_MONTH.replace("-", "年")}月分・チェック用データ（サンプル）
+        <h3 className="text-sm font-semibold mb-1">
+          {TARGET_MONTH.replace("-", "年")}月分・チェック用データ
         </h3>
+        <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
+          {isSampleData
+            ? "銀行残高突合・未確定の仕訳件数の計算には、現在サンプルの取引データを使用しています。"
+            : "銀行残高突合・未確定の仕訳件数の計算には、記帳された実データ（当期の取引）を使用しています。"}
+          請求書データ（入金消込の照合先）は引き続きこのページ専用のサンプルデータです。
+        </p>
         <div className="grid sm:grid-cols-2 gap-4">
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -229,9 +245,15 @@ export function MonthlyCloseChecklistPanel() {
               />
             </div>
             <p className="sm:col-span-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
-              サンプル取引の金額合計は+51.36万円です。実際の期末残高を{"「"}
-              {(1_200_000 + 513_600).toLocaleString("ja-JP")}円{"」"}付近にすると一致、
-              大きく外すと差額ありの状態を確認できます。
+              {isSampleData
+                ? (
+                  <>
+                    サンプル取引の金額合計は+51.36万円です。実際の期末残高を{"「"}
+                    {(1_200_000 + 513_600).toLocaleString("ja-JP")}円{"」"}付近にすると一致、
+                    大きく外すと差額ありの状態を確認できます。
+                  </>
+                )
+                : "期首残高・実際の期末残高は通帳等の実際の値を入力してください。記帳済みの取引データとの差額を突合します。"}
             </p>
           </div>
         )}
