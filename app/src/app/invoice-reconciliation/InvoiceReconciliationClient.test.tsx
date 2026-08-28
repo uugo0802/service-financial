@@ -50,15 +50,15 @@ const TRANSACTIONS_MATCHING_D_SHOP: CategorizedTransaction[] = [
   },
 ];
 
-describe("InvoiceReconciliationPage", () => {
+describe("InvoiceReconciliationClient", () => {
   it("isSampleDataがtrueの間は取引データもサンプルである旨を表示し、フック経由のtransactionsをパネルに渡す", async () => {
     mockUseLedgerTransactions.mockReturnValue({
       transactions: TRANSACTIONS_MATCHING_F_TRANSPORT,
       isSampleData: true,
     });
 
-    const { default: InvoiceReconciliationPage } = await import("./page");
-    render(<InvoiceReconciliationPage />);
+    const { InvoiceReconciliationClient } = await import("./InvoiceReconciliationClient");
+    render(<InvoiceReconciliationClient />);
 
     expect(
       screen.getByText(
@@ -79,8 +79,8 @@ describe("InvoiceReconciliationPage", () => {
       isSampleData: false,
     });
 
-    const { default: InvoiceReconciliationPage } = await import("./page");
-    render(<InvoiceReconciliationPage />);
+    const { InvoiceReconciliationClient } = await import("./InvoiceReconciliationClient");
+    render(<InvoiceReconciliationClient />);
 
     expect(
       screen.getByText("銀行の入金取引データは、記帳された実データ（当期の取引）を表示しています。")
@@ -102,8 +102,8 @@ describe("InvoiceReconciliationPage", () => {
       isSampleData: true,
     });
 
-    const { default: InvoiceReconciliationPage } = await import("./page");
-    render(<InvoiceReconciliationPage />);
+    const { InvoiceReconciliationClient } = await import("./InvoiceReconciliationClient");
+    render(<InvoiceReconciliationClient />);
 
     expect(mockUseLedgerTransactions).toHaveBeenCalledTimes(1);
     const sampleDataArg = mockUseLedgerTransactions.mock.calls[0][0] as CategorizedTransaction[];
