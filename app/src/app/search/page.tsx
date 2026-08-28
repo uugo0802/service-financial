@@ -6,27 +6,32 @@ import Link from "next/link";
 import { TransactionRow } from "@/lib/db/supabaseClient";
 import { DocumentWithTransaction } from "@/lib/documents/documentSearch";
 import { Counterparty } from "@/lib/clients/clientMaster";
+import { ReceivableInvoiceInput } from "@/lib/invoice/receivables";
 import { getMyTenantUser } from "@/lib/db/tenants";
 import { listCounterparties } from "@/lib/db/clients";
+import { listInvoices } from "@/lib/db/invoices";
 import {
   ClientSearchResult,
   DocumentSearchResultItem,
+  InvoiceSearchResult,
   TransactionSearchResult,
   globalSearch,
   groupSearchResultsByKind,
 } from "@/lib/search/globalSearch";
 
 // ------------------------------------------------------------------
-// テナントに1年分程度の記帳データが蓄積すると、目当ての取引・証憑・取引先が
-// どこにあったか思い出せなくなる。この画面は「取引」「証憑」「取引先」を
+// テナントに1年分程度の記帳データが蓄積すると、目当ての取引・証憑・取引先・請求書が
+// どこにあったか思い出せなくなる。この画面は「取引」「証憑」「取引先」「請求書」を
 // 1つのキーワードで横断検索できる場所を提供する（lib/search/globalSearch.ts
 // を薄く呼び出すだけの表示専用コンポーネント。documents/page.tsx・
 // transactions/page.tsx・clients/page.tsxと同じ構成に合わせている）。
 //
-// DB未接続の現状に合わせ、このページ専用のサンプルデータを表示する。
-// 各エンティティのサンプル値は、横断検索の効果が確認しやすいよう
-// 取引先名・摘要をわざと重ねてある（例:「〇〇不動産」は取引・証憑・
-// 取引先マスタのいずれにも登場する）。
+// 取引・証憑はこのページ専用のサンプルデータを表示する（対応する実データ接続は
+// このページの対応範囲外）。各エンティティのサンプル値は、横断検索の効果が
+// 確認しやすいよう取引先名・摘要をわざと重ねてある（例:「〇〇不動産」は取引・証憑・
+// 取引先マスタのいずれにも登場する）。取引先マスタ（counterparties）・請求書
+// （invoices）は対応する lib/db/*.ts が実装済みのため、実データに接続する
+// （テナント未解決時はこのページ専用のサンプルデータのまま表示する）。
 // ------------------------------------------------------------------
 
 const SAMPLE_TRANSACTIONS: TransactionRow[] = [
@@ -138,6 +143,27 @@ const SAMPLE_DOCUMENTS: DocumentWithTransaction[] = [
   },
 ];
 
+const SAMPLE_INVOICES: ReceivableInvoiceInput[] = [
+  {
+    invoiceNumber: "INV-20260615-0001",
+    clientName: "A社",
+    issueDate: "2026-06-15",
+    dueDate: "2026-07-15",
+    grandTotal: 300000,
+    paidAt: undefined,
+    paidAmount: undefined,
+  },
+  {
+    invoiceNumber: "INV-20260701-0002",
+    clientName: "合同会社パートナーズ",
+    issueDate: "2026-07-01",
+    dueDate: "2026-07-31",
+    grandTotal: 165000,
+    paidAt: "2026-07-20",
+    paidAmount: 165000,
+  },
+];
+
 const SAMPLE_CLIENTS: Counterparty[] = [
   {
     id: "cp-1",
@@ -174,13 +200,14 @@ const SAMPLE_CLIENTS: Counterparty[] = [
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
 const KIND_SECTIONS: {
-  kind: "transaction" | "document" | "client";
+  kind: "transaction" | "document" | "client" | "invoice";
   label: string;
   emptyMessage: string;
 }[] = [
   { kind: "transaction", label: "取引", emptyMessage: "一致する取引はありませんでした。" },
   { kind: "document", label: "証憑（レシート・請求書）", emptyMessage: "一致する証憑はありませんでした。" },
   { kind: "client", label: "取引先", emptyMessage: "一致する取引先はありませんでした。" },
+  { kind: "invoice", label: "請求書", emptyMessage: "一致する請求書はありませんでした。" },
 ];
 
 function AmountText({ amount }: { amount: number }) {
@@ -255,15 +282,38 @@ function ClientResultRow({ result }: { result: ClientSearchResult }) {
   );
 }
 
+function InvoiceResultRow({ result }: { result: InvoiceSearchResult }) {
+  return (
+    <li className="border-b border-stone-100 last:border-0 dark:border-stone-800">
+      <Link
+        href={result.href}
+        className="flex flex-col gap-1 px-4 py-3 hover:bg-stone-50 transition-colors dark:hover:bg-stone-800 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+      >
+        <span className="flex flex-col">
+          <span className="text-sm text-stone-900 dark:text-stone-50">{result.title}</span>
+          {result.subtitle && <span className="text-xs text-stone-500 dark:text-stone-400">{result.subtitle}</span>}
+        </span>
+        <span className="flex items-baseline gap-3 text-xs text-stone-500 dark:text-stone-400 whitespace-nowrap">
+          <span className="tabular-nums">{result.sortDate}</span>
+          <AmountText amount={result.amount} />
+        </span>
+      </Link>
+    </li>
+  );
+}
+
 export default function SearchPage() {
   const [queryInput, setQueryInput] = useState("");
   const [query, setQuery] = useState("");
 
-  // 取引先マスタ（counterparties テーブル）は lib/db/clients.ts が実装済みのため、
-  // ここで実データに接続する。取引・証憑は対応する記帳データ・証憑データの実データ接続
+  // 取引先マスタ（counterparties テーブル）・請求書（invoices テーブル）は
+  // それぞれ lib/db/clients.ts・lib/db/invoices.ts が実装済みのため、ここで実データに
+  // 接続する。取引・証憑は対応する記帳データ・証憑データの実データ接続
   // （このページの対応範囲外）が済むまでサンプルのままとする。
   const [clients, setClients] = useState<Counterparty[]>(SAMPLE_CLIENTS);
   const [isSampleClients, setIsSampleClients] = useState(true);
+  const [invoices, setInvoices] = useState<ReceivableInvoiceInput[]>(SAMPLE_INVOICES);
+  const [isSampleInvoices, setIsSampleInvoices] = useState(true);
 
   useEffect(() => {
     document.title = "横断検索｜決算書作成から税務申告までワンクリック（スグル）";
@@ -277,10 +327,15 @@ export default function SearchPage() {
       try {
         const tenantUser = await getMyTenantUser();
         if (!tenantUser || cancelled) return; // 未ログイン・未所属の場合はサンプルのまま
-        const records = await listCounterparties(tenantUser.tenant_id);
+        const [clientRecords, invoiceRecords] = await Promise.all([
+          listCounterparties(tenantUser.tenant_id),
+          listInvoices(tenantUser.tenant_id),
+        ]);
         if (!cancelled) {
-          setClients(records);
+          setClients(clientRecords);
           setIsSampleClients(false);
+          setInvoices(invoiceRecords);
+          setIsSampleInvoices(false);
         }
       } catch {
         // Supabaseが未設定（開発中のプロトタイプ）。サンプルデータのまま表示する。
@@ -297,8 +352,9 @@ export default function SearchPage() {
         transactions: SAMPLE_TRANSACTIONS,
         documents: SAMPLE_DOCUMENTS,
         clients,
+        invoices,
       }),
-    [query, clients]
+    [query, clients, invoices]
   );
   const grouped = useMemo(() => groupSearchResultsByKind(results), [results]);
   const hasSearched = query.trim().length > 0;
@@ -326,9 +382,9 @@ export default function SearchPage() {
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold">取引・証憑・取引先を横断検索する</h1>
+          <h1 className="text-2xl font-semibold">取引・証憑・取引先・請求書を横断検索する</h1>
           <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
-            1つのキーワードで、取引明細・証憑（レシート・請求書）・取引先マスタをまとめて検索します。
+            1つのキーワードで、取引明細・証憑（レシート・請求書）・取引先マスタ・発行済み請求書をまとめて検索します。
             より詳しい条件（日付・金額の範囲など）で絞り込みたい場合は、それぞれの検索画面（
             <Link href="/transactions" className="underline hover:no-underline">
               取引検索
@@ -340,6 +396,10 @@ export default function SearchPage() {
             ・
             <Link href="/clients" className="underline hover:no-underline">
               取引先マスタ
+            </Link>
+            ・
+            <Link href="/invoices" className="underline hover:no-underline">
+              請求書発行
             </Link>
             ）をご利用ください。
           </p>
@@ -389,13 +449,14 @@ export default function SearchPage() {
               検索結果 <span className="font-medium text-stone-700 dark:text-stone-200">{results.length}件</span>
               <span className="text-stone-400 dark:text-stone-500">
                 {" "}
-                （取引{grouped.transaction.length}件・証憑{grouped.document.length}件・取引先{grouped.client.length}件）
+                （取引{grouped.transaction.length}件・証憑{grouped.document.length}件・取引先{grouped.client.length}件・請求書
+                {grouped.invoice.length}件）
               </span>
             </h2>
 
             {results.length === 0 ? (
               <p className="text-sm text-stone-500 dark:text-stone-400 border border-dashed border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-6 text-center">
-                「{query}」に一致する取引・証憑・取引先が見つかりませんでした。キーワードを見直してください。
+                「{query}」に一致する取引・証憑・取引先・請求書が見つかりませんでした。キーワードを見直してください。
               </p>
             ) : (
               KIND_SECTIONS.map((section) => {
@@ -417,6 +478,8 @@ export default function SearchPage() {
                           grouped.document.map((result) => <DocumentResultRow key={result.id} result={result} />)}
                         {section.kind === "client" &&
                           grouped.client.map((result) => <ClientResultRow key={result.id} result={result} />)}
+                        {section.kind === "invoice" &&
+                          grouped.invoice.map((result) => <InvoiceResultRow key={result.id} result={result} />)}
                       </ul>
                     )}
                   </section>
@@ -430,9 +493,11 @@ export default function SearchPage() {
       <footer className="border-t border-stone-300 bg-white mt-4 dark:border-stone-700 dark:bg-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
-          表示される内容は記帳データ・証憑データ・取引先データの下書き・概算シミュレーションです。個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
+          表示される内容は記帳データ・証憑データ・取引先データ・請求書データの下書き・概算シミュレーションです。個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
           取引・証憑はサンプルデータです。取引先は
           {isSampleClients ? "サンプルデータを表示しています（Supabase未接続、または未ログインのため）。" : "登録済みの内容（Supabase）を表示しています。"}
+          請求書は
+          {isSampleInvoices ? "サンプルデータを表示しています（Supabase未接続、または未ログインのため）。" : "登録済みの内容（Supabase）を表示しています。"}
         </div>
       </footer>
     </div>

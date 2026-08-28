@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TransactionRow } from "../db/supabaseClient";
 import { Counterparty } from "../clients/clientMaster";
 import { DocumentWithTransaction } from "../documents/documentSearch";
+import { ReceivableInvoiceInput } from "../invoice/receivables";
 import { globalSearch, groupSearchResultsByKind } from "./globalSearch";
 
 function transaction(overrides: Partial<TransactionRow>): TransactionRow {
@@ -35,6 +36,17 @@ function document(overrides: Partial<DocumentWithTransaction>): DocumentWithTran
       amount: -150000,
       counterparty: "〇〇不動産",
     },
+    ...overrides,
+  };
+}
+
+function invoice(overrides: Partial<ReceivableInvoiceInput>): ReceivableInvoiceInput {
+  return {
+    invoiceNumber: "INV-20260601-0001",
+    clientName: "A社",
+    issueDate: "2026-06-01",
+    dueDate: "2026-06-30",
+    grandTotal: 300000,
     ...overrides,
   };
 }
@@ -77,6 +89,11 @@ const documents: DocumentWithTransaction[] = [
 const clients: Counterparty[] = [
   client({ id: "cp-fudousan", name: "〇〇不動産" }),
   client({ id: "cp-a-corp", name: "A社", kind: "client", notes: "A社案件の取引先" }),
+];
+
+const invoices: ReceivableInvoiceInput[] = [
+  invoice({ invoiceNumber: "INV-FUDOUSAN-001", clientName: "〇〇不動産" }),
+  invoice({ invoiceNumber: "INV-A-CORP-001", clientName: "A社" }),
 ];
 
 describe("globalSearch", () => {
@@ -186,6 +203,34 @@ describe("globalSearch", () => {
     expect((clientResult as { subtitle?: string }).subtitle).toBe("売上先（顧客）");
   });
 
+  it("finds matching invoices by invoice number or client name, ordered after transactions/documents/clients", () => {
+    const results = globalSearch("不動産", { transactions, documents, clients, invoices });
+    const kindOrder = results.map((r) => r.kind);
+    expect(kindOrder).toEqual(["transaction", "document", "client", "invoice"]);
+    expect(results.map((r) => r.id)).toContain("INV-FUDOUSAN-001");
+  });
+
+  it("matches invoices by keyword case-insensitively, same as the other kinds", () => {
+    const results = globalSearch("a社", { invoices });
+    expect(results).toEqual([expect.objectContaining({ kind: "invoice", id: "INV-A-CORP-001" })]);
+  });
+
+  it("builds an invoice result with the fields the UI needs", () => {
+    const results = globalSearch("A社", {
+      invoices: [invoice({ invoiceNumber: "INV-A-CORP-001", clientName: "A社", issueDate: "2026-06-01", grandTotal: 300000 })],
+    });
+    const invoiceResult = results.find((r) => r.kind === "invoice");
+    expect(invoiceResult).toMatchObject({
+      kind: "invoice",
+      id: "INV-A-CORP-001",
+      title: "INV-A-CORP-001",
+      subtitle: "A社",
+      sortDate: "2026-06-01",
+      amount: 300000,
+      href: "/invoices",
+    });
+  });
+
   it("treats missing source arrays as empty for each kind independently", () => {
     expect(globalSearch("不動産", { transactions })).toEqual([
       expect.objectContaining({ kind: "transaction", id: "tx-rent" }),
@@ -196,20 +241,24 @@ describe("globalSearch", () => {
     expect(globalSearch("不動産", { clients })).toEqual([
       expect.objectContaining({ kind: "client", id: "cp-fudousan" }),
     ]);
+    expect(globalSearch("不動産", { invoices })).toEqual([
+      expect.objectContaining({ kind: "invoice", id: "INV-FUDOUSAN-001" }),
+    ]);
   });
 });
 
 describe("groupSearchResultsByKind", () => {
   it("returns empty groups for an empty result list", () => {
-    expect(groupSearchResultsByKind([])).toEqual({ transaction: [], document: [], client: [] });
+    expect(groupSearchResultsByKind([])).toEqual({ transaction: [], document: [], client: [], invoice: [] });
   });
 
   it("splits a mixed result list into its kind-specific groups, preserving order", () => {
-    const results = globalSearch("不動産", { transactions, documents, clients });
+    const results = globalSearch("不動産", { transactions, documents, clients, invoices });
     const grouped = groupSearchResultsByKind(results);
 
     expect(grouped.transaction.map((r) => r.id)).toEqual(["tx-rent"]);
     expect(grouped.document.map((r) => r.id)).toEqual(["doc-rent"]);
+    expect(grouped.invoice.map((r) => r.id)).toEqual(["INV-FUDOUSAN-001"]);
     expect(grouped.client.map((r) => r.id)).toEqual(["cp-fudousan"]);
   });
 });

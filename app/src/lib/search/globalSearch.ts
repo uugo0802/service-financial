@@ -3,6 +3,7 @@ import { filterTransactions } from "../db/transactionSearch";
 import { DocumentWithTransaction, LinkedTransactionFields, filterDocuments } from "../documents/documentSearch";
 import { COUNTERPARTY_KIND_LABELS, Counterparty } from "../clients/clientMaster";
 import { listCounterparties } from "../clients/clientMaster";
+import { ReceivableInvoiceInput } from "../invoice/receivables";
 
 // ------------------------------------------------------------------
 // テナントに1年分程度の記帳データが蓄積すると、「取引」「証憑」「取引先」の
@@ -22,7 +23,7 @@ import { listCounterparties } from "../clients/clientMaster";
 // （documents/page.tsx の「未紐付けの証憑」注記と同じ前提）。
 // ------------------------------------------------------------------
 
-export type GlobalSearchResultKind = "transaction" | "document" | "client";
+export type GlobalSearchResultKind = "transaction" | "document" | "client" | "invoice";
 
 interface GlobalSearchResultBase {
   /** 元データのID（取引ID・証憑ID・取引先ID）。同じkind内で一意。 */
@@ -57,13 +58,24 @@ export interface ClientSearchResult extends GlobalSearchResultBase {
   counterpartyKind: Counterparty["kind"];
 }
 
+export interface InvoiceSearchResult extends GlobalSearchResultBase {
+  kind: "invoice";
+  /** 請求金額合計（税込、円）。 */
+  amount: number;
+}
+
 /** 横断検索結果の統一表現。UI側は`kind`で判別して表示を出し分ける。 */
-export type GlobalSearchResult = TransactionSearchResult | DocumentSearchResultItem | ClientSearchResult;
+export type GlobalSearchResult =
+  | TransactionSearchResult
+  | DocumentSearchResultItem
+  | ClientSearchResult
+  | InvoiceSearchResult;
 
 export interface GlobalSearchSources {
   transactions?: TransactionRow[];
   documents?: DocumentWithTransaction[];
   clients?: Counterparty[];
+  invoices?: ReceivableInvoiceInput[];
 }
 
 function toTransactionResult(row: TransactionRow): TransactionSearchResult {
@@ -110,15 +122,36 @@ function toClientResult(record: Counterparty): ClientSearchResult {
   };
 }
 
+// lib/invoice/receivables.tsは未収入金集計のみを扱う純粋関数群であり、キーワード検索用の
+// フィルタ関数を持たないため、他エンティティのように既存関数を再利用できない。ここでは
+// transactionSearch.tsのmatchesKeyword()と同じ「小文字化した部分一致」の方針だけを、
+// この薄い層の中で最小限実装する（一致対象は請求書番号・取引先名）。
+function matchesInvoiceKeyword(invoice: ReceivableInvoiceInput, keyword: string): boolean {
+  const haystack = `${invoice.invoiceNumber} ${invoice.clientName}`.toLowerCase();
+  return haystack.includes(keyword.toLowerCase());
+}
+
+function toInvoiceResult(invoice: ReceivableInvoiceInput): InvoiceSearchResult {
+  return {
+    kind: "invoice",
+    id: invoice.invoiceNumber,
+    title: invoice.invoiceNumber,
+    subtitle: invoice.clientName,
+    sortDate: invoice.issueDate,
+    amount: invoice.grandTotal,
+    href: "/invoices",
+  };
+}
+
 /**
  * 取引・証憑・取引先を1つのキーワードで横断検索する純粋関数。
  *
  * - queryが空/空白のみの場合は、既存モジュールの「条件未指定＝全件返す」という
  *   個別検索向けの挙動をそのまま横断検索に持ち込むと結果が肥大化しすぎるため、
  *   明示的に空配列を返す（何も入力していない状態では何も表示しない）。
- * - 結果はkindごとにグルーピングされた状態（取引→証憑→取引先の順）で返す。
+ * - 結果はkindごとにグルーピングされた状態（取引→証憑→取引先→請求書の順）で返す。
  *   各グループ内の並び順は、その元になった検索関数が返す順序をそのまま尊重する
- *   （取引・証憑は渡された配列の順序、取引先はlistCounterpartiesによる名称順）。
+ *   （取引・証憑・請求書は渡された配列の順序、取引先はlistCounterpartiesによる名称順）。
  */
 export function globalSearch(query: string, sources: GlobalSearchSources = {}): GlobalSearchResult[] {
   const keyword = query.trim();
@@ -127,6 +160,7 @@ export function globalSearch(query: string, sources: GlobalSearchSources = {}): 
   const transactions = sources.transactions ?? [];
   const documents = sources.documents ?? [];
   const clients = sources.clients ?? [];
+  const invoices = sources.invoices ?? [];
 
   const transactionResults: GlobalSearchResult[] = filterTransactions(transactions, { keyword }).map(
     toTransactionResult
@@ -140,7 +174,11 @@ export function globalSearch(query: string, sources: GlobalSearchSources = {}): 
 
   const clientResults: GlobalSearchResult[] = listCounterparties(clients, { query: keyword }).map(toClientResult);
 
-  return [...transactionResults, ...documentResults, ...clientResults];
+  const invoiceResults: GlobalSearchResult[] = invoices
+    .filter((invoice) => matchesInvoiceKeyword(invoice, keyword))
+    .map(toInvoiceResult);
+
+  return [...transactionResults, ...documentResults, ...clientResults, ...invoiceResults];
 }
 
 /** 横断検索結果をkindごとに分けたもの。検索結果一覧画面のグルーピング表示用。 */
@@ -148,16 +186,18 @@ export type GlobalSearchResultsByKind = {
   transaction: TransactionSearchResult[];
   document: DocumentSearchResultItem[];
   client: ClientSearchResult[];
+  invoice: InvoiceSearchResult[];
 };
 
 /** globalSearch()の結果をkindごとの配列に分類する（並び順は入力の順序を維持）。 */
 export function groupSearchResultsByKind(results: GlobalSearchResult[]): GlobalSearchResultsByKind {
-  const grouped: GlobalSearchResultsByKind = { transaction: [], document: [], client: [] };
+  const grouped: GlobalSearchResultsByKind = { transaction: [], document: [], client: [], invoice: [] };
 
   for (const result of results) {
     if (result.kind === "transaction") grouped.transaction.push(result);
     else if (result.kind === "document") grouped.document.push(result);
-    else grouped.client.push(result);
+    else if (result.kind === "client") grouped.client.push(result);
+    else grouped.invoice.push(result);
   }
 
   return grouped;
