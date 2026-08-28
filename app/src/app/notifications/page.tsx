@@ -9,11 +9,13 @@ import { ReconciliationResult } from "@/lib/reconcile/bankReconciliation";
 import { buildWeeklyDigest, IsoDate } from "@/lib/notifications/weeklyDigest";
 import { WeeklyDigestPreview } from "@/components/WeeklyDigestPreview";
 import { NotificationPreferencesForm } from "@/components/NotificationPreferencesForm";
+import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 
-// このページ専用のサンプルデータ。実際のアップロード・記帳フロー（app/page.tsx）や
-// Supabase等の実データとは連携しない、週次ダイジェストの見え方を確認するための
-// 自己完結型のプレビュー画面（dashboard/sampleData.tsと同様の位置づけだが、
-// このページ限定のダミーデータのため共有ファイルには追加しない）。
+// このページ専用のサンプルデータ。記帳された実データ（journal_entries）が
+// useLedgerTransactions経由で取得できるまで、または取得できなかった場合の
+// フォールバック表示に使う（reconcile/rule-backfill等と同じ位置づけ）。
+// 一方SAMPLE_RECONCILIATIONS（下記）は対応する銀行残高突合結果の永続化の仕組み
+// （DBテーブル・lib/db/層）が現時点で存在しないため、引き続きサンプルデータのまま。
 const SAMPLE_CATEGORIZED_TRANSACTIONS: CategorizedTransaction[] = [
   {
     id: "sample-rule-1",
@@ -112,6 +114,7 @@ function todayIsoDate(): IsoDate {
 
 export default function NotificationsPage() {
   const asOf = useMemo(() => todayIsoDate(), []);
+  const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_CATEGORIZED_TRANSACTIONS);
 
   const [entityType, setEntityType] = useState<EntityType>("individual");
   const [fiscalYearEndMonth, setFiscalYearEndMonth] = useState(3);
@@ -122,11 +125,11 @@ export default function NotificationsPage() {
     () =>
       buildWeeklyDigest({
         asOf,
-        categorizedTransactions: includeReviewQueue ? SAMPLE_CATEGORIZED_TRANSACTIONS : [],
+        categorizedTransactions: includeReviewQueue ? transactions : [],
         filing: { entityType, fiscalYearEndMonth },
         reconciliations: includeReconciliation ? SAMPLE_RECONCILIATIONS : undefined,
       }),
-    [asOf, entityType, fiscalYearEndMonth, includeReviewQueue, includeReconciliation]
+    [asOf, transactions, entityType, fiscalYearEndMonth, includeReviewQueue, includeReconciliation]
   );
 
   return (
@@ -199,8 +202,15 @@ export default function NotificationsPage() {
                 checked={includeReviewQueue}
                 onChange={(e) => setIncludeReviewQueue(e.target.checked)}
               />
-              サンプルのレビュー待ち取引を含める（AIカテゴライズの低信頼エスカレーション）
+              {isSampleData
+                ? "サンプルのレビュー待ち取引を含める（AIカテゴライズの低信頼エスカレーション）"
+                : "記帳された実データのレビュー待ち取引を含める（AIカテゴライズの低信頼エスカレーション）"}
             </label>
+            <p className="text-xs text-stone-400 dark:text-stone-500 pl-6 -mt-1">
+              {isSampleData
+                ? "現在は取引データもサンプルデータを表示しています。"
+                : "記帳された実データ（当期の取引）を表示しています。"}
+            </p>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -227,7 +237,12 @@ export default function NotificationsPage() {
 
         <section className="border-t border-stone-300 dark:border-stone-700 pt-6">
           <p className="text-xs text-stone-400 dark:text-stone-500 leading-relaxed max-w-2xl">
-            本ページは開発中のプロトタイプであり、サンプルデータを使用しています。実際のメール送信は行わず、
+            本ページは開発中のプロトタイプです。
+            {isSampleData
+              ? "レビュー待ち取引はサンプルデータを表示しています。"
+              : "レビュー待ち取引は記帳された実データに基づいて表示しています。"}
+            {" "}
+            銀行残高突合結果は現時点でサンプルデータのままです。実際のメール送信は行わず、
             ダイジェストとして組み立てられる内容（件数・申告期限の一覧・要約文）を確認するための画面です。
             申告期限の情報は一般的な原則ルールに基づく参考値であり、個別の税務相談ではありません。
           </p>
