@@ -10,6 +10,8 @@ import { ReceivableInvoiceInput } from "@/lib/invoice/receivables";
 import { getMyTenantUser } from "@/lib/db/tenants";
 import { listCounterparties } from "@/lib/db/clients";
 import { listInvoices } from "@/lib/db/invoices";
+import { loadTransactionsForCurrentTenant } from "@/lib/db/transactions";
+import { loadDocumentsWithTransactionsForCurrentTenant } from "@/lib/db/documentsWithTransactions";
 import {
   ClientSearchResult,
   DocumentSearchResultItem,
@@ -26,11 +28,11 @@ import {
 // を薄く呼び出すだけの表示専用コンポーネント。documents/page.tsx・
 // transactions/page.tsx・clients/page.tsxと同じ構成に合わせている）。
 //
-// 取引・証憑はこのページ専用のサンプルデータを表示する（対応する実データ接続は
-// このページの対応範囲外）。各エンティティのサンプル値は、横断検索の効果が
-// 確認しやすいよう取引先名・摘要をわざと重ねてある（例:「〇〇不動産」は取引・証憑・
-// 取引先マスタのいずれにも登場する）。取引先マスタ（counterparties）・請求書
-// （invoices）は対応する lib/db/*.ts が実装済みのため、実データに接続する
+// 各エンティティのサンプル値は、横断検索の効果が確認しやすいよう取引先名・摘要を
+// わざと重ねてある（例:「〇〇不動産」は取引・証憑・取引先マスタのいずれにも登場する）。
+// 取引（transactions/page.tsxと同じlib/db/transactions.ts）・証憑（documents/page.tsxと
+// 同じlib/db/documentsWithTransactions.ts）・取引先マスタ（lib/db/clients.ts）・
+// 請求書（lib/db/invoices.ts）はいずれも実装済みのため、実データに接続する
 // （テナント未解決時はこのページ専用のサンプルデータのまま表示する）。
 // ------------------------------------------------------------------
 
@@ -306,10 +308,8 @@ export default function SearchPage() {
   const [queryInput, setQueryInput] = useState("");
   const [query, setQuery] = useState("");
 
-  // 取引先マスタ（counterparties テーブル）・請求書（invoices テーブル）は
-  // それぞれ lib/db/clients.ts・lib/db/invoices.ts が実装済みのため、ここで実データに
-  // 接続する。取引・証憑は対応する記帳データ・証憑データの実データ接続
-  // （このページの対応範囲外）が済むまでサンプルのままとする。
+  const [transactions, setTransactions] = useState<TransactionRow[]>(SAMPLE_TRANSACTIONS);
+  const [documents, setDocuments] = useState<DocumentWithTransaction[]>(SAMPLE_DOCUMENTS);
   const [clients, setClients] = useState<Counterparty[]>(SAMPLE_CLIENTS);
   const [isSampleClients, setIsSampleClients] = useState(true);
   const [invoices, setInvoices] = useState<ReceivableInvoiceInput[]>(SAMPLE_INVOICES);
@@ -327,15 +327,19 @@ export default function SearchPage() {
       try {
         const tenantUser = await getMyTenantUser();
         if (!tenantUser || cancelled) return; // 未ログイン・未所属の場合はサンプルのまま
-        const [clientRecords, invoiceRecords] = await Promise.all([
+        const [clientRecords, invoiceRecords, transactionRecords, documentRecords] = await Promise.all([
           listCounterparties(tenantUser.tenant_id),
           listInvoices(tenantUser.tenant_id),
+          loadTransactionsForCurrentTenant(),
+          loadDocumentsWithTransactionsForCurrentTenant(),
         ]);
         if (!cancelled) {
           setClients(clientRecords);
           setIsSampleClients(false);
           setInvoices(invoiceRecords);
           setIsSampleInvoices(false);
+          if (transactionRecords) setTransactions(transactionRecords);
+          if (documentRecords) setDocuments(documentRecords);
         }
       } catch {
         // Supabaseが未設定（開発中のプロトタイプ）。サンプルデータのまま表示する。
@@ -349,12 +353,12 @@ export default function SearchPage() {
   const results = useMemo(
     () =>
       globalSearch(query, {
-        transactions: SAMPLE_TRANSACTIONS,
-        documents: SAMPLE_DOCUMENTS,
+        transactions,
+        documents,
         clients,
         invoices,
       }),
-    [query, clients, invoices]
+    [query, transactions, documents, clients, invoices]
   );
   const grouped = useMemo(() => groupSearchResultsByKind(results), [results]);
   const hasSearched = query.trim().length > 0;
