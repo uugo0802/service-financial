@@ -119,20 +119,20 @@ export default function JournalPage() {
   const cashAccounts = accounts.filter((a) => a.account_type === "asset");
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">仕訳の手入力</div>
+          <div className="text-xs text-muted-foreground">仕訳の手入力</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">仕訳を手入力する</h1>
-          <p className="text-sm text-stone-600 mb-4 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-4 max-w-2xl leading-relaxed">
             CSVアップロードに頼らず、現金取引やレシートのみの取引などを1件ずつ手入力で追加・編集・削除できます。
             <b>これは概算シミュレーションであり、正式な申告書ではありません。</b>
           </p>
@@ -148,7 +148,7 @@ export default function JournalPage() {
             <button
               type="button"
               onClick={() => setFormState({ mode: "create" })}
-              className="text-sm px-5 py-3 border border-stone-400 bg-white hover:border-red-700 transition-colors"
+              className="text-sm px-5 py-3 border border-border bg-surface hover:border-red-700 transition-colors"
             >
               ＋ 仕訳を追加
             </button>
@@ -157,18 +157,18 @@ export default function JournalPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-3">
-            入力済みの仕訳 {entries.length > 0 && <span className="text-sm font-normal text-stone-500">（{entries.length}件）</span>}
+            入力済みの仕訳 {entries.length > 0 && <span className="text-sm font-normal text-muted-foreground">（{entries.length}件）</span>}
           </h2>
 
           {entries.length === 0 ? (
-            <p className="text-sm text-stone-500 border border-dashed border-stone-300 bg-white px-4 py-6 text-center">
+            <p className="text-sm text-muted-foreground border border-dashed border-border bg-surface px-4 py-6 text-center">
               まだ仕訳がありません。上の「＋ 仕訳を追加」から入力してください。
             </p>
           ) : (
-            <TableScrollArea innerClassName="border border-stone-300 bg-white">
+            <TableScrollArea innerClassName="border border-border bg-surface">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">日付</th>
                     <th className="px-3 py-2 font-normal">摘要</th>
                     <th className="px-3 py-2 font-normal text-right">金額</th>
@@ -181,12 +181,12 @@ export default function JournalPage() {
                 <tbody>
                   {entries.map((entry) => (
                     <Fragment key={entry.id}>
-                      <tr className="border-b border-stone-100 last:border-0">
+                      <tr className="border-b border-border/60 last:border-0">
                         <td className="px-3 py-2 whitespace-nowrap tabular-nums">{entry.date}</td>
                         <td className="px-3 py-2 max-w-xs truncate" title={entry.description}>
                           {entry.description}
                         </td>
-                        <td className={`px-3 py-2 text-right tabular-nums ${entry.amount < 0 ? "text-stone-700" : "text-emerald-700"}`}>
+                        <td className={`px-3 py-2 text-right tabular-nums ${entry.amount < 0 ? "text-foreground" : "text-emerald-700"}`}>
                           {yen.format(entry.amount)}
                         </td>
                         <td className="px-3 py-2">{entry.account}</td>
@@ -204,7 +204,7 @@ export default function JournalPage() {
                                   : { mode: "edit", id: entry.id }
                               )
                             }
-                            className="text-xs text-stone-600 hover:text-red-700 mr-3"
+                            className="text-xs text-muted-foreground hover:text-red-700 mr-3"
                           >
                             {formState.mode === "edit" && formState.id === entry.id ? "閉じる" : "編集"}
                           </button>
@@ -219,7 +219,7 @@ export default function JournalPage() {
                       </tr>
                       {formState.mode === "edit" && formState.id === entry.id && editingEntry && (
                         <tr>
-                          <td colSpan={7} className="px-3 py-4 bg-stone-50">
+                          <td colSpan={7} className="px-3 py-4 bg-surface">
                             <JournalEntryForm
                               mode="edit"
                               initialDraft={transactionToDraft(editingEntry)}
@@ -239,12 +239,12 @@ export default function JournalPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-3">記帳する</h2>
-          <p className="text-sm text-stone-600 mb-4 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-4 max-w-2xl leading-relaxed">
             上の一覧の内容を、指定した現金・預金勘定と組み合わせて仕訳台帳（journal_entries）へ保存します。
             保存が完了すると上の一覧はクリアされます。
           </p>
 
-          {saveSetupState === "loading" && <p className="text-sm text-stone-500">読み込み中…</p>}
+          {saveSetupState === "loading" && <p className="text-sm text-muted-foreground">読み込み中…</p>}
 
           {saveSetupState === "unconfigured" && (
             <div className="border border-amber-300 bg-amber-50 text-amber-800 text-sm p-4">
@@ -253,13 +253,13 @@ export default function JournalPage() {
           )}
 
           {saveSetupState === "unauthenticated" && (
-            <div className="border border-stone-300 bg-white text-sm p-4 text-stone-600">
+            <div className="border border-border bg-surface text-sm p-4 text-muted-foreground">
               ログインすると入力した仕訳を保存できます。
             </div>
           )}
 
           {saveSetupState === "ready" && (
-            <div className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
+            <div className="border border-border bg-surface p-5 flex flex-col gap-4">
               <div className="max-w-sm">
                 <AccountSelect
                   label="記帳先の現金・預金勘定"
@@ -277,17 +277,17 @@ export default function JournalPage() {
                   onClick={handleSave}
                   className={`text-sm px-5 py-2.5 border transition-colors ${
                     !cashAccountId || entries.length === 0 || saving
-                      ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-                      : "border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+                      ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                      : "border-accent bg-accent text-white hover:opacity-90"
                   }`}
                 >
                   {saving ? "記帳中…" : `この内容で記帳する（${entries.length}件）`}
                 </button>
                 {entries.length === 0 && (
-                  <span className="ml-3 text-xs text-stone-400">保存する仕訳がありません</span>
+                  <span className="ml-3 text-xs text-muted-foreground">保存する仕訳がありません</span>
                 )}
                 {entries.length > 0 && !cashAccountId && (
-                  <span className="ml-3 text-xs text-stone-400">記帳先の現金・預金勘定を選択してください</span>
+                  <span className="ml-3 text-xs text-muted-foreground">記帳先の現金・預金勘定を選択してください</span>
                 )}
                 {saveError && <span className="ml-3 text-xs text-red-700">{saveError}</span>}
                 {saveResult && (
