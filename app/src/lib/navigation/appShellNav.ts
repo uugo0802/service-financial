@@ -37,6 +37,7 @@ export const APP_SHELL_EXCLUDED_PATHS: readonly string[] = [
   "/tokushoho",
   "/offline",
   "/invite",
+  "/auth/confirm",
 ];
 
 /**

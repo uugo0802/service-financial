@@ -79,9 +79,11 @@ function LoginPageInner() {
     setStatus("sending");
     setErrorMessage(null);
 
+    // /login自身ではなく、認証コードの交換(exchangeCodeForSession)を行う
+    // /auth/confirm ルートハンドラへ遷移させる（app/src/app/auth/confirm/route.ts参照）。
     const redirectTo =
       typeof window !== "undefined"
-        ? `${window.location.origin}/login?redirect=${encodeURIComponent(redirectTarget)}`
+        ? `${window.location.origin}/auth/confirm?next=${encodeURIComponent(redirectTarget)}`
         : undefined;
     const { error } = await signInWithMagicLink(email, redirectTo);
 
