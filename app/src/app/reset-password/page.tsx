@@ -49,12 +49,12 @@ function findResetTokenRecord(token: string): PasswordResetTokenRecord | null {
   return loadResetTokenRecords()[token] ?? null;
 }
 
-const inputClass = "border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600";
+const inputClass = "border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40";
 
 function PageChrome({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-md px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
@@ -99,7 +99,7 @@ function RequestResetForm() {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">パスワードをお忘れの方</h1>
-      <p className="text-sm text-stone-600 leading-relaxed">
+      <p className="text-sm text-muted-foreground leading-relaxed">
         登録済みのメールアドレスを入力してください。パスワード再設定用のリンクをお送りします。
       </p>
 
@@ -120,7 +120,7 @@ function RequestResetForm() {
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             メールアドレス
             <input
               type="email"
@@ -137,8 +137,8 @@ function RequestResetForm() {
             disabled={status === "submitting"}
             className={`text-sm px-5 py-3 border transition-colors ${
               status === "submitting"
-                ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-                : "border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+                ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                : "border-accent bg-accent text-white hover:opacity-90"
             }`}
           >
             {status === "submitting" ? "送信中…" : "再設定用リンクを送る"}
@@ -146,7 +146,7 @@ function RequestResetForm() {
         </form>
       )}
 
-      <Link href="/login" className="text-xs text-stone-500 underline underline-offset-2 self-start">
+      <Link href="/login" className="text-xs text-muted-foreground underline underline-offset-2 self-start">
         ← ログインに戻る
       </Link>
     </section>
@@ -206,7 +206,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
   }
 
   if (checkStatus === "checking") {
-    return <p className="text-sm text-stone-500">確認中…</p>;
+    return <p className="text-sm text-muted-foreground">確認中…</p>;
   }
 
   if (checkStatus === "invalid") {
@@ -214,7 +214,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
       <section className="flex flex-col gap-4">
         <h1 className="text-xl font-semibold">パスワードの再設定</h1>
         <p className="text-sm text-red-700 border border-red-300 bg-red-50 p-4">{invalidMessage}</p>
-        <Link href="/reset-password" className="text-sm px-5 py-3 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors self-start">
+        <Link href="/reset-password" className="text-sm px-5 py-3 border border-accent bg-accent text-white hover:opacity-90 transition-colors self-start">
           もう一度リクエストする
         </Link>
       </section>
@@ -228,7 +228,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
         <p className="text-sm text-emerald-700 border border-emerald-300 bg-emerald-50 p-4">
           パスワードを再設定しました。新しいパスワードでログインしてください。
         </p>
-        <Link href="/login" className="text-sm px-5 py-3 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors self-start">
+        <Link href="/login" className="text-sm px-5 py-3 border border-accent bg-accent text-white hover:opacity-90 transition-colors self-start">
           ログインへ進む
         </Link>
       </section>
@@ -240,10 +240,10 @@ function SetNewPasswordForm({ token }: { token: string }) {
   return (
     <section className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">パスワードの再設定</h1>
-      <p className="text-sm text-stone-600 leading-relaxed">新しいパスワードを入力してください。</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">新しいパスワードを入力してください。</p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           新しいパスワード
           <input
             type="password"
@@ -254,7 +254,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
             className={inputClass}
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           新しいパスワード（確認）
           <input
             type="password"
@@ -267,7 +267,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
         </label>
 
         {newPassword.length > 0 && !strength.valid && (
-          <ul className="text-xs text-stone-500 list-disc pl-4 flex flex-col gap-0.5">
+          <ul className="text-xs text-muted-foreground list-disc pl-4 flex flex-col gap-0.5">
             {strength.reasons.map((reason) => (
               <li key={reason}>{reason}</li>
             ))}
@@ -281,8 +281,8 @@ function SetNewPasswordForm({ token }: { token: string }) {
           disabled={submitStatus === "submitting"}
           className={`text-sm px-5 py-3 border transition-colors ${
             submitStatus === "submitting"
-              ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-              : "border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+              ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+              : "border-accent bg-accent text-white hover:opacity-90"
           }`}
         >
           {submitStatus === "submitting" ? "設定中…" : "パスワードを設定する"}
@@ -302,7 +302,7 @@ function ResetPasswordContent() {
 export default function ResetPasswordPage() {
   return (
     <PageChrome>
-      <Suspense fallback={<p className="text-sm text-stone-500">読み込み中…</p>}>
+      <Suspense fallback={<p className="text-sm text-muted-foreground">読み込み中…</p>}>
         <ResetPasswordContent />
       </Suspense>
     </PageChrome>

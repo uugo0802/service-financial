@@ -55,8 +55,8 @@ export default function InvitePage() {
   }
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> 友達紹介プログラム
@@ -67,7 +67,7 @@ export default function InvitePage() {
       <main className="mx-auto max-w-3xl px-6 py-12 flex flex-col gap-8">
         <section className="text-center flex flex-col gap-2">
           <h1 className="font-serif text-2xl">友達を招待して、お互いに1ヶ月無料</h1>
-          <p className="text-stone-600 text-sm max-w-xl mx-auto leading-relaxed">
+          <p className="text-muted-foreground text-sm max-w-xl mx-auto leading-relaxed">
             記帳・確定申告の手間で困っている友達に、あなたの紹介リンクをシェアしましょう。
             友達が登録して最初のCSVインポートを完了すると、あなたと友達の両方に特典が届きます。
           </p>
@@ -76,8 +76,8 @@ export default function InvitePage() {
         <InviteProgramCard referralCode={referralCode} invites={invites} onInvite={handleInvite} />
       </main>
 
-      <footer className="border-t border-stone-300 bg-white">
-        <div className="mx-auto max-w-3xl px-6 py-8 text-xs text-stone-500 leading-relaxed">
+      <footer className="border-t border-border bg-surface">
+        <div className="mx-auto max-w-3xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           このページは開発中のプロトタイプであり、表示されている招待データはサンプルです。実際の招待・特典付与・課金連携は今後実装予定です。
           本サービスは税理士法に定める税務代理・税務書類の作成・税務相談を行うものではなく、申告書の下書き作成・送信操作は常にご本人の判断と操作によって行われます。
         </div>

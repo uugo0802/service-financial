@@ -17,20 +17,20 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400">初回設定</div>
+          <div className="text-xs text-muted-foreground">初回設定</div>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl px-6 py-10 flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">ようこそ。まずは基本情報を設定しましょう</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-300 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             事業形態・屋号（会社名）・決算月・青色申告の承認有無は、記帳や税額の概算シミュレーション、
             申告書の下書き作成の前提となる基本情報です。ステップに沿って一つずつ設定してください。
           </p>
@@ -44,7 +44,7 @@ export default function OnboardingPage() {
         <OnboardingWizard initialDraft={EMPTY_TENANT_PROFILE_DRAFT} onComplete={handleComplete} />
 
         {completedPatch && (
-          <p className="text-xs text-stone-400 dark:text-stone-500">
+          <p className="text-xs text-muted-foreground">
             この画面は開発中のプロトタイプです。保存内容はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
           </p>
         )}

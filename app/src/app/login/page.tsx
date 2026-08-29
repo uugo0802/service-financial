@@ -99,8 +99,8 @@ function LoginPageInner() {
   }
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-md px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
@@ -115,17 +115,17 @@ function LoginPageInner() {
           </div>
         )}
 
-        {!configError && checkingSession && <p className="text-sm text-stone-500">読み込み中…</p>}
+        {!configError && checkingSession && <p className="text-sm text-muted-foreground">読み込み中…</p>}
 
         {!configError && !checkingSession && session && (
           <section className="flex flex-col gap-4">
             <h1 className="text-xl font-semibold">ログイン中</h1>
-            <p className="text-sm text-stone-600">{session.user.email} としてログインしています。</p>
-            <p className="text-sm text-stone-500">まもなく移動します…</p>
+            <p className="text-sm text-muted-foreground">{session.user.email} としてログインしています。</p>
+            <p className="text-sm text-muted-foreground">まもなく移動します…</p>
             <button
               type="button"
               onClick={handleLogout}
-              className="self-start text-sm px-5 py-3 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+              className="self-start text-sm px-5 py-3 border border-border bg-surface hover:border-foreground/40 transition-colors"
             >
               ログアウト
             </button>
@@ -135,7 +135,7 @@ function LoginPageInner() {
         {!configError && !checkingSession && !session && (
           <section className="flex flex-col gap-4">
             <h1 className="text-xl font-semibold">ログイン / 新規登録</h1>
-            <p className="text-sm text-stone-600 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               メールアドレス宛にログイン用リンクをお送りします。未登録のメールアドレスの場合は、
               自動的にアカウントが作成されます。パスワードの入力は不要です。
             </p>
@@ -146,7 +146,7 @@ function LoginPageInner() {
               </p>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-                <label className="flex flex-col gap-1 text-xs text-stone-500">
+                <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                   メールアドレス
                   <input
                     type="email"
@@ -154,7 +154,7 @@ function LoginPageInner() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+                    className="border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
                   />
                 </label>
                 {errorMessage && <p className="text-sm text-red-700">{errorMessage}</p>}
@@ -163,13 +163,13 @@ function LoginPageInner() {
                   disabled={status === "sending"}
                   className={`text-sm px-5 py-3 border transition-colors ${
                     status === "sending"
-                      ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-                      : "border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+                      ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                      : "border-accent bg-accent text-white hover:opacity-90"
                   }`}
                 >
                   {status === "sending" ? "送信中…" : "ログインリンクを送る"}
                 </button>
-                <Link href="/reset-password" className="text-xs text-stone-500 underline underline-offset-2 self-start">
+                <Link href="/reset-password" className="text-xs text-muted-foreground underline underline-offset-2 self-start">
                   パスワードをお忘れですか？
                 </Link>
               </form>
@@ -183,7 +183,7 @@ function LoginPageInner() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-stone-50" />}>
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
       <LoginPageInner />
     </Suspense>
   );
