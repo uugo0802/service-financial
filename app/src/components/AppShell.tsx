@@ -1,9 +1,9 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X } from "lucide-react";
 import { isAppShellExcludedPath, isNavLinkActive, NAV_GROUPS, NavGroup } from "@/lib/navigation/appShellNav";
 
 // ------------------------------------------------------------------
@@ -19,35 +19,85 @@ import { isAppShellExcludedPath, isNavLinkActive, NAV_GROUPS, NavGroup } from "@
 // （ロゴ＋メニューのみ。テナント名表示は各ページ既存のヘッダー領域の役割のまま）。
 // ------------------------------------------------------------------
 
+/** グループに、現在アクティブなページへのリンクが含まれるかどうか。 */
+function groupContainsActiveLink(group: NavGroup, pathname: string): boolean {
+  return group.links.some((link) => isNavLinkActive(pathname, link.href));
+}
+
 function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGroup[]; pathname: string; onNavigate?: () => void }) {
+  // 初期状態は「現在アクティブなページを含むグループ」のみ展開する。
+  // pathnameが変わるたび（ページ遷移のたび）に、その時点でアクティブなグループへ
+  // 自動的に開き直す（折りたたみ状態を明示的に操作していない限り）。
+  const [expanded, setExpanded] = useState<Set<string>>(
+    () => new Set(groups.filter((g) => groupContainsActiveLink(g, pathname)).map((g) => g.label))
+  );
+  const [manuallyToggled, setManuallyToggled] = useState(false);
+
+  useEffect(() => {
+    if (manuallyToggled) return; // ユーザーが手動で開閉した後は、自動追従を止める
+    setExpanded(new Set(groups.filter((g) => groupContainsActiveLink(g, pathname)).map((g) => g.label)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  function toggleGroup(label: string) {
+    setManuallyToggled(true);
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      return next;
+    });
+  }
+
   return (
-    <nav aria-label="メインナビゲーション" className="flex flex-col gap-5">
-      {groups.map((group) => (
-        <div key={group.label}>
-          <h2 className="px-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{group.label}</h2>
-          <ul className="mt-1 flex flex-col gap-0.5">
-            {group.links.map((link) => {
-              const active = isNavLinkActive(pathname, link.href);
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={onNavigate}
-                    aria-current={active ? "page" : undefined}
-                    className={`block rounded-md px-2 py-1.5 text-sm transition-colors ${
-                      active
-                        ? "bg-accent/10 font-medium text-accent"
-                        : "text-foreground hover:bg-surface"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
+    <nav aria-label="メインナビゲーション" className="flex flex-col gap-1">
+      {groups.map((group) => {
+        const isExpanded = expanded.has(group.label);
+        const panelId = `nav-group-${group.label}`;
+        return (
+          <div key={group.label}>
+            <button
+              type="button"
+              onClick={() => toggleGroup(group.label)}
+              aria-expanded={isExpanded}
+              aria-controls={panelId}
+              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:bg-surface"
+            >
+              {group.label}
+              <ChevronDown
+                className={`h-3.5 w-3.5 shrink-0 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+            {isExpanded && (
+              <ul id={panelId} className="mt-1 flex flex-col gap-0.5">
+                {group.links.map((link) => {
+                  const active = isNavLinkActive(pathname, link.href);
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={onNavigate}
+                        aria-current={active ? "page" : undefined}
+                        className={`block rounded-md px-2 py-1.5 text-sm transition-colors ${
+                          active
+                            ? "bg-accent/10 font-medium text-accent"
+                            : "text-foreground hover:bg-surface"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        );
+      })}
     </nav>
   );
 }

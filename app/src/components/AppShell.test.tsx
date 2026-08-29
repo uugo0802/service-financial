@@ -52,7 +52,7 @@ describe("AppShell", () => {
     expect(screen.getByLabelText("メニューを開く")).toBeTruthy();
   });
 
-  it("すべてのナビゲーショングループ・リンクのラベルが存在する", () => {
+  it("すべてのナビゲーショングループのラベルが存在し、展開するとリンクが表示される", () => {
     mockPathname = "/dashboard";
     render(
       <AppShell>
@@ -61,8 +61,15 @@ describe("AppShell", () => {
     );
     for (const group of NAV_GROUPS) {
       // デスクトップサイドバー・モバイル上部バーの両方から見つかる可能性があるが、
-      // 少なくとも1つは存在することを確認する。
-      expect(screen.getAllByText(group.label).length).toBeGreaterThan(0);
+      // 少なくとも1つは存在することを確認する。グループ見出し自体は折りたたみ中でも表示される。
+      const headers = screen.getAllByText(group.label);
+      expect(headers.length).toBeGreaterThan(0);
+      // 初期状態でアクティブページ（/dashboard）を含まないグループは折りたたまれているため、
+      // デスクトップサイドバー側の見出しボタンをクリックして展開してから中身を確認する。
+      const desktopHeader = headers.find((el) => el.closest("button")?.getAttribute("aria-expanded") === "false");
+      if (desktopHeader) {
+        fireEvent.click(desktopHeader.closest("button")!);
+      }
       for (const link of group.links) {
         expect(screen.getAllByText(link.label).length).toBeGreaterThan(0);
       }
@@ -125,6 +132,9 @@ describe("AppShell", () => {
     );
     fireEvent.click(screen.getByLabelText("メニューを開く"));
     const dialog = screen.getByRole("dialog", { name: "メインナビゲーション" });
+    // "総勘定元帳"は「記帳・仕訳」グループに属し、mockPathname="/dashboard"では
+    // 初期状態で折りたたまれているため、先にグループ見出しを展開する。
+    fireEvent.click(within(dialog).getByText("記帳・仕訳"));
     fireEvent.click(within(dialog).getByText("総勘定元帳"));
     expect(screen.queryByRole("dialog")).toBeNull();
   });

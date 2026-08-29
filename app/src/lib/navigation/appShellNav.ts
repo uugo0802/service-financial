@@ -37,7 +37,20 @@ export const APP_SHELL_EXCLUDED_PATHS: readonly string[] = [
   "/tokushoho",
   "/offline",
   "/invite",
+  "/quick-estimate",
 ];
+
+/**
+ * 認証なしでもアクセスできるパス（docs/superpowers/specs/2026-08-29-entry-auth-theme-nav-design.md ①）。
+ * AppShell対象外パスと同一の考え方だが、意味が異なる（「chromeを描画しない」ではなく
+ * 「middlewareでログインを要求しない」）ため、値は同じでも別の定数として公開する
+ * （将来どちらかだけを変更したくなった場合に混同しないため）。
+ */
+export const AUTH_EXEMPT_PATHS: readonly string[] = APP_SHELL_EXCLUDED_PATHS;
+
+export function isAuthExemptPath(pathname: string): boolean {
+  return AUTH_EXEMPT_PATHS.includes(pathname);
+}
 
 /**
  * 指定のパスがAppShell対象外（ラップしない）かどうかを判定する。

@@ -1,14 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/db/supabaseClient";
 import { signInWithMagicLink, signOut } from "@/lib/auth/authClient";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
-export default function LoginPage() {
+const DEFAULT_REDIRECT = "/dashboard";
+
+function LoginPageInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  // middlewareが未ログイン時に付与する ?redirect=<元のパス> を、ログイン成功後の
+  // 遷移先として使う（docs/superpowers/specs/2026-08-29-entry-auth-theme-nav-design.md ②）。
+  // 外部URLへのオープンリダイレクトを防ぐため、"/"始まりの相対パスのみ許可する。
+  const redirectParam = searchParams.get("redirect");
+  const redirectTarget = redirectParam && redirectParam.startsWith("/") ? redirectParam : DEFAULT_REDIRECT;
+
   const [configError, setConfigError] = useState<string | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [checkingSession, setCheckingSession] = useState(true);
@@ -52,13 +63,26 @@ export default function LoginPage() {
     };
   }, []);
 
+  // ログイン済み（既存セッション or マジックリンク経由の新規セッション）になった時点で、
+  // redirect先へ遷移する。middlewareのCookie反映を待つため、単純なpushではなく
+  // refreshを挟んでサーバー側の判定もやり直させる。
+  useEffect(() => {
+    if (!checkingSession && session) {
+      router.replace(redirectTarget);
+      router.refresh();
+    }
+  }, [checkingSession, session, redirectTarget, router]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (status === "sending") return;
     setStatus("sending");
     setErrorMessage(null);
 
-    const redirectTo = typeof window !== "undefined" ? `${window.location.origin}/login` : undefined;
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/login?redirect=${encodeURIComponent(redirectTarget)}`
+        : undefined;
     const { error } = await signInWithMagicLink(email, redirectTo);
 
     if (error) {
@@ -97,6 +121,7 @@ export default function LoginPage() {
           <section className="flex flex-col gap-4">
             <h1 className="text-xl font-semibold">ログイン中</h1>
             <p className="text-sm text-stone-600">{session.user.email} としてログインしています。</p>
+            <p className="text-sm text-stone-500">まもなく移動します…</p>
             <button
               type="button"
               onClick={handleLogout}
@@ -147,11 +172,22 @@ export default function LoginPage() {
                 <Link href="/reset-password" className="text-xs text-stone-500 underline underline-offset-2 self-start">
                   パスワードをお忘れですか？
                 </Link>
+                <Link href="/quick-estimate" className="text-xs text-stone-500 underline underline-offset-2 self-start">
+                  ログインせずに概算シミュレーションだけ試す
+                </Link>
               </form>
             )}
           </section>
         )}
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-stone-50" />}>
+      <LoginPageInner />
+    </Suspense>
   );
 }
