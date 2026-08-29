@@ -1,4 +1,5 @@
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
 // ------------------------------------------------------------------
 // Supabaseクライアントのスキャフォールドのみ。実際のSupabaseプロジェクトへの
@@ -156,6 +157,13 @@ let cachedClient: SupabaseClient | null = null;
  * ブラウザ/クライアントサイド用のSupabaseクライアントを返す。
  * 環境変数が未設定の間は呼び出し時に例外を投げる（import時点では失敗させない
  * ことで、DB未導入の現状でもアプリのビルド・実行に影響しない設計にしている）。
+ *
+ * @supabase/supabase-js の createClient ではなく @supabase/ssr の
+ * createBrowserClient を使う。前者はセッションをlocalStorageにのみ保存するため、
+ * middleware.ts / lib/auth/serverSession.ts（サーバー側、Cookieからセッションを読む）
+ * からはログイン状態が一切見えず、ログイン成功後にmiddlewareへ弾き返され続ける
+ * バグの原因になっていた（2026-08-29発見）。createBrowserClientはセッションを
+ * Cookieにも同期するため、ブラウザ側とサーバー側で同じログイン状態を共有できる。
  */
 export function getSupabaseClient(): SupabaseClient {
   if (cachedClient) return cachedClient;
@@ -170,6 +178,6 @@ export function getSupabaseClient(): SupabaseClient {
     );
   }
 
-  cachedClient = createClient(url, anonKey);
+  cachedClient = createBrowserClient(url, anonKey);
   return cachedClient;
 }
