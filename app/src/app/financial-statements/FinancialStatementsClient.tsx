@@ -10,8 +10,12 @@ import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
 import { buildEquityChangeForm } from "@/lib/tax/equityChangeForm";
 import { buildNotesForm } from "@/lib/tax/notesForm";
+import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
+import { buildMonthlySalesTrend } from "@/lib/tax/businessOverviewForm";
 import { EquityChangeStatement } from "@/components/EquityChangeStatement";
 import { NotesToFinancialStatements } from "@/components/NotesToFinancialStatements";
+import { AccountBreakdownStatement } from "@/components/AccountBreakdownStatement";
+import { BusinessOverviewStatement } from "@/components/BusinessOverviewStatement";
 import { PrintableStatementLayout } from "@/components/PrintableStatementLayout";
 import { formatFiscalYearRange } from "@/lib/export/printLayout";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
@@ -152,6 +156,12 @@ export function FinancialStatementsClient() {
     shareCount: SAMPLE_SHARE_COUNT,
   });
 
+  // 勘定科目内訳明細書・法人事業概況説明書（売上高の月別推移）は、貸借対照表等と異なり
+  // 期首残高等を必要とせず取引明細（transactions）だけから機械的に算出できるため、
+  // isSampleData（transactions自体のサンプル/実データ切替）にそのまま従う。
+  const accountBreakdowns = buildAccountBreakdownForms(transactions);
+  const monthlySales = buildMonthlySalesTrend(transactions);
+
   const fiscalYearLabel = formatFiscalYearRange(pl.periodStart, pl.periodEnd);
 
   const balanceSheetSection = (
@@ -268,6 +278,16 @@ export function FinancialStatementsClient() {
           { id: "balance-sheet", content: balanceSheetSection },
           { id: "equity-change", content: <EquityChangeStatement form={equityChange} /> },
           { id: "notes", content: <NotesToFinancialStatements form={notes} />, forceNewPage: true },
+          {
+            id: "account-breakdown",
+            content: <AccountBreakdownStatement breakdowns={accountBreakdowns} />,
+            forceNewPage: true,
+          },
+          {
+            id: "business-overview",
+            content: <BusinessOverviewStatement monthlySales={monthlySales} />,
+            forceNewPage: true,
+          },
         ]}
       />
     </>
