@@ -8,6 +8,9 @@
   --muted-foreground: #737373;
   --accent: #16a34a;
   --danger: #dc2626;
+  --warning: #fffbeb;
+  --warning-foreground: #92400e;
+  --warning-border: #fcd34d;
 }
 
 @theme inline {
@@ -18,6 +21,9 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-danger: var(--danger);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-border: var(--warning-border);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -31,6 +37,9 @@
     --muted-foreground: #a3a3a3;
     --accent: #22c55e;
     --danger: #f87171;
+    --warning: #451a03;
+    --warning-foreground: #fcd34d;
+    --warning-border: #b45309;
   }
 }
 
@@ -71,6 +80,9 @@
   --muted-foreground: #a3a3a3;
   --accent: #22c55e;
   --danger: #f87171;
+  --warning: #451a03;
+  --warning-foreground: #fcd34d;
+  --warning-border: #b45309;
 }
 
 :root[data-theme="light"] {
@@ -81,6 +93,9 @@
   --muted-foreground: #737373;
   --accent: #16a34a;
   --danger: #dc2626;
+  --warning: #fffbeb;
+  --warning-foreground: #92400e;
+  --warning-border: #fcd34d;
 }
 
 :root[data-theme="dark"] .viz-dashboard {

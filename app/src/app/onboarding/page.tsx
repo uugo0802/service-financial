@@ -34,7 +34,7 @@ export default function OnboardingPage() {
             事業形態・屋号（会社名）・決算月・青色申告の承認有無は、記帳や税額の概算シミュレーション、
             申告書の下書き作成の前提となる基本情報です。ステップに沿って一つずつ設定してください。
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-500 max-w-2xl leading-relaxed mt-2">
+          <p className="text-xs text-warning-foreground max-w-2xl leading-relaxed mt-2">
             ここでの設定は申告書の下書き作成・概算シミュレーションの前提条件として利用されるものです。
             申告書の下書き作成やe-Tax/eLTAXへの送信操作は、あくまでご自身の権限・確認のもとで行っていただくものであり、当社が税務代理を行うものではありません。
             設定内容はいつでも事業者設定画面から変更できます。
