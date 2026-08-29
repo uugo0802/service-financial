@@ -37,7 +37,6 @@ export const APP_SHELL_EXCLUDED_PATHS: readonly string[] = [
   "/tokushoho",
   "/offline",
   "/invite",
-  "/quick-estimate",
 ];
 
 /**
@@ -77,6 +76,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   {
     label: "記帳・仕訳",
     links: [
+      { href: "/quick-estimate", label: "概算シミュレーション（お試し）" },
       { href: "/transactions", label: "取引明細" },
       { href: "/journal", label: "仕訳入力" },
       { href: "/general-ledger", label: "総勘定元帳" },

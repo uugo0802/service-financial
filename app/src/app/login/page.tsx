@@ -172,9 +172,6 @@ function LoginPageInner() {
                 <Link href="/reset-password" className="text-xs text-stone-500 underline underline-offset-2 self-start">
                   パスワードをお忘れですか？
                 </Link>
-                <Link href="/quick-estimate" className="text-xs text-stone-500 underline underline-offset-2 self-start">
-                  ログインせずに概算シミュレーションだけ試す
-                </Link>
               </form>
             )}
           </section>

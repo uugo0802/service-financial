@@ -183,15 +183,14 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-stone-50 text-stone-900">
-      <header className="border-b border-stone-300 bg-white">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
+    <div className="bg-background text-foreground">
+      <div className="border-b border-border bg-surface">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4">
+          <div className="text-xs text-muted-foreground">
+            概算シミュレーション（お試し） — この画面での入力・アップロード内容はDBに保存されません
           </div>
-          <div className="text-xs text-stone-500">お試し概算シミュレーション — ログイン不要・データは保存されません</div>
         </div>
-      </header>
+      </div>
 
       <main className="mx-auto max-w-5xl px-4 sm:px-6 py-10 flex flex-col gap-10">
         <section>
