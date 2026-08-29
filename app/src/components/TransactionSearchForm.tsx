@@ -31,7 +31,7 @@ const EMPTY_FORM_FILTERS: FormFilters = {
 };
 
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
@@ -67,9 +67,9 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
 
   return (
     <div className="flex flex-col gap-6">
-      <form onSubmit={handleSubmit} className="border border-stone-300 bg-white p-5 flex flex-col gap-4" noValidate>
+      <form onSubmit={handleSubmit} className="border border-border bg-surface p-5 flex flex-col gap-4" noValidate>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引年月日（開始）
             <input
               type="date"
@@ -79,7 +79,7 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引年月日（終了）
             <input
               type="date"
@@ -89,7 +89,7 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引金額（下限）
             <input
               type="text"
@@ -101,7 +101,7 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引金額（上限）
             <input
               type="text"
@@ -113,7 +113,7 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500 sm:col-span-2 lg:col-span-4">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2 lg:col-span-4">
             取引先・摘要キーワード
             <input
               type="text"
@@ -128,14 +128,14 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
         <div className="flex gap-3">
           <button
             type="submit"
-            className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+            className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
           >
             検索
           </button>
           <button
             type="button"
             onClick={handleReset}
-            className="text-sm px-5 py-2.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+            className="text-sm px-5 py-2.5 border border-border bg-surface hover:border-foreground/40 transition-colors"
           >
             条件をクリア
           </button>
@@ -143,20 +143,20 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
       </form>
 
       <div>
-        <h2 className="text-sm text-stone-500 mb-3">
-          検索結果 <span className="font-medium text-stone-700">{results.length}件</span>
-          <span className="text-stone-400">（全{transactions.length}件中）</span>
+        <h2 className="text-sm text-muted-foreground mb-3">
+          検索結果 <span className="font-medium text-foreground">{results.length}件</span>
+          <span className="text-muted-foreground">（全{transactions.length}件中）</span>
         </h2>
 
         {results.length === 0 ? (
-          <p className="text-sm text-stone-500 border border-dashed border-stone-300 bg-white px-4 py-6 text-center">
+          <p className="text-sm text-muted-foreground border border-dashed border-border bg-surface px-4 py-6 text-center">
             条件に一致する取引が見つかりませんでした。日付・金額・キーワードの条件を見直してください。
           </p>
         ) : (
-          <div className="overflow-x-auto border border-stone-300 bg-white">
+          <div className="overflow-x-auto border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">取引年月日</th>
                   <th className="px-3 py-2 font-normal">取引先・摘要</th>
                   <th className="px-3 py-2 font-normal text-right">取引金額</th>
@@ -165,19 +165,19 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
               </thead>
               <tbody>
                 {results.map((row) => (
-                  <tr key={row.id} className="border-b border-stone-100 last:border-0">
+                  <tr key={row.id} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">{row.date}</td>
                     <td className="px-3 py-2 max-w-xs truncate" title={row.note ?? row.description}>
                       {row.description}
-                      {row.note && <span className="text-stone-400"> ／ {row.note}</span>}
+                      {row.note && <span className="text-muted-foreground"> ／ {row.note}</span>}
                     </td>
                     <td
                       className={`px-3 py-2 text-right tabular-nums ${
-                        row.amount < 0 ? "text-stone-700" : "text-emerald-700"
+                        row.amount < 0 ? "text-foreground" : "text-emerald-700"
                       }`}
                     >
                       {yen.format(row.amount)}
-                      <span className="text-xs text-stone-400"> 円</span>
+                      <span className="text-xs text-muted-foreground"> 円</span>
                     </td>
                     <td className="px-3 py-2 text-xs whitespace-nowrap">{row.tax_category}</td>
                   </tr>
@@ -188,7 +188,7 @@ export function TransactionSearchForm({ transactions }: TransactionSearchFormPro
         )}
       </div>
 
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-muted-foreground">
         表示内容は記帳データを条件で絞り込んだものであり、正式な税務代理・個別税務相談ではありません。
         内容はご自身の確認のうえご利用ください。
       </p>

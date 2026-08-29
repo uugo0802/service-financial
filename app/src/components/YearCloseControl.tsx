@@ -80,7 +80,7 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
   }
 
   return (
-    <div className="border border-stone-300 bg-white rounded-lg px-4 py-3 flex flex-col gap-2 text-sm">
+    <div className="border border-border bg-surface rounded-lg px-4 py-3 flex flex-col gap-2 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="font-medium">{fiscalYear}年度</span>
@@ -89,7 +89,7 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
               確定済み（ロック中）
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full border border-stone-300 text-stone-600 text-xs px-2.5 py-1">
+            <span className="inline-flex items-center gap-1 rounded-full border border-stone-300 text-muted-foreground text-xs px-2.5 py-1">
               未確定
             </span>
           )}
@@ -101,8 +101,8 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
             onClick={state.closed ? startReopen : startClose}
             className={
               state.closed
-                ? "text-xs px-3 py-1.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
-                : "text-xs px-3 py-1.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+                ? "text-xs px-3 py-1.5 border border-border bg-surface hover:border-foreground/40 transition-colors"
+                : "text-xs px-3 py-1.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
             }
           >
             {state.closed ? "ロックを解除する" : "年度を確定（ロック）する"}
@@ -111,11 +111,11 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
       </div>
 
       {state.closed && state.closedAt && (
-        <p className="text-xs text-stone-500">確定日時: {state.closedAt}</p>
+        <p className="text-xs text-muted-foreground">確定日時: {state.closedAt}</p>
       )}
 
       {state.reopenHistory.length > 0 && (
-        <ul className="text-xs text-stone-500 list-disc list-inside">
+        <ul className="text-xs text-muted-foreground list-disc list-inside">
           {state.reopenHistory.map((r, i) => (
             <li key={i}>
               {r.reopenedAt} にロック解除（理由: {r.reason}）
@@ -125,8 +125,8 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
       )}
 
       {confirmMode === "close" && (
-        <div className="border border-stone-300 bg-stone-50 rounded p-3 flex flex-col gap-2">
-          <p className="text-xs text-stone-700">
+        <div className="border border-border bg-surface rounded p-3 flex flex-col gap-2">
+          <p className="text-xs text-foreground">
             {fiscalYear}年度を確定すると、この年度に属する仕訳の編集・削除ができなくなります。よろしいですか？
           </p>
           {error && <p className="text-xs text-red-700">{error}</p>}
@@ -134,14 +134,14 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
             <button
               type="button"
               onClick={confirmClose}
-              className="text-xs px-3 py-1.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+              className="text-xs px-3 py-1.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
             >
               確定する
             </button>
             <button
               type="button"
               onClick={cancel}
-              className="text-xs px-3 py-1.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+              className="text-xs px-3 py-1.5 border border-border bg-surface hover:border-foreground/40 transition-colors"
             >
               キャンセル
             </button>
@@ -150,15 +150,15 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
       )}
 
       {confirmMode === "reopen" && (
-        <div className="border border-stone-300 bg-stone-50 rounded p-3 flex flex-col gap-2">
-          <label className="flex flex-col gap-1 text-xs text-stone-600">
+        <div className="border border-border bg-surface rounded p-3 flex flex-col gap-2">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             解除理由（必須）
             <input
               type="text"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="例: 税務署からの指摘により再修正が必要なため"
-              className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+              className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
             />
           </label>
           {error && <p className="text-xs text-red-700">{error}</p>}
@@ -166,14 +166,14 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
             <button
               type="button"
               onClick={confirmReopen}
-              className="text-xs px-3 py-1.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+              className="text-xs px-3 py-1.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
             >
               ロックを解除する
             </button>
             <button
               type="button"
               onClick={cancel}
-              className="text-xs px-3 py-1.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+              className="text-xs px-3 py-1.5 border border-border bg-surface hover:border-foreground/40 transition-colors"
             >
               キャンセル
             </button>
@@ -182,7 +182,7 @@ export function YearCloseControl({ fiscalYear, initialState }: YearCloseControlP
       )}
 
       {lastMessage && confirmMode === null && (
-        <p className="text-xs text-stone-500">最新の操作: {lastMessage}</p>
+        <p className="text-xs text-muted-foreground">最新の操作: {lastMessage}</p>
       )}
     </div>
   );

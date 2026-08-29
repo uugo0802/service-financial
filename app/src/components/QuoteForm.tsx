@@ -23,8 +23,8 @@ import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 function makeId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -157,7 +157,7 @@ export function QuoteForm() {
 
   return (
     <div className="flex flex-col gap-8">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 bg-stone-50 border border-stone-200 rounded p-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 bg-surface border border-border rounded p-4">
         <section>
           <h2 className="text-lg font-semibold mb-3">発行者情報（あなた）</h2>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -234,7 +234,7 @@ export function QuoteForm() {
                 className={inputClass}
               />
               {result.quote.validUntil && (
-                <p className="mt-1 text-xs text-stone-500">有効期限日: {result.quote.validUntil}</p>
+                <p className="mt-1 text-xs text-muted-foreground">有効期限日: {result.quote.validUntil}</p>
               )}
             </div>
           </div>
@@ -246,7 +246,7 @@ export function QuoteForm() {
             {lineItems.map((item, index) => (
               <div
                 key={item.id}
-                className="grid grid-cols-1 sm:grid-cols-[1fr_6rem_8rem_8rem_auto] gap-2 items-end border border-stone-200 bg-white p-3"
+                className="grid grid-cols-1 sm:grid-cols-[1fr_6rem_8rem_8rem_auto] gap-2 items-end border border-border bg-surface p-3"
               >
                 <div>
                   <label className={labelClass} htmlFor={`quote-line-description-${item.id}`}>
@@ -312,7 +312,7 @@ export function QuoteForm() {
                     type="button"
                     onClick={() => removeLineItem(item.id)}
                     disabled={lineItems.length <= 1}
-                    className="text-xs text-stone-400 hover:text-red-700 disabled:opacity-30 disabled:hover:text-stone-400 px-2 py-2.5"
+                    className="text-xs text-muted-foreground hover:text-red-700 disabled:opacity-30 disabled:hover:text-muted-foreground px-2 py-2.5"
                   >
                     削除
                   </button>
@@ -323,7 +323,7 @@ export function QuoteForm() {
           <button
             type="button"
             onClick={addLineItem}
-            className="mt-3 text-sm px-4 py-2 border border-stone-400 bg-white hover:border-red-700 transition-colors"
+            className="mt-3 text-sm px-4 py-2 border border-border bg-surface hover:border-red-700 transition-colors"
           >
             ＋ 明細行を追加
           </button>
@@ -370,7 +370,7 @@ export function QuoteForm() {
           <button
             type="submit"
             disabled={!result.isValid}
-            className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors disabled:opacity-40 disabled:hover:bg-stone-900"
+            className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors disabled:opacity-40 disabled:hover:bg-accent"
           >
             この内容で見積書を作成
           </button>
@@ -380,10 +380,10 @@ export function QuoteForm() {
       <section>
         <h2 className="text-lg font-semibold mb-3">
           作成済みの見積書
-          {savedQuotes.length > 0 && <span className="text-sm font-normal text-stone-500">（{savedQuotes.length}件）</span>}
+          {savedQuotes.length > 0 && <span className="text-sm font-normal text-muted-foreground">（{savedQuotes.length}件）</span>}
         </h2>
         {savedQuotes.length === 0 ? (
-          <p className="text-sm text-stone-500 border border-dashed border-stone-300 bg-white px-4 py-6 text-center">
+          <p className="text-sm text-muted-foreground border border-dashed border-border bg-surface px-4 py-6 text-center">
             まだ見積書がありません。上のフォームで内容を入力し「この内容で見積書を作成」を押してください。
           </p>
         ) : (
@@ -393,24 +393,24 @@ export function QuoteForm() {
               const canConvert = isQuoteAcceptedForConversion(quote, todayISO());
               const invoiceDraft = invoiceDraftsByQuoteNumber[quote.quoteNumber];
               return (
-                <div key={quote.quoteNumber} className="border border-stone-300 bg-white p-4">
+                <div key={quote.quoteNumber} className="border border-border bg-surface p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                     <div>
                       <p className="text-sm font-medium">
                         {quote.quoteNumber} — {quote.clientName || "（見積先未入力）"} 様
                       </p>
-                      <p className="text-xs text-stone-500">
+                      <p className="text-xs text-muted-foreground">
                         発行日 {quote.issueDate} ／ 有効期限 {quote.validUntil ?? "未設定"}
                       </p>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-3">
-                      <label className="flex items-center gap-1.5 text-xs text-stone-600">
+                      <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         ステータス
                         <select
                           value={quote.status}
                           onChange={(e) => updateSavedQuoteStatus(quote.quoteNumber, e.target.value as QuoteStatus)}
                           disabled={quote.status === "converted_to_invoice"}
-                          className="border border-stone-300 bg-white px-2 py-1 text-xs outline-none focus:border-stone-600 disabled:opacity-50"
+                          className="border border-border bg-surface px-2 py-1 text-xs outline-none focus:border-foreground/40 disabled:opacity-50"
                         >
                           {(Object.keys(QUOTE_STATUS_LABELS) as QuoteStatus[]).map((s) => (
                             <option key={s} value={s}>
@@ -422,7 +422,7 @@ export function QuoteForm() {
                       <button
                         type="button"
                         onClick={() => setPrintingQuote(quote)}
-                        className="text-xs text-stone-600 hover:text-stone-900"
+                        className="text-xs text-muted-foreground hover:text-foreground"
                       >
                         印刷 / PDFで保存
                       </button>
@@ -449,20 +449,20 @@ export function QuoteForm() {
                       type="button"
                       onClick={() => handleConvertToInvoice(quote)}
                       disabled={!canConvert}
-                      className="text-sm px-4 py-2 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors disabled:opacity-40 disabled:hover:bg-stone-900"
+                      className="text-sm px-4 py-2 border border-accent bg-accent text-white hover:opacity-90 transition-colors disabled:opacity-40 disabled:hover:bg-accent"
                       title={canConvert ? undefined : "先方の承認済み（ステータス「承認済み」）にすると作成できます"}
                     >
                       この見積書から請求書を作成
                     </button>
                     {!canConvert && (
-                      <span className="ml-3 text-xs text-stone-400">
+                      <span className="ml-3 text-xs text-muted-foreground">
                         ステータスを「{QUOTE_STATUS_LABELS.accepted}」にすると作成できます
                       </span>
                     )}
 
                     {invoiceDraft && (
                       <div className="mt-4 border border-stone-200 bg-stone-50 p-3">
-                        <p className="mb-2 text-xs text-stone-600">
+                        <p className="mb-2 text-xs text-muted-foreground">
                           この見積書の明細から請求書の下書きを作成しました（下記はプレビューです）。
                           正式に発行するには、
                           <Link href="/invoices" className="underline hover:no-underline">
@@ -470,16 +470,16 @@ export function QuoteForm() {
                           </Link>
                           で同じ内容を入力してください（画面間の自動連携・自動保存は未対応です）。
                         </p>
-                        <p className="text-xs text-stone-500 mb-2">請求書番号（下書き）: {invoiceDraft.invoiceNumber}</p>
+                        <p className="text-xs text-muted-foreground mb-2">請求書番号（下書き）: {invoiceDraft.invoiceNumber}</p>
                         <div className="bg-white p-3">
                           <table className="w-full text-xs">
                             <tbody>
                               <tr>
-                                <td className="pr-6 py-0.5 text-stone-500">請求先</td>
+                                <td className="pr-6 py-0.5 text-muted-foreground">請求先</td>
                                 <td className="py-0.5 text-right">{invoiceDraft.clientName}</td>
                               </tr>
                               <tr>
-                                <td className="pr-6 py-0.5 text-stone-500">請求金額合計（税込）</td>
+                                <td className="pr-6 py-0.5 text-muted-foreground">請求金額合計（税込）</td>
                                 <td className="py-0.5 text-right tabular-nums font-semibold">
                                   {yen.format(invoiceDraft.grandTotal)}
                                 </td>
@@ -495,7 +495,7 @@ export function QuoteForm() {
             })}
           </div>
         )}
-        <p className="mt-3 text-xs text-stone-400 leading-relaxed">
+        <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
           この画面での保存はブラウザの表示中のみ有効な一時保存です（再読み込みで消えます）。データベースへの永続保存や、
           メール送信機能は現時点では未対応です。印刷／PDF保存は各見積書の「印刷 / PDFで保存」ボタンからご利用いただけます。
         </p>
@@ -506,26 +506,26 @@ export function QuoteForm() {
 
 function QuotePreview({ quote, compact = false }: { quote: Quote; compact?: boolean }) {
   return (
-    <div className={compact ? "" : "border border-stone-300 bg-white p-4"}>
+    <div className={compact ? "" : "border border-border bg-surface p-4"}>
       {!compact && (
         <div className="flex flex-wrap items-baseline justify-between gap-2 mb-4">
           <div>
-            <p className="text-xs text-stone-500">見積書番号</p>
+            <p className="text-xs text-muted-foreground">見積書番号</p>
             <p className="font-medium tabular-nums">{quote.quoteNumber}</p>
           </div>
           <div className="text-right">
-            <p className="text-xs text-stone-500">有効期限: {quote.validUntil ?? "未設定"}</p>
+            <p className="text-xs text-muted-foreground">有効期限: {quote.validUntil ?? "未設定"}</p>
           </div>
         </div>
       )}
 
       {quote.lineItems.length === 0 ? (
-        <p className="text-sm text-stone-500">明細が未入力です。</p>
+        <p className="text-sm text-muted-foreground">明細が未入力です。</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+              <tr className="border-b border-border text-left text-muted-foreground text-xs">
                 <th className="px-2 py-1.5 font-normal">品目・内容</th>
                 <th className="px-2 py-1.5 font-normal text-right">数量</th>
                 <th className="px-2 py-1.5 font-normal text-right whitespace-nowrap">単価（税抜）</th>
@@ -535,7 +535,7 @@ function QuotePreview({ quote, compact = false }: { quote: Quote; compact?: bool
             </thead>
             <tbody>
               {quote.lineItems.map((item, index) => (
-                <tr key={index} className="border-b border-stone-100 last:border-0">
+                <tr key={index} className="border-b border-border/60 last:border-0">
                   <td className="px-2 py-1.5">{item.description || "（未入力）"}</td>
                   <td className="px-2 py-1.5 text-right tabular-nums">{item.quantity || 0}</td>
                   <td className="px-2 py-1.5 text-right tabular-nums">{yen.format(item.unitPrice || 0)}</td>
@@ -555,17 +555,17 @@ function QuotePreview({ quote, compact = false }: { quote: Quote; compact?: bool
           <tbody>
             {quote.taxRateSubtotals.map((s) => (
               <tr key={s.taxRate}>
-                <td className="pr-6 py-0.5 text-stone-500 whitespace-nowrap">{QUOTE_TAX_RATE_LABELS[s.taxRate]} 対象額</td>
+                <td className="pr-6 py-0.5 text-muted-foreground whitespace-nowrap">{QUOTE_TAX_RATE_LABELS[s.taxRate]} 対象額</td>
                 <td className="py-0.5 text-right tabular-nums">{yen.format(s.taxableBase)}</td>
               </tr>
             ))}
             {quote.taxRateSubtotals.map((s) => (
               <tr key={`tax-${s.taxRate}`}>
-                <td className="pr-6 py-0.5 text-stone-500 whitespace-nowrap">{QUOTE_TAX_RATE_LABELS[s.taxRate]} 消費税額</td>
+                <td className="pr-6 py-0.5 text-muted-foreground whitespace-nowrap">{QUOTE_TAX_RATE_LABELS[s.taxRate]} 消費税額</td>
                 <td className="py-0.5 text-right tabular-nums">{yen.format(s.taxAmount)}</td>
               </tr>
             ))}
-            <tr className="border-t-2 border-stone-800 font-semibold">
+            <tr className="border-t-2 border-foreground font-semibold">
               <td className="pr-6 py-1.5 whitespace-nowrap">御見積金額合計（税込）</td>
               <td className="py-1.5 text-right tabular-nums">{yen.format(quote.grandTotal)}</td>
             </tr>

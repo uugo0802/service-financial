@@ -77,7 +77,7 @@ export function MigrationImportForm() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+      <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
         freee会計・マネーフォワード クラウド会計/確定申告からエクスポートした<b>仕訳帳（journal）のCSV</b>
         をアップロードすると、このアプリの取引形式に変換してプレビューします。
         複式簿記の借方・貸方は自動的に1件の符号付き金額に集約されるため、
@@ -86,7 +86,7 @@ export function MigrationImportForm() {
       </p>
 
       <div>
-        <div className="text-xs text-stone-500 mb-2" id="format-override-label">
+        <div className="text-xs text-muted-foreground mb-2" id="format-override-label">
           移行元ソフト
         </div>
         <div className="flex items-center gap-3 flex-wrap" role="group" aria-labelledby="format-override-label">
@@ -98,12 +98,12 @@ export function MigrationImportForm() {
       </div>
 
       <div>
-        <div className="text-xs text-stone-500 mb-2">仕訳帳CSV</div>
+        <div className="text-xs text-muted-foreground mb-2">仕訳帳CSV</div>
         <label
           className={`inline-flex min-w-[13rem] items-center justify-center gap-3 border px-5 py-3 text-sm transition-colors ${
             loading
-              ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-              : "border-stone-400 bg-white cursor-pointer hover:border-red-700"
+              ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+              : "border-border bg-surface cursor-pointer hover:border-red-700"
           }`}
         >
           <span>{loading ? "解析中…" : "CSVファイルを選択"}</span>
@@ -120,8 +120,8 @@ export function MigrationImportForm() {
             }}
           />
         </label>
-        {result && <span className="ml-3 text-xs text-stone-500">{result.fileName}</span>}
-        <p className="mt-2 text-xs text-stone-400 max-w-md leading-relaxed">
+        {result && <span className="ml-3 text-xs text-muted-foreground">{result.fileName}</span>}
+        <p className="mt-2 text-xs text-muted-foreground max-w-md leading-relaxed">
           対応列名: 日付/取引日、借方勘定科目、貸方勘定科目/貸方科目、金額、摘要。
           文字コードはUTF-8・Shift-JISを自動判定します。
         </p>
@@ -131,7 +131,7 @@ export function MigrationImportForm() {
 
       {result && (
         <>
-          <div className="text-xs text-stone-500 flex flex-wrap gap-x-6 gap-y-1">
+          <div className="text-xs text-muted-foreground flex flex-wrap gap-x-6 gap-y-1">
             <span>判定フォーマット: {MIGRATION_FORMATS[result.formatId].label}</span>
             <span>文字コード: {result.encoding === "shift_jis" ? "Shift-JIS(自動検出)" : "UTF-8"}</span>
             <span>取込件数: {result.transactions.length}件（スキップ {result.skippedRows}件）</span>
@@ -139,14 +139,14 @@ export function MigrationImportForm() {
           </div>
 
           {result.transactions.length === 0 ? (
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-muted-foreground">
               フォーマットは認識できましたが、データ行が見つかりませんでした。ヘッダーのみのファイルでないかご確認ください。
             </p>
           ) : (
-            <div className="overflow-x-auto border border-stone-300 bg-white">
+            <div className="overflow-x-auto border border-border bg-surface">
               <table className="w-full min-w-[42rem] text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">日付</th>
                     <th className="px-3 py-2 font-normal">摘要</th>
                     <th className="px-3 py-2 font-normal text-right">金額</th>
@@ -159,12 +159,12 @@ export function MigrationImportForm() {
                   {result.transactions.map((t) => {
                     const needsReview = t.source === "uncategorized" || t.confidence < 0.75;
                     return (
-                      <tr key={t.id} className={`border-b border-stone-100 last:border-0 ${needsReview ? "bg-red-50" : ""}`}>
+                      <tr key={t.id} className={`border-b border-border/60 last:border-0 ${needsReview ? "bg-red-50" : ""}`}>
                         <td className="px-3 py-2 whitespace-nowrap tabular-nums">{t.date}</td>
                         <td className="px-3 py-2 max-w-[10rem] sm:max-w-xs truncate" title={t.description}>
                           {t.description}
                         </td>
-                        <td className={`px-3 py-2 text-right whitespace-nowrap tabular-nums ${t.amount < 0 ? "text-stone-700" : "text-emerald-700"}`}>
+                        <td className={`px-3 py-2 text-right whitespace-nowrap tabular-nums ${t.amount < 0 ? "text-foreground" : "text-emerald-700"}`}>
                           {yen.format(t.amount)}
                         </td>
                         <td className="px-3 py-2">{t.account}</td>
@@ -204,8 +204,8 @@ function FormatButton({
       onClick={() => onSelect(value)}
       className={`text-sm px-4 py-2 border transition-colors ${
         current === value
-          ? "bg-stone-900 border-stone-900 text-white"
-          : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+          ? "bg-accent border-accent text-white"
+          : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
       }`}
     >
       {label}

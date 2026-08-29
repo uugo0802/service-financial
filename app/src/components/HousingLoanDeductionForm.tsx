@@ -7,8 +7,8 @@ import {
   calculateHousingLoanDeduction,
 } from "@/lib/tax/housingLoanDeduction";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 const yen = new Intl.NumberFormat("ja-JP");
 
 /**
@@ -52,7 +52,7 @@ export function HousingLoanDeductionForm() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-5 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-5 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="housing-loan-balance">
             年末時点の住宅ローン残高（円）
@@ -66,16 +66,16 @@ export function HousingLoanDeductionForm() {
             placeholder="例：25000000"
             className={inputClass}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             住宅ローンを提供している金融機関から発行される「住宅取得資金に係る借入金の年末残高等証明書」に記載の金額を入力してください。連帯債務の場合は、ご自身の負担割合分の残高を入力する想定です。
           </p>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
+        <div className="border-t border-border pt-4">
           <button
             type="button"
             onClick={() => setShowAdvanced((v) => !v)}
-            className="text-xs text-stone-600 underline underline-offset-2"
+            className="text-xs text-muted-foreground underline underline-offset-2"
           >
             {showAdvanced ? "詳細設定を閉じる" : "詳細設定（借入限度額を変更する）"}
           </button>
@@ -92,7 +92,7 @@ export function HousingLoanDeductionForm() {
                 onChange={(e) => setLoanBalanceCapInput(e.target.value)}
                 className={inputClass}
               />
-              <p className="text-xs text-stone-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 既定値は「省エネ基準適合住宅（新築）」の一般区分（
                 {yen.format(HOUSING_LOAN_DEDUCTION_SIMPLIFIED_LOAN_BALANCE_CAP)}円）です。認定長期優良住宅・ZEH水準省エネ住宅（子育て世帯・若者夫婦世帯を含む）は最大5,000万円、既存住宅（中古）は原則2,000万円など、実際の区分に応じた借入限度額に置き換えてください。判断に迷う場合は税理士等の専門家にご確認ください。
               </p>
@@ -115,24 +115,24 @@ export function HousingLoanDeductionForm() {
             )}
 
             <div className="grid sm:grid-cols-3 gap-4">
-              <div className="border border-stone-300 bg-white rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">控除率</div>
+              <div className="border border-border bg-surface rounded-lg p-4">
+                <div className="text-xs text-muted-foreground mb-1">控除率</div>
                 <div className="text-2xl font-semibold">{(result.creditRate * 100).toFixed(2)}%</div>
               </div>
-              <div className="border border-stone-300 bg-white rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">上限適用前の控除額</div>
+              <div className="border border-border bg-surface rounded-lg p-4">
+                <div className="text-xs text-muted-foreground mb-1">上限適用前の控除額</div>
                 <div className="text-2xl font-semibold">{yen.format(result.rawAnnualCredit)}円</div>
               </div>
-              <div className="border border-stone-700 bg-stone-800 text-white rounded-lg p-4">
+              <div className="border border-border bg-foreground text-background rounded-lg p-4">
                 <div className="text-xs text-stone-300 mb-1">その年の税額控除見込み額（概算）</div>
                 <div className="text-2xl font-semibold">{yen.format(result.estimatedAnnualCredit)}円</div>
-                <div className="text-xs text-stone-300 mt-1">上限 {yen.format(result.annualCreditCap)}円/年</div>
+                <div className="text-xs text-muted-foreground mt-1">上限 {yen.format(result.annualCreditCap)}円/年</div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.assumptions.map((assumption) => (
                   <li key={assumption}>{assumption}</li>
                 ))}
@@ -142,7 +142,7 @@ export function HousingLoanDeductionForm() {
             <p className="text-xs text-amber-700 leading-relaxed">{result.disclaimer}</p>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         )}
       </section>
     </div>

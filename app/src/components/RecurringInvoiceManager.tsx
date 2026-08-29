@@ -36,8 +36,8 @@ import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 // ------------------------------------------------------------------
 
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 const errorTextClass = "mt-1 text-xs text-red-700";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
@@ -137,14 +137,14 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+      <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
         顧問料・月額サブスクリプションなど、同じ取引先に毎月/四半期ごと同じ内容で発行する請求書をテンプレートとして
         登録しておくと、対象期間を指定するだけで発生する請求書発行日を確認し、その場で請求書を作成できます。
         テンプレートも作成した請求書も、この画面を開いている間だけ有効な一時データです（永続保存は未対応）。
       </p>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-stone-800">発行者情報（あなた・請求書作成時に使用）</h3>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h3 className="text-sm font-semibold text-foreground">発行者情報（あなた・請求書作成時に使用）</h3>
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className={labelClass} htmlFor="recurring-invoice-issuer-name">
@@ -175,8 +175,8 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
         </div>
       </section>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-stone-800">定期請求書テンプレートを追加</h3>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h3 className="text-sm font-semibold text-foreground">定期請求書テンプレートを追加</h3>
         <form onSubmit={handleAddTemplate} className="flex flex-col gap-4" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -274,7 +274,7 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
                 className={inputClass}
               />
               {errors.startDate && <span className={errorTextClass}>{errors.startDate}</span>}
-              <p className="mt-1 text-xs text-stone-400">
+              <p className="mt-1 text-xs text-muted-foreground">
                 開始日の「日」が毎回の発行日の基準になります（末日が存在しない月は月末日になります）。
               </p>
             </div>
@@ -310,22 +310,22 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
 
           <button
             type="submit"
-            className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors self-start"
+            className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors self-start"
           >
             テンプレートを追加
           </button>
         </form>
       </section>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-stone-800">登録済みテンプレート</h3>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h3 className="text-sm font-semibold text-foreground">登録済みテンプレート</h3>
         {templates.length === 0 ? (
-          <p className="text-sm text-stone-500">まだテンプレートが登録されていません。</p>
+          <p className="text-sm text-muted-foreground">まだテンプレートが登録されていません。</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-xs text-stone-500">
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2 pr-4">請求先</th>
                   <th className="py-2 pr-4">品目</th>
                   <th className="py-2 pr-4">単価（税抜）</th>
@@ -339,7 +339,7 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
               </thead>
               <tbody>
                 {templates.map((template) => (
-                  <tr key={template.id} className="border-b border-stone-100">
+                  <tr key={template.id} className="border-b border-border/60">
                     <td className="py-2 pr-4">{template.clientName}</td>
                     <td className="py-2 pr-4">{template.description}</td>
                     <td className="py-2 pr-4 text-right tabular-nums">{yen.format(template.amount)}</td>
@@ -351,14 +351,14 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
                       {template.active ? (
                         <span className="text-emerald-700">有効</span>
                       ) : (
-                        <span className="text-stone-400">無効</span>
+                        <span className="text-muted-foreground">無効</span>
                       )}
                     </td>
                     <td className="py-2 flex gap-3">
                       <button
                         type="button"
                         onClick={() => handleToggleActive(template.id)}
-                        className="text-xs text-stone-600 underline hover:text-stone-900"
+                        className="text-xs text-muted-foreground underline hover:text-foreground"
                       >
                         {template.active ? "無効化" : "有効化"}
                       </button>
@@ -378,10 +378,10 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
         )}
       </section>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-stone-800">対象期間の発生予定を確認・作成</h3>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h3 className="text-sm font-semibold text-foreground">対象期間の発生予定を確認・作成</h3>
         <div className="flex items-end gap-3 flex-wrap">
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             期間開始日
             <input
               type="date"
@@ -390,7 +390,7 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
               className={inputClass}
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             期間終了日
             <input
               type="date"
@@ -404,14 +404,14 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
         {rangeStart > rangeEnd ? (
           <p className="text-sm text-red-700">期間開始日は期間終了日より前の日付にしてください。</p>
         ) : occurrences.length === 0 ? (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted-foreground">
             この期間に発生するテンプレートはありません（テンプレート未登録、または期間外です）。
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-xs text-stone-500">
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2 pr-4">発行予定日</th>
                   <th className="py-2 pr-4">請求先</th>
                   <th className="py-2 pr-4">品目</th>
@@ -431,7 +431,7 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
                   const taxMultiplier = 1 + template.taxRate / 100;
 
                   return (
-                    <tr key={occurrenceId} className="border-b border-stone-100">
+                    <tr key={occurrenceId} className="border-b border-border/60">
                       <td className="py-2 pr-4 whitespace-nowrap">{occurrence.issueDate}</td>
                       <td className="py-2 pr-4">{template.clientName}</td>
                       <td className="py-2 pr-4">{template.description}</td>
@@ -445,7 +445,7 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
                           <button
                             type="button"
                             onClick={() => handleGenerateOccurrence(template, occurrence)}
-                            className="text-xs px-3 py-1.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+                            className="text-xs px-3 py-1.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
                           >
                             この回の請求書を作成
                           </button>
@@ -458,7 +458,7 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
             </table>
           </div>
         )}
-        <p className="text-xs text-stone-400 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           税込見込額は税率から概算したものです。実際の請求書金額は「この回の請求書を作成」を押した際に
           clientInvoice.tsの計算ロジック（税率ごとに1回だけ端数処理）で確定します。
         </p>
@@ -468,11 +468,11 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
         <h2 className="text-lg font-semibold mb-3">
           作成済みの定期請求書
           {generatedInvoices.length > 0 && (
-            <span className="text-sm font-normal text-stone-500">（{generatedInvoices.length}件）</span>
+            <span className="text-sm font-normal text-muted-foreground">（{generatedInvoices.length}件）</span>
           )}
         </h2>
         {generatedInvoices.length === 0 ? (
-          <p className="text-sm text-stone-500 border border-dashed border-stone-300 bg-white px-4 py-6 text-center">
+          <p className="text-sm text-muted-foreground border border-dashed border-border bg-surface px-4 py-6 text-center">
             まだ作成された請求書がありません。上の一覧から「この回の請求書を作成」を押してください。
           </p>
         ) : (
@@ -480,13 +480,13 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
             {generatedInvoices.map((invoice) => (
               <div
                 key={invoice.invoiceNumber}
-                className="border border-stone-300 bg-white p-4 flex items-center justify-between gap-3 flex-wrap"
+                className="border border-border bg-surface p-4 flex items-center justify-between gap-3 flex-wrap"
               >
                 <div>
                   <p className="text-sm font-medium">
                     {invoice.invoiceNumber} — {invoice.clientName || "（請求先未入力）"} 様
                   </p>
-                  <p className="text-xs text-stone-500">
+                  <p className="text-xs text-muted-foreground">
                     発行日 {invoice.issueDate} ／ 税込合計 {yen.format(invoice.grandTotal)}
                   </p>
                 </div>
@@ -494,7 +494,7 @@ export function RecurringInvoiceManager({ initialTemplates = [] }: RecurringInvo
                   <button
                     type="button"
                     onClick={() => setPrintingInvoice(invoice)}
-                    className="text-xs text-stone-600 hover:text-stone-900"
+                    className="text-xs text-muted-foreground hover:text-foreground"
                   >
                     印刷 / PDFで保存
                   </button>

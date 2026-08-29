@@ -111,7 +111,7 @@ export function CorporateInterimTaxForm() {
             className={`text-xs px-3 py-1.5 rounded-full border font-medium ${
               method === tab.value
                 ? "bg-stone-900 text-white border-stone-900"
-                : "bg-white text-stone-600 border-stone-300 hover:border-stone-500"
+                : "bg-white text-muted-foreground border-stone-300 hover:border-stone-500"
             }`}
           >
             {tab.label}
@@ -127,12 +127,12 @@ export function CorporateInterimTaxForm() {
       )}
 
       {(method === "provisional" || method === "compare") && (
-        <section className="border border-stone-300 bg-white rounded-lg p-5">
-          <h3 className="text-sm font-semibold mb-3 text-stone-700">
+        <section className="border border-border bg-surface rounded-lg p-5">
+          <h3 className="text-sm font-semibold mb-3 text-foreground">
             予定申告方式（前年実績による予定申告）
           </h3>
           <div className="flex flex-col gap-4 max-w-md mb-4">
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               前期確定法人税額（国税、地方法人税を含まない）
               <input
                 type="number"
@@ -140,11 +140,11 @@ export function CorporateInterimTaxForm() {
                 min={0}
                 value={priorCorporateTaxInput}
                 onChange={(e) => setPriorCorporateTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="例: 450000"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               前期確定地方法人税額
               <input
                 type="number"
@@ -152,11 +152,11 @@ export function CorporateInterimTaxForm() {
                 min={0}
                 value={priorLocalCorporateTaxInput}
                 onChange={(e) => setPriorLocalCorporateTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="例: 46000"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               前期確定消費税額（国税部分、任意）
               <input
                 type="number"
@@ -164,7 +164,7 @@ export function CorporateInterimTaxForm() {
                 min={0}
                 value={priorConsumptionTaxInput}
                 onChange={(e) => setPriorConsumptionTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="未入力可（消費税は計算しません）"
               />
             </label>
@@ -180,21 +180,21 @@ export function CorporateInterimTaxForm() {
             ]}
             total={provisional.totalPrepayment}
           />
-          <p className="text-xs text-stone-400 leading-relaxed mt-3">
+          <p className="text-xs text-muted-foreground leading-relaxed mt-3">
             前期確定額の1/2を、法人税・地方法人税は1万円未満切り捨て、消費税は円未満切り捨てで概算しています。
           </p>
         </section>
       )}
 
       {(method === "interimClosing" || method === "compare") && (
-        <section className="border border-stone-300 bg-white rounded-lg p-5">
-          <h3 className="text-sm font-semibold mb-3 text-stone-700">仮決算方式（仮決算による中間申告）</h3>
-          <p className="text-xs text-stone-500 leading-relaxed mb-3">
+        <section className="border border-border bg-surface rounded-lg p-5">
+          <h3 className="text-sm font-semibold mb-3 text-foreground">仮決算方式（仮決算による中間申告）</h3>
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
             事業年度開始から6か月間の実際の取引データを法人税概算ツール（corporateEstimate.ts の
             estimateForMicroCorp）にかけて仮決算を組み、その結果の法人税額・地方法人税額・消費税額をここに入力してください。
           </p>
           <div className="flex flex-col gap-4 max-w-md mb-4">
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               仮決算（6か月）による法人税額
               <input
                 type="number"
@@ -202,11 +202,11 @@ export function CorporateInterimTaxForm() {
                 min={0}
                 value={closingCorporateTaxInput}
                 onChange={(e) => setClosingCorporateTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="例: 180000"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               仮決算（6か月）による地方法人税額
               <input
                 type="number"
@@ -214,11 +214,11 @@ export function CorporateInterimTaxForm() {
                 min={0}
                 value={closingLocalCorporateTaxInput}
                 onChange={(e) => setClosingLocalCorporateTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="例: 18000"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               仮決算（6か月）による消費税納付見込額（任意）
               <input
                 type="number"
@@ -226,7 +226,7 @@ export function CorporateInterimTaxForm() {
                 min={0}
                 value={closingConsumptionTaxInput}
                 onChange={(e) => setClosingConsumptionTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="未入力可（消費税は計算しません）"
               />
             </label>
@@ -242,15 +242,15 @@ export function CorporateInterimTaxForm() {
             ]}
             total={interimClosing.totalPrepayment}
           />
-          <p className="text-xs text-stone-400 leading-relaxed mt-3">
+          <p className="text-xs text-muted-foreground leading-relaxed mt-3">
             仮決算の試算結果をそのまま転記しています（予定申告方式のような1万円未満切り捨ては適用していません）。
           </p>
         </section>
       )}
 
       {method === "compare" && comparison.interimClosingTotal !== null && (
-        <section className="border border-stone-300 bg-white rounded-lg p-5">
-          <h3 className="text-sm font-semibold mb-3 text-stone-700">方式の比較</h3>
+        <section className="border border-border bg-surface rounded-lg p-5">
+          <h3 className="text-sm font-semibold mb-3 text-foreground">方式の比較</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <ComparisonCard
               label="予定申告方式"
@@ -263,7 +263,7 @@ export function CorporateInterimTaxForm() {
               favored={comparison.favorableMethod === "interimClosing"}
             />
           </div>
-          <div className="text-sm text-stone-700">
+          <div className="text-sm text-foreground">
             {comparison.favorableMethod === "equal" && "両方式の納付額は同額です。"}
             {comparison.favorableMethod === "provisional" &&
               `予定申告方式の方が ${formatYen(Math.abs(comparison.savingsFromInterimClosing ?? 0))} 少なく済みます。`}
@@ -273,7 +273,7 @@ export function CorporateInterimTaxForm() {
         </section>
       )}
 
-      <p className="text-xs text-stone-400 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         これは一般的な制度に基づく概算シミュレーションであり、個別の税務相談・助言ではありません。
         中間申告の要否・実際の金額・提出方式の選択は、必ず税務署からの通知または税理士等の専門家にご確認ください。
       </p>
@@ -287,16 +287,16 @@ function ResultTable({ rows, total }: { rows: { label: string; value: number }[]
       <table className="w-full text-sm">
         <tbody>
           {rows.map((row) => (
-            <tr key={row.label} className="border-b border-stone-100">
-              <td className="px-3 py-2 text-stone-600">{row.label}</td>
-              <td className="px-3 py-2 text-right tabular-nums font-medium text-stone-900">
+            <tr key={row.label} className="border-b border-border/60">
+              <td className="px-3 py-2 text-muted-foreground">{row.label}</td>
+              <td className="px-3 py-2 text-right tabular-nums font-medium text-foreground">
                 {formatYen(row.value)}
               </td>
             </tr>
           ))}
           <tr className="bg-stone-50">
-            <td className="px-3 py-2 font-semibold text-stone-900">合計</td>
-            <td className="px-3 py-2 text-right tabular-nums font-semibold text-stone-900">{formatYen(total)}</td>
+            <td className="px-3 py-2 font-semibold text-foreground">合計</td>
+            <td className="px-3 py-2 text-right tabular-nums font-semibold text-foreground">{formatYen(total)}</td>
           </tr>
         </tbody>
       </table>
@@ -308,16 +308,16 @@ function ComparisonCard({ label, amount, favored }: { label: string; amount: num
   return (
     <div
       className={`border rounded-lg p-4 ${
-        favored ? "border-emerald-400 bg-emerald-50" : "border-stone-300 bg-white"
+        favored ? "border-emerald-400 bg-emerald-50" : "border-border bg-surface"
       }`}
     >
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium text-stone-600">{label}</span>
+        <span className="text-xs font-medium text-muted-foreground">{label}</span>
         {favored && (
           <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-700 text-white font-medium">有利</span>
         )}
       </div>
-      <div className="text-xl font-semibold tabular-nums text-stone-900">{formatYen(amount)}</div>
+      <div className="text-xl font-semibold tabular-nums text-foreground">{formatYen(amount)}</div>
     </div>
   );
 }

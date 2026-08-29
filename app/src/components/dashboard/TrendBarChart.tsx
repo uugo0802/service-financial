@@ -86,7 +86,7 @@ export function TrendBarChart({ points, title }: { points: TrendPoint[]; title: 
             {ticks.map((t, i) => (
               <g key={i}>
                 <line x1={MARGIN.left} x2={width - MARGIN.right} y1={yScale(t)} y2={yScale(t)} stroke="var(--viz-grid)" strokeWidth={1} />
-                <text x={MARGIN.left - 8} y={yScale(t)} textAnchor="end" dominantBaseline="middle" className="fill-stone-500 dark:fill-stone-400" fontSize={10}>
+                <text x={MARGIN.left - 8} y={yScale(t)} textAnchor="end" dominantBaseline="middle" className="fill-muted-foreground" fontSize={10}>
                   {formatMan(t)}
                 </text>
               </g>
@@ -112,7 +112,7 @@ export function TrendBarChart({ points, title }: { points: TrendPoint[]; title: 
                       />
                     );
                   })}
-                  <text x={groupX + groupWidth / 2} y={HEIGHT - 10} textAnchor="middle" className="fill-stone-500 dark:fill-stone-400" fontSize={11}>
+                  <text x={groupX + groupWidth / 2} y={HEIGHT - 10} textAnchor="middle" className="fill-muted-foreground" fontSize={11}>
                     {p.key}
                   </text>
                 </g>

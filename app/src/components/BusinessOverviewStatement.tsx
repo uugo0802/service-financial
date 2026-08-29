@@ -18,18 +18,18 @@ export function BusinessOverviewStatement({ monthlySales }: { monthlySales: Mont
   return (
     <section>
       <h2 className="text-lg font-semibold mb-3">法人事業概況説明書（簡易版・売上高の月別推移）</h2>
-      <p className="text-xs text-stone-500 dark:text-stone-400 mb-4 leading-relaxed max-w-2xl">
+      <p className="text-xs text-stone-500 mb-4 leading-relaxed max-w-2xl">
         正式様式にある「業種」「事業内容の概要」「従業者数」「主要な取引先」「経理の方法」「海外取引状況」等の項目は
         記帳データからは機械的に算出できないため、このアプリでは対応していません。以下は取引明細から算出できる
         「売上高の月別推移」のみの簡易版です。
       </p>
       {monthlySales.length === 0 ? (
-        <p className="text-sm text-stone-500 dark:text-stone-400">売上（収入）データがありませんでした。</p>
+        <p className="text-sm text-stone-500">売上（収入）データがありませんでした。</p>
       ) : (
-        <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <TableScrollArea innerClassName="border border-stone-300 bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+              <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
                 <th className="px-3 py-2 font-normal">月</th>
                 <th className="px-3 py-2 font-normal text-right">売上高</th>
               </tr>
@@ -38,11 +38,11 @@ export function BusinessOverviewStatement({ monthlySales }: { monthlySales: Mont
               {monthlySales.map((line) => (
                 <tr
                   key={line.month}
-                  className="border-b border-stone-100 dark:border-stone-800 last:border-0 print:break-inside-avoid"
+                  className="border-b border-stone-100 last:border-0 print:break-inside-avoid"
                 >
                   <td className="px-3 py-2">
                     {line.month}
-                    <span className="text-xs text-stone-400 dark:text-stone-500 ml-1">（{line.transactionCount}件）</span>
+                    <span className="text-xs text-stone-500 ml-1">（{line.transactionCount}件）</span>
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(line.amount)}</td>
                 </tr>

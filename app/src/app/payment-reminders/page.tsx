@@ -65,20 +65,20 @@ export default function PaymentRemindersPage() {
   const summary = computeReceivablesSummary(buildSampleReceivableInvoices(asOfDate), asOfDate);
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500 dark:text-stone-400">支払い督促メール下書き作成</div>
+          <div className="text-xs text-muted-foreground">支払い督促メール下書き作成</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">支払い督促メールの下書きを作成する</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             期日を過ぎても入金が確認できない請求書について、取引先に送る「支払い状況確認・督促」メールの下書き
             （件名＋本文）をその場で作成します。初回は「やわらかい」トーン、再送・長期化した場合は「強め」トーンを
             選べます。実際の送信は行いません。生成された文面をコピーして、ご自身のメールソフトから送信してください。

@@ -112,7 +112,7 @@ const STATUS_LABEL: Record<MonthlyCloseChecklistItemStatus, string> = {
 
 const STATUS_BADGE_CLASS: Record<MonthlyCloseChecklistItemStatus, string> = {
   done: "border-emerald-600 bg-emerald-50 text-emerald-700 dark:border-emerald-400 dark:bg-emerald-950 dark:text-emerald-300",
-  pending: "border-stone-400 bg-stone-50 text-stone-600 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300",
+  pending: "border-border bg-surface text-muted-foreground",
   attention: "border-red-700 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-950 dark:text-red-300",
 };
 
@@ -123,8 +123,8 @@ const STATUS_ICON: Record<MonthlyCloseChecklistItemStatus, string> = {
 };
 
 const inputClass =
-  "w-full max-w-xs border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-red-700 dark:focus:border-red-400 tabular-nums";
-const labelClass = "block text-xs text-stone-500 dark:text-stone-400 mb-1";
+  "w-full max-w-xs border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-red-700 dark:focus:border-red-400 tabular-nums";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 /**
  * 月次決算チェックリストパネル。
@@ -214,11 +214,11 @@ export function MonthlyCloseChecklistPanel() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 rounded p-4">
+      <section className="bg-surface border border-border rounded p-4">
         <h3 className="text-sm font-semibold mb-1">
           {TARGET_MONTH.replace("-", "年")}月分・チェック用データ
         </h3>
-        <p className="text-xs text-stone-500 dark:text-stone-400 mb-3">
+        <p className="text-xs text-muted-foreground mb-3">
           {isSampleData
             ? "銀行残高突合・未確定の仕訳件数の計算には、現在サンプルの取引データを使用しています。"
             : "銀行残高突合・未確定の仕訳件数の計算には、記帳された実データ（当期の取引）を使用しています。"}
@@ -275,7 +275,7 @@ export function MonthlyCloseChecklistPanel() {
                 className={inputClass}
               />
             </div>
-            <p className="sm:col-span-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+            <p className="sm:col-span-2 text-xs text-muted-foreground leading-relaxed">
               {isSampleData
                 ? (
                   <>
@@ -293,11 +293,11 @@ export function MonthlyCloseChecklistPanel() {
           <button
             type="button"
             onClick={() => setFiscalYearClosed((v) => !v)}
-            className="text-xs px-3 py-1.5 border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 hover:border-stone-600 dark:hover:border-stone-400"
+            className="text-xs px-3 py-1.5 border border-border bg-surface hover:border-foreground/40"
           >
             {fiscalYearClosed ? `${TARGET_MONTH.slice(0, 4)}年度のロックを解除する（デモ）` : `${TARGET_MONTH.slice(0, 4)}年度を確定（ロック）する（デモ）`}
           </button>
-          <span className="text-xs text-stone-500 dark:text-stone-400">
+          <span className="text-xs text-muted-foreground">
             現在: {fiscalYearClosed ? "確定済み（ロック中）" : "未確定（オープン）"}
           </span>
         </div>
@@ -308,13 +308,13 @@ export function MonthlyCloseChecklistPanel() {
           <h2 className="text-lg font-semibold">
             {TARGET_MONTH.replace("-", "年")}月 チェックリスト
           </h2>
-          <span className="text-sm tabular-nums text-stone-500 dark:text-stone-400">
+          <span className="text-sm tabular-nums text-muted-foreground">
             {checklist.doneCount} / {checklist.totalCount} 件完了
           </span>
         </div>
 
         <div
-          className="h-2 w-full bg-stone-200 dark:bg-stone-800 rounded-full overflow-hidden"
+          className="h-2 w-full bg-surface rounded-full overflow-hidden"
           role="progressbar"
           aria-valuenow={checklist.completionPercent}
           aria-valuemin={0}
@@ -327,7 +327,7 @@ export function MonthlyCloseChecklistPanel() {
             style={{ width: `${checklist.completionPercent}%` }}
           />
         </div>
-        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1.5 tabular-nums">
+        <p className="text-xs text-muted-foreground mt-1.5 tabular-nums">
           完了率 {checklist.completionPercent}%
           {checklist.isComplete && <span className="ml-2 text-emerald-700 dark:text-emerald-400">今月分の締め作業は完了しています。</span>}
         </p>
@@ -336,7 +336,7 @@ export function MonthlyCloseChecklistPanel() {
           {checklist.items.map((item) => (
             <li
               key={item.id}
-              className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded p-4 flex flex-col gap-1.5"
+              className="border border-border bg-surface rounded p-4 flex flex-col gap-1.5"
             >
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="flex items-center gap-2">
@@ -352,9 +352,9 @@ export function MonthlyCloseChecklistPanel() {
                   {STATUS_LABEL[item.status]}
                 </span>
               </div>
-              <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">{item.description}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
               {item.detail && (
-                <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{item.detail}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{item.detail}</p>
               )}
             </li>
           ))}

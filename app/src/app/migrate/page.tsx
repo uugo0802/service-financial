@@ -9,26 +9,26 @@ export const metadata: Metadata = {
 
 export default function MigratePage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 他社会計ソフトからの移行インポート</div>
+          <div className="text-xs text-muted-foreground">MVP — 他社会計ソフトからの移行インポート</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">freee / マネーフォワードからの移行インポート</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             freee会計やマネーフォワード クラウド会計/確定申告を使っていた方が、これまでの記帳データを
             ゼロから入力し直さずに済むようにするための移行ツールです。
             各サービスの「仕訳帳（journal）」エクスポート機能でダウンロードしたCSVファイルをそのままアップロードすると、
             借方・貸方の勘定科目や金額を読み取り、このアプリの記帳データ形式にその場で変換してプレビューします。
           </p>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             会計ソフトの乗り換えは、過去データの移行作業が面倒で見送られがちです。
             このツールはその切り替えコストを下げることを目的としたプロトタイプで、
             アップロードしたデータはサーバーには送信されず、お使いのブラウザ内だけで変換処理を行います。

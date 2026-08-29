@@ -101,7 +101,7 @@ export function TrendLineChart({ points, title }: { points: TrendPoint[]; title:
                   stroke="var(--viz-grid)"
                   strokeWidth={1}
                 />
-                <text x={MARGIN.left - 8} y={yScale(t)} textAnchor="end" dominantBaseline="middle" className="fill-stone-500 dark:fill-stone-400" fontSize={10}>
+                <text x={MARGIN.left - 8} y={yScale(t)} textAnchor="end" dominantBaseline="middle" className="fill-muted-foreground" fontSize={10}>
                   {formatMan(t)}
                 </text>
               </g>
@@ -140,7 +140,7 @@ export function TrendLineChart({ points, title }: { points: TrendPoint[]; title:
               const step = points.length > 18 ? 3 : points.length > 10 ? 2 : 1;
               if (i % step !== 0 && i !== points.length - 1) return null;
               return (
-                <text key={p.key} x={xScale(i)} y={HEIGHT - 12} textAnchor="middle" className="fill-stone-500 dark:fill-stone-400" fontSize={10}>
+                <text key={p.key} x={xScale(i)} y={HEIGHT - 12} textAnchor="middle" className="fill-muted-foreground" fontSize={10}>
                   {p.key}
                 </text>
               );

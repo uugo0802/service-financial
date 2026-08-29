@@ -75,7 +75,7 @@ export function ReconcileClient() {
 
   return (
     <>
-      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl -mt-6">
+      <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl -mt-6">
         {isSampleData
           ? "本ページは開発中のプロトタイプであり、サンプルデータを使用しています。"
           : "記帳された実データ（当期の取引）を表示しています。ここでの「取引」は、収益・費用の相手勘定として現金・預金勘定を使う仕訳のみを想定しています。固定資産の減価償却など現金を伴わない仕訳が含まれる場合、この突合結果はそのまま使えません。"}

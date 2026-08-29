@@ -82,10 +82,10 @@ export function ExpenseAllocationCalculator() {
   return (
     <div className="flex flex-col gap-8">
       <form onSubmit={handleCalculate} className="flex flex-col gap-4">
-        <div className="overflow-x-auto border border-stone-300">
+        <div className="overflow-x-auto border border-border">
           <table className="w-full text-sm min-w-[560px]">
             <thead>
-              <tr className="bg-stone-100 text-left text-xs text-stone-500">
+              <tr className="bg-surface text-left text-xs text-muted-foreground">
                 <th className="px-3 py-2 font-normal">勘定科目</th>
                 <th className="px-3 py-2 font-normal">年間支払額（税込・円）</th>
                 <th className="px-3 py-2 font-normal">事業按分率（%）</th>
@@ -94,7 +94,7 @@ export function ExpenseAllocationCalculator() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-t border-stone-200">
+                <tr key={row.id} className="border-t border-border">
                   <td className="px-3 py-2">
                     <input
                       type="text"
@@ -102,7 +102,7 @@ export function ExpenseAllocationCalculator() {
                       onChange={(e) => updateRow(row.id, { account: e.target.value })}
                       placeholder="例: 地代家賃"
                       aria-label="勘定科目"
-                      className="w-full border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+                      className="w-full border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -114,7 +114,7 @@ export function ExpenseAllocationCalculator() {
                       onChange={(e) => updateRow(row.id, { amountInput: e.target.value })}
                       placeholder="0"
                       aria-label="年間支払額"
-                      className="w-full border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+                      className="w-full border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -125,14 +125,14 @@ export function ExpenseAllocationCalculator() {
                       value={row.percentInput}
                       onChange={(e) => updateRow(row.id, { percentInput: e.target.value })}
                       aria-label="事業按分率(%)"
-                      className="w-24 border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+                      className="w-24 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
                     />
                   </td>
                   <td className="px-3 py-2 text-right">
                     <button
                       type="button"
                       onClick={() => removeRow(row.id)}
-                      className="text-xs text-stone-500 hover:text-red-700"
+                      className="text-xs text-muted-foreground hover:text-red-700"
                     >
                       削除
                     </button>
@@ -147,13 +147,13 @@ export function ExpenseAllocationCalculator() {
           <button
             type="button"
             onClick={addRow}
-            className="text-sm px-4 py-2 border border-stone-400 text-stone-600 hover:border-stone-600"
+            className="text-sm px-4 py-2 border border-border text-muted-foreground hover:border-foreground/40"
           >
             科目を追加
           </button>
           <button
             type="submit"
-            className="text-sm px-6 py-2 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+            className="text-sm px-6 py-2 border border-accent bg-accent text-white hover:opacity-90"
           >
             計算する
           </button>
@@ -167,14 +167,14 @@ export function ExpenseAllocationCalculator() {
           </h3>
 
           {result.lines.length === 0 ? (
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-muted-foreground">
               計算対象の行がありません。勘定科目名と金額（1円以上）を入力してください。
             </p>
           ) : (
-            <div className="overflow-x-auto border border-stone-300">
+            <div className="overflow-x-auto border border-border">
               <table className="w-full text-sm min-w-[640px]">
                 <thead>
-                  <tr className="bg-stone-100 text-left text-xs text-stone-500">
+                  <tr className="bg-surface text-left text-xs text-muted-foreground">
                     <th className="px-3 py-2 font-normal">勘定科目</th>
                     <th className="px-3 py-2 font-normal">支払額合計</th>
                     <th className="px-3 py-2 font-normal">按分率</th>
@@ -189,7 +189,7 @@ export function ExpenseAllocationCalculator() {
                       <td className="px-3 py-2">{formatYen(line.totalAmount)}</td>
                       <td className="px-3 py-2">{line.businessUsePercent}%</td>
                       <td className="px-3 py-2 font-medium">{formatYen(line.businessAmount)}</td>
-                      <td className="px-3 py-2 text-stone-500">{formatYen(line.personalAmount)}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{formatYen(line.personalAmount)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -199,7 +199,7 @@ export function ExpenseAllocationCalculator() {
                       合計
                     </td>
                     <td className="px-3 py-2">{formatYen(result.totalBusinessAmount)}</td>
-                    <td className="px-3 py-2 text-stone-500">{formatYen(result.totalPersonalAmount)}</td>
+                    <td className="px-3 py-2 text-muted-foreground">{formatYen(result.totalPersonalAmount)}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -222,7 +222,7 @@ export function ExpenseAllocationCalculator() {
             </div>
           )}
 
-          <p className="text-xs text-stone-500 leading-relaxed">{result.generalNote}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{result.generalNote}</p>
         </section>
       )}
     </div>

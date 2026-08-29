@@ -26,8 +26,8 @@ interface ClientMasterTableProps {
 
 type KindFilter = CounterpartyKind | "all";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "flex flex-col gap-1 text-xs text-stone-500";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "flex flex-col gap-1 text-xs text-muted-foreground";
 const errorTextClass = "mt-1 text-xs text-red-700";
 
 export function ClientMasterTable({ initialRecords = [], onChange }: ClientMasterTableProps) {
@@ -111,7 +111,7 @@ export function ClientMasterTable({ initialRecords = [], onChange }: ClientMaste
         </h2>
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4"
+          className="flex flex-col gap-4 bg-surface border border-border rounded p-4"
           noValidate
         >
           <div className="grid sm:grid-cols-2 gap-4">
@@ -184,14 +184,14 @@ export function ClientMasterTable({ initialRecords = [], onChange }: ClientMaste
             </label>
           </div>
 
-          <p className="text-xs text-stone-400 leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             適格請求書発行事業者の登録番号は未登録・免税事業者の場合は空欄のままで構いません。番号を入力した場合は形式・チェックデジットのみを検証し、国税庁「適格請求書発行事業者公表サイト」での実在確認は別途行ってください。
           </p>
 
           <div className="flex items-center gap-3">
             <button
               type="submit"
-              className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+              className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
             >
               {editingId ? "変更を保存" : "取引先を追加"}
             </button>
@@ -199,7 +199,7 @@ export function ClientMasterTable({ initialRecords = [], onChange }: ClientMaste
               <button
                 type="button"
                 onClick={resetForm}
-                className="text-sm px-4 py-2 border border-stone-400 text-stone-600 hover:bg-stone-100 transition-colors"
+                className="text-sm px-4 py-2 border border-border text-muted-foreground hover:bg-surface transition-colors"
               >
                 キャンセル
               </button>
@@ -230,7 +230,7 @@ export function ClientMasterTable({ initialRecords = [], onChange }: ClientMaste
             <select
               value={kindFilter}
               onChange={(e) => setKindFilter(e.target.value as KindFilter)}
-              className="border border-stone-400 bg-white px-3 py-1.5 text-xs outline-none focus:border-stone-600"
+              className="border border-border bg-surface px-3 py-1.5 text-xs outline-none focus:border-foreground/40"
             >
               <option value="all">すべての種別</option>
               {COUNTERPARTY_KIND_OPTIONS.map((option) => (
@@ -244,18 +244,18 @@ export function ClientMasterTable({ initialRecords = [], onChange }: ClientMaste
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="名称・メモで検索"
-              className="border border-stone-400 bg-white px-3 py-1.5 text-xs outline-none focus:border-stone-600"
+              className="border border-border bg-surface px-3 py-1.5 text-xs outline-none focus:border-foreground/40"
             />
           </div>
         </div>
 
         {filteredRecords.length === 0 ? (
-          <p className="text-sm text-stone-500">該当する取引先が登録されていません。</p>
+          <p className="text-sm text-muted-foreground">該当する取引先が登録されていません。</p>
         ) : (
-          <div className="overflow-x-auto border border-stone-300 bg-white">
+          <div className="overflow-x-auto border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">取引先名</th>
                   <th className="px-3 py-2 font-normal whitespace-nowrap">種別</th>
                   <th className="px-3 py-2 font-normal whitespace-nowrap">既定の勘定科目</th>
@@ -266,28 +266,28 @@ export function ClientMasterTable({ initialRecords = [], onChange }: ClientMaste
               </thead>
               <tbody>
                 {filteredRecords.map((record) => (
-                  <tr key={record.id} className="border-b border-stone-100 last:border-0">
+                  <tr key={record.id} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2">{record.name}</td>
                     <td className="px-3 py-2 whitespace-nowrap">{COUNTERPARTY_KIND_LABELS[record.kind]}</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-stone-600">
+                    <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">
                       {record.defaultAccountName ?? "—"}
                     </td>
-                    <td className="px-3 py-2 whitespace-nowrap tabular-nums text-stone-600">
+                    <td className="px-3 py-2 whitespace-nowrap tabular-nums text-muted-foreground">
                       {record.invoiceRegistrationNumber ?? "—"}
                     </td>
-                    <td className="px-3 py-2 text-stone-500 max-w-[16rem]">{record.notes}</td>
+                    <td className="px-3 py-2 text-muted-foreground max-w-[16rem]">{record.notes}</td>
                     <td className="px-3 py-2 print:hidden whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => handleEdit(record)}
-                        className="text-xs text-stone-500 hover:text-stone-900 mr-3"
+                        className="text-xs text-muted-foreground hover:text-foreground mr-3"
                       >
                         編集
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDelete(record.id)}
-                        className="text-xs text-stone-400 hover:text-red-700"
+                        className="text-xs text-muted-foreground hover:text-red-700"
                       >
                         削除
                       </button>

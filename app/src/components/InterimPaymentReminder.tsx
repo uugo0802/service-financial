@@ -21,7 +21,7 @@ const URGENCY_STYLES: Record<InterimUrgency, { badge: string; card: string; labe
   },
   normal: {
     badge: "bg-emerald-700 text-white",
-    card: "border-stone-300 bg-white",
+    card: "border-border bg-surface",
     label: "余裕あり",
   },
 };
@@ -58,8 +58,8 @@ export function InterimPaymentReminder({ maxItems, ...input }: InterimPaymentRem
 
   if (visible.length === 0) {
     return (
-      <div className="border border-stone-300 bg-white rounded-lg p-4">
-        <p className="text-sm text-stone-600">
+      <div className="border border-border bg-surface rounded-lg p-4">
+        <p className="text-sm text-muted-foreground">
           入力されている前期確定税額に基づくと、今期の中間申告・中間納付は不要と見込まれます
           （法人税は前期確定税額20万円超、消費税は48万円超の場合に必要になります）。
         </p>
@@ -72,7 +72,7 @@ export function InterimPaymentReminder({ maxItems, ...input }: InterimPaymentRem
       {visible.map((obligation) => (
         <ObligationCard key={obligation.id} obligation={obligation} />
       ))}
-      <p className="text-xs text-stone-400 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         表示している期日・金額は一般的な制度としきい値に基づく概算です（個別の税務相談ではありません）。
         中間納付額は前期確定税額の1/2として簡易計算しており、仮決算による中間申告には対応していません。
         土日祝日により実際の期限は前後する場合があるため、必ず国税庁・税理士等の専門家でご確認ください。
@@ -90,22 +90,22 @@ function ObligationCard({ obligation }: { obligation: InterimPaymentObligation }
         <span className={`inline-block w-fit text-xs px-2 py-0.5 rounded-full font-medium ${style.badge}`}>
           {style.label}
         </span>
-        <span className="text-sm font-semibold text-stone-900">
+        <span className="text-sm font-semibold text-foreground">
           {KIND_LABELS[obligation.kind]}中間申告・中間納付
         </span>
-        <span className="text-xs text-stone-600">{obligation.label}</span>
-        {obligation.dueDate && <span className="text-xs text-stone-500">期日: {obligation.dueDate}</span>}
-        <span className="text-xs text-stone-400 max-w-md leading-relaxed">{obligation.note}</span>
+        <span className="text-xs text-muted-foreground">{obligation.label}</span>
+        {obligation.dueDate && <span className="text-xs text-muted-foreground">期日: {obligation.dueDate}</span>}
+        <span className="text-xs text-muted-foreground max-w-md leading-relaxed">{obligation.note}</span>
       </div>
       <div className="text-right">
         {obligation.needsManualReview ? (
-          <div className="text-sm font-medium tabular-nums text-stone-500">期日・金額は要確認</div>
+          <div className="text-sm font-medium tabular-nums text-muted-foreground">期日・金額は要確認</div>
         ) : (
           <>
-            <div className="text-2xl font-semibold tabular-nums text-stone-900">
+            <div className="text-2xl font-semibold tabular-nums text-foreground">
               {daysRemainingText(obligation.daysRemaining ?? 0)}
             </div>
-            <div className="text-sm tabular-nums text-stone-600">
+            <div className="text-sm tabular-nums text-muted-foreground">
               概算納付額: {formatYen(obligation.estimatedAmount ?? 0)}
             </div>
           </>

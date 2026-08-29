@@ -127,8 +127,8 @@ export function TagsClient() {
   const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
@@ -139,11 +139,11 @@ export function TagsClient() {
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">クライアント・プロジェクトの収益性</h1>
-          <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             取引にクライアントや案件のタグを付けると、タグごとの収入・支出・純額を自動で集計します。
             「どの案件が実際に儲かっているか」を、高価な会計ツールなしで手軽に把握するための画面です。
           </p>
-          <p className="text-xs text-stone-500 leading-relaxed max-w-2xl">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             {isSampleData
               ? "取引一覧は開発中のプロトタイプであり、サンプルデータを使用しています。"
               : "記帳された実データ（当期の取引）を表示しています。"}
@@ -157,8 +157,8 @@ export function TagsClient() {
         />
       </PageContainer>
 
-      <footer className="border-t border-stone-300 bg-white mt-4">
-        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 leading-relaxed">
+      <footer className="border-t border-border bg-surface mt-4">
+        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される内容は取引データの単純な集計・可視化であり、税額計算や申告内容とは連動していません。
           個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。

@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+/*
+ * Tailwindの dark: バリアントを、既定の prefers-color-scheme メディアクエリではなく
+ * <html data-theme="dark"> 属性に追従させる。
+ *
+ * 2026-08-30発見: 既定のdark:はOSのシステム設定にしか反応せず、/settings/appearance の
+ * ライト/ダーク/システム3択トグル（data-theme属性による明示的な上書き）を無視していた。
+ * これが「ページごとにダークモードの見え方がバラバラ」の根本原因だった
+ * （--background等のCSS変数側は既に:root[data-theme="dark"]で対応済みだったため、
+ * トークンを使うページは正しく追従し、生のdark:クラスを使うページだけ取り残されていた）。
+ *
+ * ThemeProvider（src/app/layout.tsxのTHEME_INIT_SCRIPT）とThemeToggleは、
+ * "system"選択時もOSの設定を都度解決してdata-theme属性へ明示的に反映する
+ * （属性を外してメディアクエリに委ねる、という以前の方式はやめた）ため、
+ * このバリアントだけで全てのケース（明示的な選択・システム追従とも）をカバーできる。
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 :root {
   --background: #ffffff;
   --surface: #fafafa;

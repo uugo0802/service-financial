@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function ResidentTaxEstimatePage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 個人住民税 概算シミュレーター</div>
+          <div className="text-xs text-muted-foreground">MVP — 個人住民税 概算シミュレーター</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">個人住民税 概算シミュレーター</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             住民税（道府県民税・市町村民税）は、前年の所得に対して、その年の1月1日時点に
             住所を有する市区町村・都道府県が翌年度に課税する地方税です。確定申告で計算した
             所得税の課税所得金額を入力すると、所得割（標準税率10%）と均等割（標準額6,000円、

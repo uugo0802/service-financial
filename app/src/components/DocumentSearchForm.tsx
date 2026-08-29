@@ -62,7 +62,7 @@ const DOCUMENT_PRINT_NOTICE =
   "当社が税務代理・税務書類の作成・税務相談を行うものではありません。";
 
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600 dark:border-stone-600 dark:bg-stone-900";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
@@ -114,11 +114,11 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
     <div className="document-search-form flex flex-col gap-6">
       <form
         onSubmit={handleSubmit}
-        className="border border-stone-300 bg-white p-5 flex flex-col gap-4 print:hidden dark:border-stone-700 dark:bg-stone-900"
+        className="border border-border bg-surface p-5 flex flex-col gap-4 print:hidden dark:border-stone-700 dark:bg-stone-900"
         noValidate
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引年月日（開始）
             <input
               type="date"
@@ -128,7 +128,7 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引年月日（終了）
             <input
               type="date"
@@ -138,7 +138,7 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引金額（下限）
             <input
               type="text"
@@ -150,7 +150,7 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             取引金額（上限）
             <input
               type="text"
@@ -162,7 +162,7 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400 sm:col-span-2 lg:col-span-4">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2 lg:col-span-4">
             取引先・摘要キーワード
             <input
               type="text"
@@ -174,7 +174,7 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
           </label>
         </div>
 
-        <label className="flex items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
           <input
             type="checkbox"
             checked={unlinkedOnly}
@@ -187,21 +187,21 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
         <div className="flex flex-wrap gap-3">
           <button
             type="submit"
-            className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-300"
+            className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
           >
             検索
           </button>
           <button
             type="button"
             onClick={handleReset}
-            className="text-sm px-5 py-2.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors dark:border-stone-600 dark:bg-stone-900 dark:hover:border-stone-400"
+            className="text-sm px-5 py-2.5 border border-border bg-surface hover:border-foreground/40 transition-colors"
           >
             条件をクリア
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="text-sm px-5 py-2.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors ml-auto dark:border-stone-600 dark:bg-stone-900 dark:hover:border-stone-400"
+            className="text-sm px-5 py-2.5 border border-border bg-surface hover:border-foreground/40 transition-colors ml-auto dark:border-stone-600 dark:bg-stone-900 dark:hover:border-stone-400"
           >
             印刷 / PDFで保存
           </button>
@@ -216,13 +216,13 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
       )}
 
       {/* 画面表示用の見出し（印刷時は下の固定ヘッダーに置き換わるため隠す） */}
-      <h2 className="text-sm text-stone-500 dark:text-stone-400 print:hidden">
-        検索結果 <span className="font-medium text-stone-700 dark:text-stone-200">{results.length}件</span>
-        <span className="text-stone-400 dark:text-stone-500">（全{documents.length}件中</span>
+      <h2 className="text-sm text-muted-foreground print:hidden">
+        検索結果 <span className="font-medium text-foreground">{results.length}件</span>
+        <span className="text-muted-foreground">（全{documents.length}件中</span>
         {resultUnlinkedCount > 0 && (
           <span className="text-amber-700 dark:text-amber-400">、うち未紐付け{resultUnlinkedCount}件</span>
         )}
-        <span className="text-stone-400 dark:text-stone-500">）</span>
+        <span className="text-muted-foreground">）</span>
       </h2>
 
       {/* 印刷時のみ表示する固定ヘッダー。各ページの先頭に繰り返し表示される。 */}
@@ -235,14 +235,14 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
       </div>
 
       {results.length === 0 ? (
-        <p className="text-sm text-stone-500 dark:text-stone-400 border border-dashed border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-6 text-center">
+        <p className="text-sm text-muted-foreground border border-dashed border-border bg-surface px-4 py-6 text-center">
           条件に一致する証憑が見つかりませんでした。日付・金額・キーワードの条件を見直してください。
         </p>
       ) : (
-        <div className="overflow-x-auto border border-stone-300 bg-white print:mx-auto print:w-[186mm] print:border-0 print:pt-[14mm] print:pb-[18mm] dark:border-stone-700 dark:bg-stone-900">
+        <div className="overflow-x-auto border border-border bg-surface print:mx-auto print:w-[186mm] print:border-0 print:pt-[14mm] print:pb-[18mm] dark:border-stone-700 dark:bg-stone-900">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-300 text-left text-stone-500 text-xs dark:border-stone-700 dark:text-stone-400">
+              <tr className="border-b border-border text-left text-muted-foreground text-xs">
                 <th className="px-3 py-2 font-normal">取引年月日</th>
                 <th className="px-3 py-2 font-normal">取引先・摘要</th>
                 <th className="px-3 py-2 font-normal text-right">取引金額</th>
@@ -257,22 +257,22 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
                 return (
                   <tr
                     key={row.id}
-                    className="border-b border-stone-100 last:border-0 print:break-inside-avoid dark:border-stone-800"
+                    className="border-b border-border/60 last:border-0 print:break-inside-avoid dark:border-stone-800"
                   >
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">
-                      {unlinked ? <span className="text-stone-400 dark:text-stone-500">－</span> : row.transaction!.date}
+                      {unlinked ? <span className="text-muted-foreground">－</span> : row.transaction!.date}
                     </td>
                     <td
                       className="px-3 py-2 max-w-xs truncate"
                       title={unlinked ? undefined : row.transaction!.counterparty ?? row.transaction!.description}
                     >
                       {unlinked ? (
-                        <span className="text-stone-400 dark:text-stone-500">－</span>
+                        <span className="text-muted-foreground">－</span>
                       ) : (
                         <>
                           {row.transaction!.description}
                           {row.transaction!.counterparty && (
-                            <span className="text-stone-400 dark:text-stone-500"> ／ {row.transaction!.counterparty}</span>
+                            <span className="text-muted-foreground"> ／ {row.transaction!.counterparty}</span>
                           )}
                         </>
                       )}
@@ -280,16 +280,16 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
                     <td
                       className={`px-3 py-2 text-right tabular-nums ${
                         unlinked
-                          ? "text-stone-400 dark:text-stone-500"
+                          ? "text-muted-foreground"
                           : row.transaction!.amount < 0
-                            ? "text-stone-700 dark:text-stone-200"
+                            ? "text-foreground"
                             : "text-emerald-700 dark:text-emerald-400"
                       }`}
                     >
                       {unlinked ? "－" : (
                         <>
                           {yen.format(row.transaction!.amount)}
-                          <span className="text-xs text-stone-400 dark:text-stone-500"> 円</span>
+                          <span className="text-xs text-muted-foreground"> 円</span>
                         </>
                       )}
                     </td>
@@ -303,7 +303,7 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
                           未紐付け
                         </span>
                       ) : (
-                        <span className="text-xs text-stone-400 dark:text-stone-500">紐付け済み</span>
+                        <span className="text-xs text-muted-foreground">紐付け済み</span>
                       )}
                     </td>
                   </tr>
@@ -314,7 +314,7 @@ export function DocumentSearchForm({ documents }: DocumentSearchFormProps) {
         </div>
       )}
 
-      <p className="text-xs text-stone-500 dark:text-stone-400 print:hidden">
+      <p className="text-xs text-muted-foreground print:hidden">
         表示内容は証憑データを条件で絞り込んだものであり、正式な税務代理・個別税務相談ではありません。
         内容はご自身の確認のうえご利用ください。
       </p>

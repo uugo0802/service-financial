@@ -21,7 +21,7 @@ export function InvoiceNumberBadge({
   if (trimmed.length === 0) {
     return (
       <span
-        className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 border rounded-full border-stone-300 bg-stone-50 text-stone-500 ${className}`}
+        className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 border rounded-full border-stone-300 bg-stone-50 text-muted-foreground ${className}`}
       >
         <span aria-hidden="true">－</span>
         登録番号未入力・要確認
@@ -40,7 +40,7 @@ export function InvoiceNumberBadge({
           <span aria-hidden="true">✕</span>
           登録番号エラー・要確認
         </summary>
-        <p className="mt-1.5 max-w-xs text-stone-600 leading-relaxed">{result.message}</p>
+        <p className="mt-1.5 max-w-xs text-muted-foreground leading-relaxed">{result.message}</p>
       </details>
     );
   }
@@ -53,7 +53,7 @@ export function InvoiceNumberBadge({
         <span aria-hidden="true">△</span>
         形式チェックOK・要確認
       </summary>
-      <p className="mt-1.5 max-w-xs text-stone-600 leading-relaxed">{result.message}</p>
+      <p className="mt-1.5 max-w-xs text-muted-foreground leading-relaxed">{result.message}</p>
     </details>
   );
 }

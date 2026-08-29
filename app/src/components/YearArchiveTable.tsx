@@ -13,11 +13,11 @@ function Yen({ v }: { v: number }) {
 
 function ChangeBadge({ pct }: { pct: number | null }) {
   if (pct === null) {
-    return <span className="text-xs text-stone-400">—</span>;
+    return <span className="text-xs text-muted-foreground">—</span>;
   }
   const isUp = pct > 0;
   const isFlat = pct === 0;
-  const color = isFlat ? "text-stone-500" : isUp ? "text-emerald-700" : "text-red-700";
+  const color = isFlat ? "text-muted-foreground" : isUp ? "text-emerald-700" : "text-red-700";
   const sign = isUp ? "+" : "";
   return (
     <span className={`text-xs font-medium tabular-nums ${color}`}>
@@ -30,7 +30,7 @@ function ChangeBadge({ pct }: { pct: number | null }) {
 export function YearArchiveTable({ archive }: { archive: YearArchiveViewModel }) {
   if (archive.entries.length === 0) {
     return (
-      <div className="border border-stone-300 bg-white rounded-lg p-8 text-center text-sm text-stone-500">
+      <div className="border border-border bg-surface rounded-lg p-8 text-center text-sm text-muted-foreground">
         まだ記録された年度データがありません。年度ごとの記帳・申告データが蓄積されると、ここに一覧で表示されます。
       </div>
     );
@@ -57,10 +57,10 @@ export function YearArchiveTable({ archive }: { archive: YearArchiveViewModel })
         </p>
       )}
 
-      <div className="overflow-x-auto border border-stone-300 bg-white rounded-lg">
+      <div className="overflow-x-auto border border-border bg-surface rounded-lg">
         <table className="w-full text-sm border-collapse min-w-[640px]">
           <thead>
-            <tr className="border-b border-stone-300 bg-stone-50 text-left text-xs text-stone-500">
+            <tr className="border-b border-border bg-surface text-left text-xs text-muted-foreground">
               <th className="py-2 px-3 font-semibold">年度</th>
               <th className="py-2 px-3 font-semibold text-right">売上高</th>
               <th className="py-2 px-3 font-semibold text-right">経費</th>
@@ -81,15 +81,15 @@ export function YearArchiveTable({ archive }: { archive: YearArchiveViewModel })
                 </td>
                 <td className="py-2.5 px-3 text-right align-top">
                   <Yen v={e.revenue} />
-                  <span className="text-xs text-stone-400"> 円</span>
+                  <span className="text-xs text-muted-foreground"> 円</span>
                 </td>
                 <td className="py-2.5 px-3 text-right align-top">
                   <Yen v={e.expenses} />
-                  <span className="text-xs text-stone-400"> 円</span>
+                  <span className="text-xs text-muted-foreground"> 円</span>
                 </td>
                 <td className={`py-2.5 px-3 text-right align-top ${e.profit < 0 ? "text-red-700" : ""}`}>
                   <Yen v={e.profit} />
-                  <span className="text-xs text-stone-400"> 円</span>
+                  <span className="text-xs text-muted-foreground"> 円</span>
                 </td>
                 <td className="py-2.5 px-3 text-right align-top">
                   <div className="flex flex-col items-end gap-0.5">
@@ -99,16 +99,16 @@ export function YearArchiveTable({ archive }: { archive: YearArchiveViewModel })
                 </td>
                 <td className="py-2.5 px-3 text-right align-top">
                   <Yen v={e.estimatedTax} />
-                  <span className="text-xs text-stone-400"> 円</span>
+                  <span className="text-xs text-muted-foreground"> 円</span>
                 </td>
-                <td className="py-2.5 px-3 align-top text-stone-500 text-xs">{e.filedAt ?? "—"}</td>
+                <td className="py-2.5 px-3 align-top text-muted-foreground text-xs">{e.filedAt ?? "—"}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-muted-foreground">
         表示内容は過去に記録された記帳・概算データを並び替えたものであり、正式な税務代理・個別税務相談ではありません。数値は概算シミュレーションとしてご確認ください。
       </p>
     </div>
@@ -117,8 +117,8 @@ export function YearArchiveTable({ archive }: { archive: YearArchiveViewModel })
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border border-stone-300 bg-white rounded-lg px-4 py-3">
-      <div className="text-xs text-stone-500 mb-1">{label}</div>
+    <div className="border border-border bg-surface rounded-lg px-4 py-3">
+      <div className="text-xs text-muted-foreground mb-1">{label}</div>
       <div className="text-lg font-serif tabular-nums">{value}</div>
     </div>
   );

@@ -167,26 +167,26 @@ export function FinancialStatementsClient() {
   const balanceSheetSection = (
     <section>
       <h2 className="text-lg font-semibold mb-3">貸借対照表</h2>
-      <p className="text-xs text-muted-foreground mb-3 leading-relaxed max-w-2xl">
+      <p className="text-xs text-stone-500 mb-3 leading-relaxed max-w-2xl">
         {bsData
           ? "固定資産・借入金は台帳データ（減価償却・返済スケジュールの計算結果）から積み上げています。売掛金・買掛金等、これら以外の資産負債はこのアプリでは反映されません。"
           : "固定資産・売掛金・借入金等、現金以外の資産負債はこのアプリでは反映されません。"}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TableScrollArea innerClassName="border border-border bg-surface">
+        <TableScrollArea innerClassName="border border-stone-300 bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-muted-foreground text-xs">
+              <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
                 <th className="px-3 py-2 font-normal" colSpan={2}>資産の部</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border/60 print:break-inside-avoid">
+              <tr className="border-b border-stone-100 print:break-inside-avoid">
                 <td className="px-3 py-2">現金及び預金</td>
                 <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.endingCash)}</td>
               </tr>
               {balanceSheet.fixedAssetsBookValue > 0 && (
-                <tr className="border-b border-border/60 print:break-inside-avoid">
+                <tr className="border-b border-stone-100 print:break-inside-avoid">
                   <td className="px-3 py-2">固定資産（期末帳簿価額）</td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.fixedAssetsBookValue)}</td>
                 </tr>
@@ -199,24 +199,24 @@ export function FinancialStatementsClient() {
           </table>
         </TableScrollArea>
         <div className="flex flex-col gap-4">
-          <TableScrollArea innerClassName="border border-border bg-surface">
+          <TableScrollArea innerClassName="border border-stone-300 bg-white">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-muted-foreground text-xs">
+                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
                   <th className="px-3 py-2 font-normal" colSpan={2}>負債の部</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-border/60 print:break-inside-avoid">
+                <tr className="border-b border-stone-100 print:break-inside-avoid">
                   <td className="px-3 py-2">未払法人税等</td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidCorporateTaxes)}</td>
                 </tr>
-                <tr className="border-b border-border/60 print:break-inside-avoid">
+                <tr className="border-b border-stone-100 print:break-inside-avoid">
                   <td className="px-3 py-2">未払消費税等</td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.unpaidConsumptionTax)}</td>
                 </tr>
                 {balanceSheet.loansBalance > 0 && (
-                  <tr className="border-b border-border/60 print:break-inside-avoid">
+                  <tr className="border-b border-stone-100 print:break-inside-avoid">
                     <td className="px-3 py-2">借入金</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.loansBalance)}</td>
                   </tr>
@@ -228,19 +228,19 @@ export function FinancialStatementsClient() {
               </tbody>
             </table>
           </TableScrollArea>
-          <TableScrollArea innerClassName="border border-border bg-surface">
+          <TableScrollArea innerClassName="border border-stone-300 bg-white">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-muted-foreground text-xs">
+                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
                   <th className="px-3 py-2 font-normal" colSpan={2}>純資産の部</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-border/60 print:break-inside-avoid">
+                <tr className="border-b border-stone-100 print:break-inside-avoid">
                   <td className="px-3 py-2">資本金</td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.capitalStock)}</td>
                 </tr>
-                <tr className="border-b border-border/60 print:break-inside-avoid">
+                <tr className="border-b border-stone-100 print:break-inside-avoid">
                   <td className="px-3 py-2">繰越利益剰余金</td>
                   <td className="px-3 py-2 text-right tabular-nums">{yen.format(balanceSheet.retainedEarningsEnding)}</td>
                 </tr>
@@ -253,7 +253,7 @@ export function FinancialStatementsClient() {
           </TableScrollArea>
         </div>
       </div>
-      <p className={`text-xs mt-3 ${balanceSheet.balanced ? "text-muted-foreground" : "text-red-700"}`}>
+      <p className={`text-xs mt-3 ${balanceSheet.balanced ? "text-stone-400" : "text-red-700"}`}>
         {balanceSheet.balanced
           ? "検算: 資産合計＝負債＋純資産合計（一致）"
           : "検算エラー: 資産合計と負債＋純資産合計が一致していません。入力値をご確認ください。"}
@@ -263,7 +263,7 @@ export function FinancialStatementsClient() {
 
   return (
     <>
-      <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
+      <p className="text-xs text-stone-500 leading-relaxed max-w-2xl">
         {isSampleData
           ? `${SAMPLE_ENTITY_NAME}を想定したサンプルデータで当期の損益を表示しています（資本金・期首残高もサンプル値）。`
           : isSampleBalanceSheetData

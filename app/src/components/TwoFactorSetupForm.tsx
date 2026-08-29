@@ -11,7 +11,7 @@ interface TwoFactorSetupFormProps {
 }
 
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
 
 /**
  * TOTPベースの二要素認証(2FA)を設定するフォーム。
@@ -75,7 +75,7 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
         <button
           type="button"
           onClick={handleReset}
-          className="self-start text-xs text-stone-600 underline underline-offset-2"
+          className="self-start text-xs text-muted-foreground underline underline-offset-2"
         >
           別の端末をもう1つ登録する
         </button>
@@ -85,8 +85,8 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
 
   if (step === "idle") {
     return (
-      <div className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <p className="text-sm text-stone-600 leading-relaxed">
+      <div className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <p className="text-sm text-muted-foreground leading-relaxed">
           Google Authenticator・1Password等の認証アプリを使ったTOTPベースの二要素認証を設定できます。
           記帳データや税務情報など機微な情報を保護するため、設定を推奨します。
         </p>
@@ -94,7 +94,7 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
         <button
           type="button"
           onClick={handleStartEnroll}
-          className="self-start text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+          className="self-start text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
         >
           二要素認証を設定する
         </button>
@@ -104,17 +104,17 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
 
   if (step === "enrolling") {
     return (
-      <div className="border border-stone-300 bg-white p-5">
-        <p className="text-sm text-stone-500">登録準備中…</p>
+      <div className="border border-border bg-surface p-5">
+        <p className="text-sm text-muted-foreground">登録準備中…</p>
       </div>
     );
   }
 
   // step === "awaiting-code" | "verifying"
   return (
-    <div className="border border-stone-300 bg-white p-5 flex flex-col gap-5">
+    <div className="border border-border bg-surface p-5 flex flex-col gap-5">
       <div className="flex flex-col gap-3">
-        <p className="text-sm text-stone-700">
+        <p className="text-sm text-foreground">
           認証アプリでQRコードを読み取るか、シークレットキーを手動で入力してください。
         </p>
         {enrollment && (
@@ -129,7 +129,7 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
               height={180}
               className="border border-stone-300"
             />
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               シークレットキー（手動入力用）
               <input
                 type="text"
@@ -144,7 +144,7 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
       </div>
 
       <form onSubmit={handleVerify} className="flex flex-col gap-3" noValidate>
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           認証アプリに表示されている6桁の確認コード
           <input
             type="text"
@@ -165,8 +165,8 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
             disabled={step === "verifying" || code.length === 0}
             className={`text-sm px-5 py-2.5 border transition-colors ${
               step === "verifying" || code.length === 0
-                ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-                : "border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+                ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                : "border-accent bg-accent text-white hover:opacity-90"
             }`}
           >
             {step === "verifying" ? "確認中…" : "確認する"}
@@ -174,7 +174,7 @@ export function TwoFactorSetupForm({ onEnrolled }: TwoFactorSetupFormProps) {
           <button
             type="button"
             onClick={handleReset}
-            className="text-xs text-stone-500 underline underline-offset-2"
+            className="text-xs text-muted-foreground underline underline-offset-2"
           >
             キャンセル
           </button>

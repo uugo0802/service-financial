@@ -11,20 +11,20 @@ export const metadata: Metadata = {
 
 export default function CorporateEstablishmentNotificationPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen print:bg-white">
-      <header className="border-b border-stone-300 bg-white print:hidden">
+    <div className="bg-background text-foreground min-h-screen print:bg-white">
+      <header className="border-b border-border bg-surface print:hidden">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500">MVP — 法人設立時の届出書・申請書一式（下書き作成）</div>
+          <div className="text-xs text-muted-foreground">MVP — 法人設立時の届出書・申請書一式（下書き作成）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8 print:max-w-none print:px-0 print:py-0">
         <section className="print:hidden">
           <h1 className="text-2xl font-semibold mb-2">法人設立時の届出書・申請書一式（下書き作成）</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             新しく設立したマイクロ法人が設立直後に提出する必要のある、
             <b className="font-medium">法人設立届出書</b>（税務署・都道府県税事務所・市区町村役場の3通）、
             <b className="font-medium">青色申告の承認申請書（法人用）</b>、
@@ -38,7 +38,7 @@ export default function CorporateEstablishmentNotificationPage() {
             当社が代理で提出することはありません。個別具体的な税務相談には該当しませんので、最終的な判断は
             必要に応じて税理士等の専門家にご相談ください。
           </p>
-          <p className="text-xs text-stone-500 max-w-2xl leading-relaxed mt-2">
+          <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed mt-2">
             本サービスはマイナンバー非保持の原則に従い、個人番号（マイナンバー）の入力欄は設けていません。
             法人番号は設立登記完了後に国税庁から指定されるため、この時点では入力を求めません。
             個人事業主（フリーランス）向けの青色申告承認申請書は、別ツールをご利用ください。

@@ -9,7 +9,7 @@ const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY",
 
 function EquityChangeRow({ line }: { line: EquityChangeLine }) {
   return (
-    <tr className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+    <tr className="border-b border-stone-100 last:border-0">
       <td className="px-3 py-2 font-medium">{line.label}</td>
       <td className="px-3 py-2 text-right tabular-nums">{yen.format(line.openingBalance)}</td>
       <td className="px-3 py-2 text-right tabular-nums">{yen.format(line.change)}</td>
@@ -22,13 +22,13 @@ export function EquityChangeStatement({ form }: { form: EquityChangeForm }) {
   return (
     <section>
       <h2 className="text-lg font-semibold mb-3">株主資本等変動計算書</h2>
-      <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">
+      <p className="text-xs text-stone-500 mb-3 leading-relaxed max-w-2xl">
         当期中に増資・減資・自己株式の取得等の資本取引は発生していないものとして扱っています。該当する資本取引がある場合は、ご自身で反映してください。
       </p>
-      <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+      <div className="overflow-x-auto border border-stone-300 bg-white">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+            <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
               <th className="px-3 py-2 font-normal">科目</th>
               <th className="px-3 py-2 font-normal text-right">当期首残高</th>
               <th className="px-3 py-2 font-normal text-right">当期変動額</th>

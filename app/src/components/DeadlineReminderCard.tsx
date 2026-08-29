@@ -17,7 +17,7 @@ const STATUS_LABEL: Record<ReminderStatus, string> = {
 const STATUS_BADGE_CLASS: Record<ReminderStatus, string> = {
   overdue: "border-red-700 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-950 dark:text-red-300",
   "due-soon": "border-amber-600 bg-amber-50 text-amber-700 dark:border-amber-400 dark:bg-amber-950 dark:text-amber-300",
-  upcoming: "border-stone-400 bg-stone-50 text-stone-600 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-300",
+  upcoming: "border-border bg-surface text-muted-foreground",
 };
 
 function formatDaysRemaining(daysRemaining: number): string {
@@ -36,11 +36,11 @@ export function DeadlineReminderCard({ reminders }: { reminders: DeadlineReminde
   const rest = sorted.slice(1);
 
   return (
-    <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+    <div className="border border-border bg-surface rounded-md p-5">
       <h3 className="text-sm font-semibold mb-4">次の申告期限とタスク</h3>
 
       {!next ? (
-        <p className="text-sm text-stone-500 dark:text-stone-400">
+        <p className="text-sm text-muted-foreground">
           現在表示できる申告期限タスクがありません。モードや入力内容をご確認ください。
         </p>
       ) : (
@@ -52,14 +52,14 @@ export function DeadlineReminderCard({ reminders }: { reminders: DeadlineReminde
               >
                 {STATUS_LABEL[next.status]}
               </span>
-              <span className="text-xs text-stone-500 dark:text-stone-400 tabular-nums">
+              <span className="text-xs text-muted-foreground tabular-nums">
                 期限: {next.dueDate}
               </span>
             </div>
             <div className="text-base font-semibold">{next.title}</div>
-            <p className="text-sm text-stone-600 dark:text-stone-400 mt-1 leading-relaxed">{next.description}</p>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{next.description}</p>
             <p className="text-sm font-medium mt-2 tabular-nums">{formatDaysRemaining(next.daysRemaining)}</p>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mt-2">{next.basis}</p>
+            <p className="text-xs text-muted-foreground mt-2">{next.basis}</p>
           </div>
 
           {rest.length > 0 && (
@@ -68,7 +68,7 @@ export function DeadlineReminderCard({ reminders }: { reminders: DeadlineReminde
                 <li key={r.id} className="py-2 flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <span className="text-sm">{r.title}</span>
-                    <span className="text-xs text-stone-400 dark:text-stone-500 ml-2 tabular-nums">
+                    <span className="text-xs text-muted-foreground ml-2 tabular-nums">
                       {r.dueDate}
                     </span>
                   </div>
@@ -82,7 +82,7 @@ export function DeadlineReminderCard({ reminders }: { reminders: DeadlineReminde
         </>
       )}
 
-      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed mt-3 border-t border-stone-100 dark:border-stone-800 pt-3">
+      <p className="text-xs text-muted-foreground leading-relaxed mt-3 border-t border-border/60 pt-3">
         {DEADLINE_GENERAL_INFO_NOTICE}
       </p>
     </div>

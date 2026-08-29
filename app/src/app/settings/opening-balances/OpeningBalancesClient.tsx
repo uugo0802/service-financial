@@ -87,7 +87,7 @@ export function OpeningBalancesClient() {
   }
 
   if (state === "loading") {
-    return <p className="text-sm text-stone-500">読み込み中…</p>;
+    return <p className="text-sm text-muted-foreground">読み込み中…</p>;
   }
 
   if (state === "unconfigured") {
@@ -101,7 +101,7 @@ export function OpeningBalancesClient() {
 
   if (state === "unauthenticated" || !tenantId) {
     return (
-      <div className="border border-stone-300 bg-white text-sm p-4 text-stone-600">
+      <div className="border border-border bg-surface text-sm p-4 text-muted-foreground">
         ログインすると期首残高・固定資産・借入金を投入できます。
       </div>
     );
@@ -115,7 +115,7 @@ export function OpeningBalancesClient() {
     <div className="flex flex-col gap-10">
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">期首残高（現金・繰越利益剰余金）</h2>
-        <p className="text-xs text-stone-500 leading-relaxed max-w-2xl">
+        <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
           前期末時点の貸借対照表をもとに、期首日・現金及び預金残高・繰越利益剰余金を入力してください。
           既に投入済みの場合は上書き保存されます（tenant_idにつき1行のみ保持します）。
         </p>
@@ -130,15 +130,15 @@ export function OpeningBalancesClient() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">固定資産台帳</h2>
-        <p className="text-xs text-stone-500 leading-relaxed max-w-2xl">
+        <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
           期首時点で既に保有している固定資産があれば登録してください（取得日は実際の取得日のままで構いません）。
           登録した資産は毎期の減価償却費が自動計算され、貸借対照表に反映されます。
         </p>
         {fixedAssets.length > 0 && (
-          <TableScrollArea innerClassName="border border-stone-300 bg-white">
+          <TableScrollArea innerClassName="border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">資産名</th>
                   <th className="px-3 py-2 font-normal">取得日</th>
                   <th className="px-3 py-2 font-normal text-right">取得価額</th>
@@ -147,7 +147,7 @@ export function OpeningBalancesClient() {
               </thead>
               <tbody>
                 {fixedAssets.map((a) => (
-                  <tr key={a.id} className="border-b border-stone-100 last:border-0">
+                  <tr key={a.id} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2">{a.name}</td>
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">{a.acquisition_date}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(a.acquisition_cost)}</td>
@@ -171,15 +171,15 @@ export function OpeningBalancesClient() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">借入金台帳</h2>
-        <p className="text-xs text-stone-500 leading-relaxed max-w-2xl">
+        <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
           期首時点で返済中の借入金があれば登録してください（借入日は実際の借入日のままで構いません）。
           登録した借入金は毎月の元本・利息の返済仕訳が自動計算され、貸借対照表に反映されます。
         </p>
         {loans.length > 0 && (
-          <TableScrollArea innerClassName="border border-stone-300 bg-white">
+          <TableScrollArea innerClassName="border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">借入先・借入名</th>
                   <th className="px-3 py-2 font-normal">借入日</th>
                   <th className="px-3 py-2 font-normal text-right">元本</th>
@@ -189,7 +189,7 @@ export function OpeningBalancesClient() {
               </thead>
               <tbody>
                 {loans.map((l) => (
-                  <tr key={l.id} className="border-b border-stone-100 last:border-0">
+                  <tr key={l.id} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2">{l.name}</td>
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">{l.start_date}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(l.principal_amount)}</td>

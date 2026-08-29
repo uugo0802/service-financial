@@ -5,8 +5,8 @@ import { calculateMonthlyWithholding } from "@/lib/payroll/withholding";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 /**
  * 月額の役員報酬・給与から、源泉徴収税額（月額表・甲欄の近似）と差引支給額を
@@ -47,7 +47,7 @@ export function WithholdingCalculator() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="monthly-gross-compensation">
             月額の役員報酬・給与（総支給額、円）
@@ -101,12 +101,12 @@ export function WithholdingCalculator() {
       <section>
         <h2 className="text-lg font-semibold mb-3">計算結果</h2>
         {result ? (
-          <div className="border border-stone-300 bg-white p-4 flex flex-col gap-2">
-            <div className="flex justify-between text-sm text-stone-600">
+          <div className="border border-border bg-surface p-4 flex flex-col gap-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>社会保険料等控除後の金額（課税ベース）</span>
               <span className="tabular-nums">{yen.format(result.taxableBase)}円</span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>扶養控除相当の概算控除額</span>
               <span className="tabular-nums">{yen.format(result.dependentDeductionApplied)}円</span>
             </div>
@@ -114,13 +114,13 @@ export function WithholdingCalculator() {
               <span>源泉徴収税額（概算・月額）</span>
               <span className="tabular-nums">{yen.format(result.withholdingTax)}円</span>
             </div>
-            <div className="flex justify-between text-base font-semibold border-t border-stone-200 pt-2">
+            <div className="flex justify-between text-base font-semibold border-t border-border pt-2">
               <span>差引支給額（概算）</span>
               <span className="tabular-nums">{yen.format(result.netPay)}円</span>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted-foreground">
             月額の役員報酬・給与を入力すると、源泉徴収税額（概算）と差引支給額を計算します。
           </p>
         )}

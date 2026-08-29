@@ -121,7 +121,7 @@ export function WithholdingSlipForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">支払者（会社）情報</div>
+          <div className="text-xs font-semibold text-stone-500 mb-2">支払者（会社）情報</div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="slip-company-name">
@@ -179,7 +179,7 @@ export function WithholdingSlipForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">
+          <div className="text-xs font-semibold text-stone-500 mb-2">
             支払を受ける者（役員・従業員）情報 ※個人番号（マイナンバー）は入力しません
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -239,7 +239,7 @@ export function WithholdingSlipForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">年末調整の入力（yearEndAdjustment.tsと同じ内容）</div>
+          <div className="text-xs font-semibold text-stone-500 mb-2">年末調整の入力（yearEndAdjustment.tsと同じ内容）</div>
           <div className="flex flex-col gap-4">
             <div>
               <label className={labelClass} htmlFor="slip-annual-gross-compensation">
@@ -355,7 +355,7 @@ function WithholdingSlipPreview({ slip }: { slip: WithholdingSlipResult }) {
         </OfficialSection>
 
         <OfficialSection title="摘要">
-          <ul className="text-xs text-stone-600 list-disc list-inside space-y-1 px-1 py-1">
+          <ul className="text-xs text-stone-500 list-disc list-inside space-y-1 px-1 py-1">
             <li>この源泉徴収票は下書きです。正式な発行前に必ず内容をご確認ください。</li>
             {slip.unsupportedFields.length > 0 && (
               <li>次の欄はこのツールでは計算していません（空欄のままです）: {slip.unsupportedFields.join("、")}</li>

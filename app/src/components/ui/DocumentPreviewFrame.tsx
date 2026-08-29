@@ -31,6 +31,16 @@ export interface DocumentPreviewFrameProps extends HTMLAttributes<HTMLElement> {
  * （申告書・帳票の見た目を毎回同じ紙面イメージで確認できるようにするため）。
  * そのため`--background`等のダークモード対応トークンは使わず、bg-white/stone系の
  * 色を固定で使う。
+ *
+ * 【重要・2026-08-30に実際に踏んだ罠】このフレームの子として描画されるコンポーネント
+ * （page.tsx側の説明文セクション・PrintableStatementLayout・InvoicePrintLayout・
+ * QuotePrintLayout・DocumentPreview・OfficialForm等）も、同じ理由で`bg-background`
+ * `text-foreground`等のトークンクラスを使ってはいけない。トークンはCSS変数
+ * （`--foreground`等）経由でdata-theme属性から全ページ共通に解決されるため、
+ * 「親のこのフレームだけ固定白」であっても、子がトークンクラスを使えばダークモード時に
+ * ダーク用の文字色・背景色がこの固定白の紙面に乗ってしまい、コントラストが崩れる
+ * （このフレーム自体がbg-whiteで、子だけダークモード対応にしても意味がない）。
+ * このフレームの子孫は必ずbg-white/stone系の固定色のみを使うこと。
  */
 export function DocumentPreviewFrame({
   as = "div",

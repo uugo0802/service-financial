@@ -21,7 +21,7 @@ export interface ExportDataButtonProps {
 }
 
 const DEFAULT_CLASSNAME =
-  "text-sm px-5 py-3 border border-stone-400 bg-white hover:border-red-700 transition-colors dark:bg-stone-900 dark:border-stone-600 dark:text-stone-50 dark:hover:border-red-400";
+  "text-sm px-5 py-3 border border-border bg-surface hover:border-red-700 transition-colors dark:bg-stone-900 dark:border-stone-600 dark:text-stone-50 dark:hover:border-red-400";
 
 export function ExportDataButton({ csvContent, fileNamePrefix, label = "CSVをダウンロード", className }: ExportDataButtonProps) {
   function handleDownload() {

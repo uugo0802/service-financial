@@ -5,20 +5,20 @@ import { CategorizeRuleEditor } from "@/components/CategorizeRuleEditor";
 
 export default function CategorizeRulesPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">ユーザー辞書編集</div>
+          <div className="text-xs text-muted-foreground">ユーザー辞書編集</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">ユーザー辞書編集</h1>
-          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             「取引先名」など、ご自身の事業に特有のキーワードと勘定科目・税区分の対応関係を登録しておくと、共通の分類辞書よりも優先して自動分類に反映されます。
           </p>
           <p className="text-xs text-amber-700 max-w-2xl leading-relaxed mt-2">
@@ -28,7 +28,7 @@ export default function CategorizeRulesPage() {
 
         <CategorizeRuleEditor />
 
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-muted-foreground">
           この画面は開発中のプロトタイプです。登録したルールはこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
         </p>
       </PageContainer>

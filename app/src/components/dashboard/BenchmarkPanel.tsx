@@ -26,11 +26,11 @@ function formatDifference(value: number | null): string {
  */
 function ComparisonBar({ value, scaleMax, colorClass }: { value: number | null; scaleMax: number; colorClass: string }) {
   if (value === null) {
-    return <div className="h-1.5 rounded-full bg-stone-100 dark:bg-stone-800" />;
+    return <div className="h-1.5 rounded-full bg-surface" />;
   }
   const widthPercent = scaleMax > 0 ? Math.min(100, Math.max(0, (Math.abs(value) / scaleMax) * 100)) : 0;
   return (
-    <div className="h-1.5 rounded-full bg-stone-100 dark:bg-stone-800 overflow-hidden">
+    <div className="h-1.5 rounded-full bg-surface overflow-hidden">
       <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${widthPercent}%` }} />
     </div>
   );

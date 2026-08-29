@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function OpeningBalancesPage() {
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500 dark:text-stone-400">期首残高・固定資産・借入金の投入</div>
+          <div className="text-xs text-muted-foreground">期首残高・固定資産・借入金の投入</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">期首残高・固定資産・借入金の投入</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             記帳データ（journal_entries）は投入後の<b className="font-medium">変動のみ</b>を積み上げるため、
             前期末時点の貸借対照表（現金残高・繰越利益剰余金・固定資産・借入金）を最初に一度だけ投入する必要があります。
             ここで投入した内容は、貸借対照表・株主資本等変動計算書などの実残高計算の起点になります。
@@ -36,7 +36,7 @@ export default function OpeningBalancesPage() {
 
         <OpeningBalancesClient />
 
-        <Link href="/settings" className="text-xs text-stone-500 dark:text-stone-400 underline underline-offset-2 self-start">
+        <Link href="/settings" className="text-xs text-muted-foreground underline underline-offset-2 self-start">
           ← 事業者設定に戻る
         </Link>
       </PageContainer>

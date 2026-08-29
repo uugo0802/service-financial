@@ -91,26 +91,26 @@ export function DocumentsClient() {
   const { documents, isSampleData } = useDocuments(SAMPLE_DOCUMENTS);
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 bg-white print:hidden dark:border-stone-700 dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface print:hidden dark:border-stone-700 dark:bg-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500 dark:text-stone-400">証憑（レシート・請求書）一覧・検索</div>
+          <div className="text-xs text-muted-foreground">証憑（レシート・請求書）一覧・検索</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2 print:hidden">
           <h1 className="text-2xl font-semibold">証憑（レシート・請求書）を検索する</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             電子帳簿保存法で求められる「取引年月日・取引金額・取引先」による証憑検索、およびディスプレイ・書面への
             出力（可視性確保）に対応した画面です。証憑は紐づく取引の年月日・金額・取引先で検索されます。
             取引と紐付いていない証憑（スキャンのみアップロードされたもの）は検索条件を照合できないため、
             画面下部で常に件数を表示します。
           </p>
-          <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             {isSampleData
               ? "本ページは開発中のプロトタイプであり、サンプルデータを使用しています。"
               : "記帳された実データ（アップロード済みの証憑と、紐づく仕訳）を表示しています。取引先（相手方の名称）は現時点では記録していないため空欄になります。"}
@@ -120,8 +120,8 @@ export function DocumentsClient() {
         <DocumentSearchForm documents={documents} />
       </PageContainer>
 
-      <footer className="border-t border-stone-300 bg-white mt-4 print:hidden dark:border-stone-700 dark:bg-stone-900">
-        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+      <footer className="border-t border-border bg-surface mt-4 print:hidden dark:border-stone-700 dark:bg-stone-900">
+        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される内容は記帳データ・証憑データの下書き・概算シミュレーションです。個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
         </div>

@@ -14,8 +14,8 @@ function ChecklistItemCard({ item }: { item: TaxSavingChecklistItem }) {
         )}
         <h3 className="text-sm font-semibold">{item.title}</h3>
       </div>
-      <p className="text-sm text-stone-600 leading-relaxed">{item.summary}</p>
-      <p className="text-xs text-stone-500 mt-2 leading-relaxed">{item.note}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{item.summary}</p>
+      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{item.note}</p>
     </div>
   );
 }

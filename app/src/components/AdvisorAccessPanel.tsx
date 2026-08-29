@@ -26,7 +26,7 @@ interface AdvisorAccessPanelProps {
 const statusBadgeClass: Record<AdvisorAccessGrant["status"], string> = {
   pending: "text-amber-700",
   active: "text-emerald-700",
-  revoked: "text-stone-400",
+  revoked: "text-muted-foreground",
 };
 
 function formatDateTime(iso?: string): string {
@@ -91,16 +91,16 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
         </section>
       )}
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-stone-800">顧問税理士を招待</h2>
-        <p className="text-xs text-stone-500 leading-relaxed">
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground">顧問税理士を招待</h2>
+        <p className="text-xs text-muted-foreground leading-relaxed">
           既にご契約中の顧問税理士・会計事務所に、記帳データの一部を read-only（閲覧のみ）で共有できます。
           共有範囲は下記から選択でき、期間を指定すれば申告シーズンのみの限定共有も可能です。
         </p>
         <form onSubmit={handleInvite} className="flex flex-col gap-3">
           <div className="grid sm:grid-cols-2 gap-3">
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-stone-500">顧問税理士のお名前・事務所名</span>
+              <span className="text-xs text-muted-foreground">顧問税理士のお名前・事務所名</span>
               <input
                 type="text"
                 required
@@ -108,11 +108,11 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
                 value={advisorName}
                 onChange={(e) => setAdvisorName(e.target.value)}
                 placeholder="山田税理士事務所"
-                className="border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-stone-500 disabled:bg-stone-100 disabled:text-stone-400"
+                className="border border-border px-3 py-2 text-sm focus:outline-none focus:border-foreground/40 disabled:bg-surface disabled:text-muted-foreground"
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-stone-500">メールアドレス</span>
+              <span className="text-xs text-muted-foreground">メールアドレス</span>
               <input
                 type="email"
                 required
@@ -120,16 +120,16 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
                 value={advisorEmail}
                 onChange={(e) => setAdvisorEmail(e.target.value)}
                 placeholder="advisor@example.com"
-                className="border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-stone-500 disabled:bg-stone-100 disabled:text-stone-400"
+                className="border border-border px-3 py-2 text-sm focus:outline-none focus:border-foreground/40 disabled:bg-surface disabled:text-muted-foreground"
               />
             </label>
           </div>
 
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-stone-500">共有するデータ範囲</span>
+            <span className="text-xs text-muted-foreground">共有するデータ範囲</span>
             <div className="flex flex-wrap gap-3">
               {ADVISOR_ACCESS_SCOPES.map((scope) => (
-                <label key={scope} className="flex items-center gap-1.5 text-sm text-stone-700">
+                <label key={scope} className="flex items-center gap-1.5 text-sm text-foreground">
                   <input
                     type="checkbox"
                     disabled={!eligible}
@@ -143,7 +143,7 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
           </div>
 
           <label className="flex flex-col gap-1 sm:w-64">
-            <span className="text-xs text-stone-500">アクセス期限（任意・日数）</span>
+            <span className="text-xs text-muted-foreground">アクセス期限（任意・日数）</span>
             <input
               type="number"
               min={1}
@@ -151,14 +151,14 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
               value={expiresInDays}
               onChange={(e) => setExpiresInDays(e.target.value)}
               placeholder="例: 90（未入力の場合は無期限）"
-              className="border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-stone-500 disabled:bg-stone-100 disabled:text-stone-400"
+              className="border border-border px-3 py-2 text-sm focus:outline-none focus:border-foreground/40 disabled:bg-surface disabled:text-muted-foreground"
             />
           </label>
 
           <button
             type="submit"
             disabled={!eligible}
-            className="self-start bg-stone-800 text-white text-sm px-4 py-2 hover:bg-stone-700 disabled:bg-stone-300 disabled:text-stone-500 whitespace-nowrap"
+            className="self-start bg-stone-800 text-white text-sm px-4 py-2 hover:bg-stone-700 disabled:bg-stone-300 disabled:text-muted-foreground whitespace-nowrap"
           >
             招待する
           </button>
@@ -166,13 +166,13 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
         {inviteError && <p className="text-sm text-red-700">{inviteError}</p>}
       </section>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-stone-800">共有中の顧問税理士</h2>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-3">
+        <h2 className="text-sm font-semibold text-foreground">共有中の顧問税理士</h2>
 
         {actionError && <p className="text-sm text-red-700">{actionError}</p>}
 
         {grants.length === 0 ? (
-          <p className="text-sm text-stone-500">まだ顧問税理士への共有はありません。</p>
+          <p className="text-sm text-muted-foreground">まだ顧問税理士への共有はありません。</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {grants.map((grant) => {
@@ -180,14 +180,14 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
               return (
                 <li
                   key={grant.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-stone-200 px-3 py-2 text-sm"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-border px-3 py-2 text-sm"
                 >
                   <div className="flex flex-col">
                     <span>
                       {grant.advisorName}{" "}
-                      <span className="text-stone-400 text-xs">（{grant.advisorEmail}）</span>
+                      <span className="text-muted-foreground text-xs">（{grant.advisorEmail}）</span>
                     </span>
-                    <span className="text-xs text-stone-500 flex flex-wrap items-center gap-2">
+                    <span className="text-xs text-muted-foreground flex flex-wrap items-center gap-2">
                       <span className={statusBadgeClass[grant.status]}>
                         {ADVISOR_ACCESS_STATUS_LABELS[grant.status]}
                       </span>
@@ -215,7 +215,7 @@ export function AdvisorAccessPanel({ tenantId, initialGrants, eligible }: Adviso
         )}
       </section>
 
-      <p className="text-xs text-stone-400 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         本サービスは自己申告支援ツールであり、共有した記帳データ・申告書下書きの概算内容について
         当社が税務代理や個別の税務判断を行うものではありません。内容の最終確認・ご相談は、
         共有先の顧問税理士にご依頼ください。

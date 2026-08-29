@@ -7,8 +7,8 @@ import {
   determineTaxableStatus,
 } from "@/lib/tax/taxableStatusDetermination";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 const RULE_STEP_TITLES: Record<TaxableStatusRuleId, string> = {
   basePeriod: "(a) 基準期間の課税売上高",
@@ -77,7 +77,7 @@ export function TaxableStatusChecker() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass}>事業形態</label>
           <div className="flex gap-4 text-sm">
@@ -140,7 +140,7 @@ export function TaxableStatusChecker() {
             />
           </div>
         ) : (
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-muted-foreground">
             個人事業主の場合、新設法人の資本金特例は適用されません。基準期間の課税売上高は0円として扱われます。
           </p>
         )}
@@ -197,7 +197,7 @@ export function TaxableStatusChecker() {
         </div>
 
         <div className="border-t border-stone-200 pt-3 flex flex-col gap-2">
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-muted-foreground">
             以下に該当する場合、本ツールの判定ロジックは対応していません（要専門家確認）。
           </p>
           <label className="flex items-center gap-2 text-sm">
@@ -241,7 +241,7 @@ export function TaxableStatusChecker() {
                 <div className="text-2xl font-semibold mt-1">{result.statusLabel}</div>
               </div>
               {result.decidingRuleId && (
-                <div className="text-sm text-stone-600 max-w-xs">
+                <div className="text-sm text-muted-foreground max-w-xs">
                   決め手: {RULE_STEP_TITLES[result.decidingRuleId]}
                 </div>
               )}
@@ -258,10 +258,10 @@ export function TaxableStatusChecker() {
               </div>
             )}
 
-            <div className="border border-stone-300 bg-white overflow-x-auto">
+            <div className="border border-border bg-surface overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">判定ルール</th>
                     <th className="px-3 py-2 font-normal">対象</th>
                     <th className="px-3 py-2 font-normal">該当</th>
@@ -270,21 +270,21 @@ export function TaxableStatusChecker() {
                 </thead>
                 <tbody>
                   {result.steps.map((step) => (
-                    <tr key={step.ruleId} className="border-b border-stone-100 last:border-b-0">
+                    <tr key={step.ruleId} className="border-b border-border/60 last:border-b-0">
                       <td className="px-3 py-2 whitespace-nowrap font-medium">
                         {RULE_STEP_TITLES[step.ruleId]}
                       </td>
-                      <td className="px-3 py-2 text-stone-500">{step.applicable ? "対象" : "対象外"}</td>
+                      <td className="px-3 py-2 text-muted-foreground">{step.applicable ? "対象" : "対象外"}</td>
                       <td className="px-3 py-2">
                         {step.applicable ? (
-                          <span className={step.triggered ? "text-red-700 font-medium" : "text-stone-500"}>
+                          <span className={step.triggered ? "text-red-700 font-medium" : "text-muted-foreground"}>
                             {step.triggered ? "該当" : "非該当"}
                           </span>
                         ) : (
-                          <span className="text-stone-300">—</span>
+                          <span className="text-muted-foreground">—</span>
                         )}
                       </td>
-                      <td className="px-3 py-2 text-stone-600 leading-relaxed">{step.detail}</td>
+                      <td className="px-3 py-2 text-muted-foreground leading-relaxed">{step.detail}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -292,8 +292,8 @@ export function TaxableStatusChecker() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.assumptions.map((assumption) => (
                   <li key={assumption}>{assumption}</li>
                 ))}
@@ -303,7 +303,7 @@ export function TaxableStatusChecker() {
             <p className="text-xs text-amber-700 leading-relaxed">{result.disclaimer}</p>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         )}
       </section>
     </div>

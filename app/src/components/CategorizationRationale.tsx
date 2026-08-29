@@ -6,9 +6,9 @@ import { buildCategorizationRationale, RATIONALE_DISCLAIMER, RationaleTone } fro
 
 const TONE_STYLES: Record<RationaleTone, { trigger: string; label: string; panel: string; showWarningIcon: boolean }> = {
   confirmed: {
-    trigger: "border-stone-300 text-stone-600 hover:border-stone-500",
+    trigger: "border-border text-muted-foreground hover:border-foreground/40",
     label: "根拠を見る",
-    panel: "border-stone-300 bg-stone-50",
+    panel: "border-border bg-surface",
     showWarningIcon: false,
   },
   caution: {
@@ -58,14 +58,14 @@ export function CategorizationRationale({ transaction }: { transaction: Categori
       {open && (
         <div className={`mt-2 w-72 max-w-[85vw] border p-3 text-xs leading-relaxed ${style.panel}`}>
           <div className="flex items-center justify-between gap-2 mb-1">
-            <span className="font-semibold text-stone-800">{rationale.headline}</span>
+            <span className="font-semibold text-foreground">{rationale.headline}</span>
             {rationale.confidencePercent !== null && (
-              <span className="text-stone-500 tabular-nums shrink-0">確信度 {rationale.confidencePercent}%</span>
+              <span className="text-muted-foreground tabular-nums shrink-0">確信度 {rationale.confidencePercent}%</span>
             )}
           </div>
-          <p className="text-stone-700">{rationale.explanation}</p>
+          <p className="text-foreground">{rationale.explanation}</p>
           {rationale.reviewMessage && <p className="mt-2 text-amber-800 font-medium">{rationale.reviewMessage}</p>}
-          <p className="mt-3 text-stone-400 border-t border-stone-200 pt-2">{RATIONALE_DISCLAIMER}</p>
+          <p className="mt-3 text-muted-foreground border-t border-stone-200 pt-2">{RATIONALE_DISCLAIMER}</p>
         </div>
       )}
     </div>

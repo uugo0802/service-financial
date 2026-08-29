@@ -178,7 +178,7 @@ export function StatutoryReportSummaryClient() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 dark:text-stone-300 mb-2">提出者情報</div>
+          <div className="text-xs font-semibold text-stone-500 mb-2">提出者情報</div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="summary-submitter-name">
@@ -250,13 +250,13 @@ export function StatutoryReportSummaryClient() {
 
         <div>
           <div className="flex items-baseline justify-between mb-2">
-            <div className="text-xs font-semibold text-stone-600 dark:text-stone-300">
+            <div className="text-xs font-semibold text-stone-500">
               給与所得の源泉徴収票（年末調整をしたもの）
             </div>
             <button
               type="button"
               onClick={() => setSalaryRows((rows) => [...rows, makeSalaryRow()])}
-              className="text-xs underline text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100"
+              className="text-xs underline text-stone-500 hover:text-stone-900"
             >
               + 行を追加
             </button>
@@ -306,7 +306,7 @@ export function StatutoryReportSummaryClient() {
               </div>
             ))}
             {salaryRows.length === 0 && (
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-500">
                 行がありません。「+ 行を追加」から、給与所得の源泉徴収票（
                 <a href="/withholding-slip" className="underline">
                   下書き作成画面
@@ -319,13 +319,13 @@ export function StatutoryReportSummaryClient() {
 
         <div>
           <div className="flex items-baseline justify-between mb-2">
-            <div className="text-xs font-semibold text-stone-600 dark:text-stone-300">
+            <div className="text-xs font-semibold text-stone-500">
               報酬、料金、契約金及び賞金の支払調書
             </div>
             <button
               type="button"
               onClick={() => setPaymentRows((rows) => [...rows, makePaymentRow()])}
-              className="text-xs underline text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100"
+              className="text-xs underline text-stone-500 hover:text-stone-900"
             >
               + 行を追加
             </button>
@@ -397,7 +397,7 @@ export function StatutoryReportSummaryClient() {
               </div>
             ))}
             {paymentRows.length === 0 && (
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-stone-500">
                 行がありません。「+ 行を追加」から、支払調書（
                 <a href="/payment-report" className="underline">
                   下書き作成画面
@@ -406,7 +406,7 @@ export function StatutoryReportSummaryClient() {
               </p>
             )}
           </div>
-          <p className="mt-2 text-xs text-stone-400 leading-relaxed">
+          <p className="mt-2 text-xs text-stone-500 leading-relaxed">
             「提出対象」のチェックを外した行は、支払調書の提出が不要と判断した行として合計表の集計から除外されます
             （
             <a href="/payment-report" className="underline">

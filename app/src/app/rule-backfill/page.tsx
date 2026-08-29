@@ -103,26 +103,26 @@ export default function RuleBackfillPage() {
   }, []);
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">ルール一括再適用（バックフィル）</div>
+          <div className="text-xs text-muted-foreground">ルール一括再適用（バックフィル）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">カテゴライズルールの一括再適用（バックフィル）</h1>
-          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             ユーザー辞書ルール（キーワードと勘定科目・税区分の対応）を追加・編集すると、今後の自動分類には反映されますが、すでに分類済みの過去の取引は自動では変わりません。ここでは現在のルールでもう一度分類し直した場合の変更内容を一覧表示し、内容を確認したうえで、必要な取引だけを選んで反映できます。
           </p>
           <p className="text-xs text-amber-700 max-w-2xl leading-relaxed mt-2">
             このツールが提示する勘定科目・税区分はルールに基づく簡易な自動判定であり、正式な税務判断ではありません。反映する場合も、最終的な内容は必ずご自身でご確認ください（本サービスは税理士法上の税務代理・個別税務相談を行うものではなく、本人申告を支援するツールです）。
           </p>
-          <p className="text-xs text-stone-400 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             {isSampleData ? "現在は取引データもサンプルデータを表示しています。" : "記帳された実データ（当期の取引）を表示しています。"}
           </p>
         </section>
@@ -141,10 +141,10 @@ export default function RuleBackfillPage() {
           userRules={userRules}
         />
 
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-muted-foreground">
           この画面は開発中のプロトタイプです。適用結果はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
         </p>
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-muted-foreground">
           {isSampleUserRules
             ? "ユーザー辞書ルールもサンプルデータを表示しています（Supabase未接続、または未ログインのため）。"
             : "ユーザー辞書ルールは登録済みの内容（Supabase）を表示しています。"}

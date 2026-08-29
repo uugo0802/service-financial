@@ -11,13 +11,13 @@ export const metadata: Metadata = {
 
 export default function WithholdingSlipPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
+          <Link href="/dashboard" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500">給与所得の源泉徴収票（下書き）</div>
+          <div className="text-xs text-muted-foreground">給与所得の源泉徴収票（下書き）</div>
         </div>
       </header>
 

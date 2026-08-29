@@ -23,8 +23,8 @@ import {
   buildBlueReturnApplicationDraft,
 } from "@/lib/tax/blueReturnApplicationForm";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 const INCOME_TYPE_OPTIONS: { value: BlueReturnIncomeType; label: string }[] = [
   { value: "business", label: "事業所得" },
@@ -127,7 +127,7 @@ export function BlueReturnApplicationForm() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="print:hidden flex flex-col gap-6 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="print:hidden flex flex-col gap-6 bg-surface border border-border rounded p-4">
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className={labelClass} htmlFor="blue-app-tax-office">
@@ -158,7 +158,7 @@ export function BlueReturnApplicationForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">納税地・氏名等</div>
+          <div className="text-xs font-semibold text-muted-foreground mb-2">納税地・氏名等</div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="blue-app-address">
@@ -242,7 +242,7 @@ export function BlueReturnApplicationForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">1・2 事業所又は所得の基因となる資産／所得の種類</div>
+          <div className="text-xs font-semibold text-muted-foreground mb-2">1・2 事業所又は所得の基因となる資産／所得の種類</div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="blue-app-business-location">
@@ -358,7 +358,7 @@ export function BlueReturnApplicationForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">6 その他参考事項 — 簿記方式</div>
+          <div className="text-xs font-semibold text-muted-foreground mb-2">6 その他参考事項 — 簿記方式</div>
           <div className="flex flex-wrap gap-4 text-sm">
             {BOOKKEEPING_METHOD_OPTIONS.map((opt) => (
               <label key={opt.value} className="flex items-center gap-2">
@@ -390,7 +390,7 @@ export function BlueReturnApplicationForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">6 その他参考事項 — 備付帳簿名</div>
+          <div className="text-xs font-semibold text-muted-foreground mb-2">6 その他参考事項 — 備付帳簿名</div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-sm">
             {BLUE_RETURN_LEDGER_OPTIONS.map((ledger) => (
               <label key={ledger} className="flex items-center gap-2">
@@ -434,7 +434,7 @@ function BlueReturnApplicationPreview({ draft }: { draft: BlueReturnApplicationD
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded border border-stone-400 bg-white px-4 py-2 text-sm font-medium text-stone-800 shadow-sm hover:bg-stone-100"
+          className="rounded border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-surface"
         >
           印刷 / PDFで保存
         </button>
@@ -456,7 +456,7 @@ function BlueReturnApplicationPreview({ draft }: { draft: BlueReturnApplicationD
         >
           {isComplete ? "必須項目 入力済み" : "未入力の必須項目あり"}
         </span>
-        <span className="text-sm text-stone-700">所得税の青色申告承認申請書の下書きを作成しています</span>
+        <span className="text-sm text-foreground">所得税の青色申告承認申請書の下書きを作成しています</span>
       </div>
 
       {draft.warnings.length > 0 && (
@@ -481,32 +481,32 @@ function BlueReturnApplicationPreview({ draft }: { draft: BlueReturnApplicationD
           </span>
         </div>
         <div className="relative z-[1] p-4 sm:p-6">
-          <div className="text-center text-base font-semibold tracking-widest border-b-2 border-stone-800 pb-3 mb-4">
+          <div className="text-center text-base font-semibold tracking-widest border-b-2 border-foreground pb-3 mb-4">
             所得税の青色申告承認申請書（下書き）
           </div>
-          <div className="divide-y divide-stone-200">
+          <div className="divide-y divide-border">
             {draft.sections.map((section) => (
               <div key={section.title} className="py-3">
-                <h3 className="text-sm font-semibold text-stone-700 mb-2">{section.title}</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-2">{section.title}</h3>
                 <dl className="text-sm space-y-1">
                   {section.fields.map((field) => (
                     <div key={field.label} className="flex flex-col sm:flex-row sm:gap-2">
-                      <dt className="text-stone-500 sm:w-96 shrink-0">{field.label}</dt>
-                      <dd className="text-stone-900 font-medium">{field.value}</dd>
+                      <dt className="text-muted-foreground sm:w-96 shrink-0">{field.label}</dt>
+                      <dd className="text-foreground font-medium">{field.value}</dd>
                     </div>
                   ))}
                 </dl>
               </div>
             ))}
           </div>
-          <p className="mt-4 pt-3 border-t border-stone-300 text-xs text-stone-500">{SHORT_DRAFT_DISCLAIMER}</p>
+          <p className="mt-4 pt-3 border-t border-border text-xs text-muted-foreground">{SHORT_DRAFT_DISCLAIMER}</p>
         </div>
       </div>
 
       {draft.notes.length > 0 && (
         <div className="print:hidden">
-          <h3 className="text-sm font-semibold mb-2 text-stone-700">留意事項</h3>
-          <ul className="text-xs text-stone-600 leading-relaxed list-disc list-inside space-y-1">
+          <h3 className="text-sm font-semibold mb-2 text-foreground">留意事項</h3>
+          <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
             {draft.notes.map((note) => (
               <li key={note}>{note}</li>
             ))}
@@ -515,8 +515,8 @@ function BlueReturnApplicationPreview({ draft }: { draft: BlueReturnApplicationD
       )}
 
       <div className="print:hidden">
-        <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-        <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+        <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+        <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
           {draft.assumptions.map((assumption) => (
             <li key={assumption}>{assumption}</li>
           ))}

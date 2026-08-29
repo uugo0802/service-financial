@@ -21,8 +21,8 @@ export function PaymentReportTable({ lines }: { lines: PaymentReportLine[] }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="border border-stone-300 bg-white rounded-lg p-4">
-          <p className="text-xs text-stone-500">支払先×区分の件数</p>
+        <div className="border border-border bg-surface rounded-lg p-4">
+          <p className="text-xs text-muted-foreground">支払先×区分の件数</p>
           <p className="text-xl font-semibold tabular-nums mt-1">{lines.length}件</p>
         </div>
         <div className="border border-amber-300 bg-amber-50 rounded-lg p-4">
@@ -32,14 +32,14 @@ export function PaymentReportTable({ lines }: { lines: PaymentReportLine[] }) {
             年間支払合計が{GENERAL_ANNUAL_THRESHOLD.toLocaleString("ja-JP")}円を超えるもの
           </p>
         </div>
-        <div className="border border-stone-300 bg-white rounded-lg p-4">
-          <p className="text-xs text-stone-500">支払金額合計</p>
+        <div className="border border-border bg-surface rounded-lg p-4">
+          <p className="text-xs text-muted-foreground">支払金額合計</p>
           <p className="text-xl font-semibold tabular-nums mt-1">
             <Yen v={totalGross} />
           </p>
         </div>
-        <div className="border border-stone-300 bg-white rounded-lg p-4">
-          <p className="text-xs text-stone-500">源泉徴収税額合計</p>
+        <div className="border border-border bg-surface rounded-lg p-4">
+          <p className="text-xs text-muted-foreground">源泉徴収税額合計</p>
           <p className="text-xl font-semibold tabular-nums mt-1">
             <Yen v={totalWithholding} />
           </p>
@@ -49,14 +49,14 @@ export function PaymentReportTable({ lines }: { lines: PaymentReportLine[] }) {
       <div>
         <h3 className="text-sm font-semibold mb-2">支払先・区分ごとの年間集計（支払金額の多い順）</h3>
         {lines.length === 0 ? (
-          <div className="border border-dashed border-stone-300 bg-white rounded-lg p-6 text-center text-sm text-stone-500">
+          <div className="border border-dashed border-border bg-surface rounded-lg p-6 text-center text-sm text-muted-foreground">
             対象になる支払データがありません。
           </div>
         ) : (
-          <div className="overflow-x-auto border border-stone-300 bg-white rounded-lg">
+          <div className="overflow-x-auto border border-border bg-surface rounded-lg">
             <table className="w-full text-sm border-collapse min-w-[720px]">
               <thead>
-                <tr className="border-b border-stone-300 bg-stone-50 text-left text-xs text-stone-500">
+                <tr className="border-b border-border bg-surface text-left text-xs text-muted-foreground">
                   <th className="py-2 px-3 font-semibold">支払先</th>
                   <th className="py-2 px-3 font-semibold whitespace-nowrap">区分</th>
                   <th className="py-2 px-3 font-semibold text-right whitespace-nowrap">支払金額合計</th>
@@ -92,7 +92,7 @@ export function PaymentReportTable({ lines }: { lines: PaymentReportLine[] }) {
                           提出が必要
                         </span>
                       ) : (
-                        <span className="text-xs text-stone-400">基準額以下</span>
+                        <span className="text-xs text-muted-foreground">基準額以下</span>
                       )}
                     </td>
                   </tr>
@@ -103,7 +103,7 @@ export function PaymentReportTable({ lines }: { lines: PaymentReportLine[] }) {
         )}
       </div>
 
-      <p className="text-xs text-stone-500 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         この一覧は記帳データから機械的に集計した「支払調書」の下書きであり、正式な法定調書ではありません。
         e-Taxソフト等への実際の提出は行っていないため、内容をご自身でご確認のうえ、ご自身で提出手続きを行ってください。
         税理士法に定める税務代理・税務書類の作成・個別具体的な税務相談を提供するものではありません。

@@ -16,8 +16,8 @@ export interface BankReconciliationPanelProps {
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
 const inputClass =
-  "w-full max-w-xs border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-red-700 dark:focus:border-red-400 tabular-nums";
-const labelClass = "block text-xs text-stone-500 dark:text-stone-400 mb-1";
+  "w-full max-w-xs border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-red-700 dark:focus:border-red-400 tabular-nums";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 /**
  * 銀行残高突合（銀行残高突合チェック）パネル。
@@ -56,7 +56,7 @@ export function BankReconciliationPanel({
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="grid sm:grid-cols-2 gap-4 bg-stone-50 dark:bg-stone-800/50 border border-stone-200 dark:border-stone-700 rounded p-4">
+      <section className="grid sm:grid-cols-2 gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="opening-balance">
             期首残高（この期間の開始時点の、銀行明細上の残高）
@@ -85,7 +85,7 @@ export function BankReconciliationPanel({
             className={inputClass}
           />
         </div>
-        <p className="sm:col-span-2 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+        <p className="sm:col-span-2 text-xs text-muted-foreground leading-relaxed">
           いずれも、実際にお手元の銀行明細（Web明細・通帳）に記載されている残高をそのまま入力してください。
           このツールが残高を推測することはありません。
         </p>
@@ -94,12 +94,12 @@ export function BankReconciliationPanel({
       <section>
         <h3 className="text-sm font-semibold mb-2">
           突合対象の取引明細
-          <span className="text-xs font-normal text-stone-500 dark:text-stone-400 ml-2">{transactions.length}件</span>
+          <span className="text-xs font-normal text-muted-foreground ml-2">{transactions.length}件</span>
         </h3>
-        <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 max-h-80 overflow-y-auto">
+        <div className="overflow-x-auto border border-border bg-surface max-h-80 overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-white dark:bg-stone-900">
-              <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+            <thead className="sticky top-0 bg-surface">
+              <tr className="border-b border-border text-left text-muted-foreground text-xs">
                 <th className="px-3 py-2 font-normal">日付</th>
                 <th className="px-3 py-2 font-normal">摘要</th>
                 <th className="px-3 py-2 font-normal text-right">金額</th>
@@ -108,14 +108,14 @@ export function BankReconciliationPanel({
             </thead>
             <tbody>
               {transactions.map((t) => (
-                <tr key={t.id} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+                <tr key={t.id} className="border-b border-border/60 last:border-0">
                   <td className="px-3 py-2 whitespace-nowrap tabular-nums">{t.date}</td>
                   <td className="px-3 py-2 max-w-xs truncate" title={t.description}>
                     {t.description}
                   </td>
                   <td
                     className={`px-3 py-2 text-right tabular-nums ${
-                      t.amount < 0 ? "text-stone-700 dark:text-stone-300" : "text-emerald-700 dark:text-emerald-400"
+                      t.amount < 0 ? "text-foreground" : "text-emerald-700 dark:text-emerald-400"
                     }`}
                   >
                     {yen.format(t.amount)}
@@ -131,7 +131,7 @@ export function BankReconciliationPanel({
       <section>
         <h3 className="text-sm font-semibold mb-2">突合結果</h3>
         {!result ? (
-          <p className="text-sm text-stone-500 dark:text-stone-400">
+          <p className="text-sm text-muted-foreground">
             期首残高と実際の期末残高を入力すると、取込済み取引との突合結果を表示します。
           </p>
         ) : (
@@ -168,7 +168,7 @@ export function BankReconciliationPanel({
             {!result.isReconciled && result.hint && (
               <div className="mt-1 border-t border-red-200 dark:border-red-800 pt-3">
                 <p className="text-sm font-semibold text-red-800 dark:text-red-300">{result.hint.title}</p>
-                <p className="mt-1 text-xs text-stone-600 dark:text-stone-300 leading-relaxed">{result.hint.message}</p>
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{result.hint.message}</p>
               </div>
             )}
           </div>
@@ -196,7 +196,7 @@ function ResultRow({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-stone-500 dark:text-stone-400">{label}</dt>
+      <dt className="text-muted-foreground">{label}</dt>
       <dd className={`tabular-nums ${strong ? "font-semibold text-base" : ""} ${emphasisClassName ?? ""}`}>{value}</dd>
     </div>
   );

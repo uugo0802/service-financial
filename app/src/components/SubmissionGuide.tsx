@@ -59,7 +59,7 @@ export function SubmissionGuide({ mode, individualEstimate, corpEstimate, entity
 
   return (
     <div>
-      <p className="text-sm text-stone-600 leading-relaxed max-w-2xl mb-4">
+      <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl mb-4">
         e-Tax・eLTAXへの最終送信は、常にご本人の認証・操作で行っていただきます（当社が代理送信することはありません）。
         下記は、当社が作成した下書きデータを実際に送信するまでの手順ガイドです。
       </p>
@@ -72,8 +72,8 @@ export function SubmissionGuide({ mode, individualEstimate, corpEstimate, entity
             onClick={() => setSystem(t.key)}
             className={`text-sm px-4 py-2 border transition-colors ${
               system === t.key
-                ? "bg-stone-900 border-stone-900 text-white"
-                : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                ? "bg-accent border-accent text-white"
+                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
             }`}
           >
             {t.label}

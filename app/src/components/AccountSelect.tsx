@@ -13,7 +13,7 @@ import { AccountRow } from "@/lib/db/supabaseClient";
 const NEW_ACCOUNT_VALUE = "__new__";
 
 const selectClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
 const inputClass = selectClass;
 const errorTextClass = "mt-1 text-xs text-red-700";
 
@@ -56,7 +56,7 @@ export function AccountSelect({ label, accounts, value, onChange, onCreate, erro
   }
 
   return (
-    <label className="flex flex-col gap-1 text-xs text-stone-500" htmlFor={selectId}>
+    <label className="flex flex-col gap-1 text-xs text-muted-foreground" htmlFor={selectId}>
       {label}
       {!creating ? (
         <select
@@ -95,7 +95,7 @@ export function AccountSelect({ label, accounts, value, onChange, onCreate, erro
               type="button"
               onClick={handleCreate}
               disabled={submitting}
-              className="whitespace-nowrap text-xs px-3 py-2 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors disabled:opacity-50"
+              className="whitespace-nowrap text-xs px-3 py-2 border border-accent bg-accent text-white hover:opacity-90 transition-colors disabled:opacity-50"
             >
               {submitting ? "作成中…" : "作成"}
             </button>
@@ -107,7 +107,7 @@ export function AccountSelect({ label, accounts, value, onChange, onCreate, erro
                 setCreateError(null);
               }}
               disabled={submitting}
-              className="whitespace-nowrap text-xs px-3 py-2 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+              className="whitespace-nowrap text-xs px-3 py-2 border border-border bg-surface hover:border-foreground/40 transition-colors"
             >
               取消
             </button>

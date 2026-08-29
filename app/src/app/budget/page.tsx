@@ -68,7 +68,7 @@ const STATUS_LABEL: Record<BudgetTrackingStatus, string> = {
 
 const STATUS_BADGE_CLASS: Record<BudgetTrackingStatus, string> = {
   under_budget: "text-emerald-700 dark:text-emerald-400",
-  at_budget: "text-stone-500 dark:text-stone-400",
+  at_budget: "text-muted-foreground",
   over_budget: "text-red-700 dark:text-red-400",
   over_budget_no_cap: "text-red-700 dark:text-red-400",
   no_budget_set: "text-warning-foreground",
@@ -76,10 +76,10 @@ const STATUS_BADGE_CLASS: Record<BudgetTrackingStatus, string> = {
 
 const BAR_FILL_CLASS: Record<BudgetTrackingStatus, string> = {
   under_budget: "bg-emerald-600",
-  at_budget: "bg-stone-500",
+  at_budget: "bg-border",
   over_budget: "bg-red-600",
   over_budget_no_cap: "bg-red-600",
-  no_budget_set: "bg-stone-400",
+  no_budget_set: "bg-border",
 };
 
 export default function BudgetPage() {
@@ -109,26 +109,26 @@ export default function BudgetPage() {
   const totalRemainingYen = result.totalBudgetYen - result.totalActualYen;
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400">支出予算 vs 実績</div>
+          <div className="text-xs text-muted-foreground">支出予算 vs 実績</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-10">
         <section>
           <h1 className="text-2xl font-semibold mb-2">経費科目ごとの月間予算 vs 実績</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             経費科目ごとに月間の支出予算を設定し、記帳済みの実績と比較できます。
             <b className="font-medium">
             これは記帳データに基づく中立的な比較・警告表示であり、個別の節税・支出削減の助言ではありません。
             </b>
           </p>
-          <p className="text-xs text-stone-500 dark:text-stone-400 max-w-2xl leading-relaxed mt-2">
+          <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed mt-2">
             {isSampleData
               ? "本ページは開発中のプロトタイプであり、サンプルの実績データを使用しています。"
               : "記帳された実データ（当期の取引）をもとに実績を集計しています。"}
@@ -136,13 +136,13 @@ export default function BudgetPage() {
         </section>
 
         <section className="flex items-end gap-4 flex-wrap">
-          <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             対象月
             <input
               type="month"
               value={period}
               onChange={(e) => e.target.value && setPeriod(e.target.value)}
-              className="border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400"
+              className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
             />
           </label>
         </section>
@@ -162,15 +162,15 @@ export default function BudgetPage() {
           />
         </section>
 
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+        <section className="border border-border bg-surface rounded-md p-5">
           <h2 className="text-lg font-semibold mb-1">予算設定</h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
+          <p className="text-xs text-muted-foreground mb-4">
             科目は記帳の自動仕訳ルール（categorize辞書）に登録済みのものと同じです。0円のまま・未入力にしておくと「支出しない想定の枠」として扱われ、少額でも実績が発生すると超過フラグが立ちます。
           </p>
           <TableScrollArea>
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">経費科目</th>
                   <th className="px-3 py-2 font-normal text-right">月間予算額（円）</th>
                   <th className="px-3 py-2 font-normal"></th>
@@ -178,7 +178,7 @@ export default function BudgetPage() {
               </thead>
               <tbody>
                 {categories.map((account) => (
-                  <tr key={account} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+                  <tr key={account} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2">{account}</td>
                     <td className="px-3 py-2 text-right">
                       <input
@@ -187,7 +187,7 @@ export default function BudgetPage() {
                         step={1000}
                         value={budgetFor(account)}
                         onChange={(e) => handleBudgetChange(account, e.target.value)}
-                        className="w-32 text-right border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 px-2 py-1 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400 tabular-nums"
+                        className="w-32 text-right border border-border bg-surface px-2 py-1 text-sm outline-none focus:border-foreground/40 tabular-nums"
                         aria-label={`${account}の月間予算額`}
                       />
                     </td>
@@ -196,7 +196,7 @@ export default function BudgetPage() {
                         <button
                           type="button"
                           onClick={() => handleClearBudget(account)}
-                          className="text-xs text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 underline underline-offset-2"
+                          className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
                         >
                           未設定に戻す
                         </button>
@@ -209,14 +209,14 @@ export default function BudgetPage() {
           </TableScrollArea>
         </section>
 
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5">
+        <section className="border border-border bg-surface rounded-md p-5">
           <h2 className="text-lg font-semibold mb-1">{period} 予算 vs 実績</h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mb-4">
+          <p className="text-xs text-muted-foreground mb-4">
             実績のあるカテゴリ、または予算が設定されているカテゴリのみ表示します。
           </p>
 
           {result.comparisons.length === 0 ? (
-            <p className="text-sm text-stone-500 dark:text-stone-400">
+            <p className="text-sm text-muted-foreground">
               この期間には予算設定・実績のいずれもありません。上の予算設定、または対象月をご確認ください。
             </p>
           ) : (
@@ -229,13 +229,13 @@ export default function BudgetPage() {
                       <span className="font-medium">{c.account}</span>
                       <span className={`text-xs ${STATUS_BADGE_CLASS[c.status]}`}>{STATUS_LABEL[c.status]}</span>
                     </div>
-                    <div className="h-2.5 w-full bg-stone-100 dark:bg-stone-800 rounded-sm overflow-hidden">
+                    <div className="h-2.5 w-full bg-surface rounded-sm overflow-hidden">
                       <div
                         className={`h-full ${BAR_FILL_CLASS[c.status]}`}
                         style={{ width: `${Math.round(ratio * 100)}%` }}
                       />
                     </div>
-                    <div className="flex items-baseline justify-between gap-4 flex-wrap text-xs text-stone-500 dark:text-stone-400">
+                    <div className="flex items-baseline justify-between gap-4 flex-wrap text-xs text-muted-foreground">
                       <span className="tabular-nums">
                         実績 {yen.format(c.actualYen)}
                         {" / 予算 "}
@@ -276,10 +276,10 @@ function StatTile({
       ? "text-emerald-700 dark:text-emerald-400"
       : tone === "negative"
         ? "text-red-700 dark:text-red-400"
-        : "text-stone-900 dark:text-stone-50";
+        : "text-foreground";
   return (
-    <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-4">
-      <div className="text-xs text-stone-500 dark:text-stone-400 mb-1">{label}</div>
+    <div className="border border-border bg-surface rounded-md p-4">
+      <div className="text-xs text-muted-foreground mb-1">{label}</div>
       <div className={`text-lg font-semibold tabular-nums ${toneClass}`}>{value}</div>
     </div>
   );

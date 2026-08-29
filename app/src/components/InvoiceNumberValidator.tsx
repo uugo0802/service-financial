@@ -41,7 +41,7 @@ export function InvoiceNumberValidator() {
     eligible: "border-emerald-700 bg-emerald-50 text-emerald-900",
     transitional: "border-amber-700 bg-amber-50 text-amber-900",
     ineligible: "border-red-700 bg-red-50 text-red-900",
-    not_applicable: "border-stone-400 bg-stone-50 text-stone-700",
+    not_applicable: "border-stone-400 bg-stone-50 text-foreground",
   };
 
   const statusLabel: Record<string, string> = {
@@ -54,7 +54,7 @@ export function InvoiceNumberValidator() {
   return (
     <div className="flex flex-col gap-5 max-w-xl">
       <div>
-        <label className="block text-xs text-stone-500 mb-1" htmlFor="invoice-number">
+        <label className="block text-xs text-muted-foreground mb-1" htmlFor="invoice-number">
           取引先のインボイス登録番号
         </label>
         <input
@@ -63,7 +63,7 @@ export function InvoiceNumberValidator() {
           value={invoiceNumber}
           onChange={(e) => setInvoiceNumber(e.target.value)}
           placeholder="T1234567890123"
-          className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600 font-mono"
+          className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40 font-mono"
         />
         {!result.numberFormat.valid && result.numberFormat.reason && (
           <p className="mt-1 text-xs text-red-700">{result.numberFormat.reason}</p>
@@ -72,14 +72,14 @@ export function InvoiceNumberValidator() {
 
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
-          <label className="block text-xs text-stone-500 mb-1" htmlFor="invoice-tax-category">
+          <label className="block text-xs text-muted-foreground mb-1" htmlFor="invoice-tax-category">
             税区分
           </label>
           <select
             id="invoice-tax-category"
             value={taxCategory}
             onChange={(e) => setTaxCategory(e.target.value as TaxCategory)}
-            className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+            className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           >
             <optgroup label="課税仕入（控除判定の対象）">
               {PURCHASE_TAX_CATEGORIES.map((c) => (
@@ -98,7 +98,7 @@ export function InvoiceNumberValidator() {
           </select>
         </div>
         <div>
-          <label className="block text-xs text-stone-500 mb-1" htmlFor="invoice-tx-date">
+          <label className="block text-xs text-muted-foreground mb-1" htmlFor="invoice-tx-date">
             取引日（経過措置の判定に使用）
           </label>
           <input
@@ -106,7 +106,7 @@ export function InvoiceNumberValidator() {
             type="date"
             value={transactionDate}
             onChange={(e) => setTransactionDate(e.target.value)}
-            className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+            className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           />
         </div>
       </div>
@@ -119,7 +119,7 @@ export function InvoiceNumberValidator() {
         {result.warning && <p className="text-xs">{result.warning}</p>}
       </div>
 
-      <p className="text-xs text-stone-500 leading-relaxed">{INVOICE_VALIDATION_DISCLAIMER}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed">{INVOICE_VALIDATION_DISCLAIMER}</p>
     </div>
   );
 }

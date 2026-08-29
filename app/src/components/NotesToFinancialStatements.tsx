@@ -14,11 +14,11 @@ export function NotesToFinancialStatements({ form }: { form: NotesForm }) {
       <div className="flex flex-col gap-6">
         {sections.map((section) => (
           <div key={section.title}>
-            <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-2">{section.title}</h3>
-            <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 divide-y divide-stone-100 dark:divide-stone-800">
+            <h3 className="text-sm font-semibold text-stone-800 mb-2">{section.title}</h3>
+            <div className="border border-stone-300 bg-white divide-y divide-stone-100">
               {section.lines.map((line, i) => (
                 <div key={i} className="flex flex-col sm:flex-row gap-1 sm:gap-4 px-3 py-2 text-sm">
-                  <div className="text-stone-500 dark:text-stone-400 sm:w-64 shrink-0">{line.label}</div>
+                  <div className="text-stone-500 sm:w-64 shrink-0">{line.label}</div>
                   <div className="leading-relaxed">{line.value}</div>
                 </div>
               ))}

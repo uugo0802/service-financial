@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { simulateFurusatoNozei, type FurusatoNozeiEntityType } from "@/lib/tax/furusatoNozeiSimulator";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 const yen = new Intl.NumberFormat("ja-JP");
 
 /**
@@ -45,7 +45,7 @@ export function FurusatoNozeiSimulatorForm() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-5 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-5 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="furusato-entity-type">
             事業形態
@@ -59,12 +59,12 @@ export function FurusatoNozeiSimulatorForm() {
             <option value="individual">個人（フリーランス・給与所得者等）</option>
             <option value="corporation">マイクロ法人（法人）</option>
           </select>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             ふるさと納税の自己負担2,000円の特例控除制度は個人向けの制度です。法人を選択した場合は試算を行いません。
           </p>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
+        <div className="border-t border-border pt-4">
           <label className={labelClass} htmlFor="furusato-taxable-income">
             所得税の課税所得金額（円）
           </label>
@@ -78,13 +78,13 @@ export function FurusatoNozeiSimulatorForm() {
             className={inputClass}
             disabled={entityType === "corporation"}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             社会保険料控除・基礎控除・配偶者控除・扶養控除など、適用可能な所得控除をすべて差し引いた後の金額（このふるさと納税分の寄附金控除を適用する前の金額）を入力してください。
           </p>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
-          <div className="text-xs text-stone-500 mb-2">配偶者控除・扶養親族の適用状況</div>
+        <div className="border-t border-border pt-4">
+          <div className="text-xs text-muted-foreground mb-2">配偶者控除・扶養親族の適用状況</div>
           <label className="flex items-center gap-2 text-sm mb-3">
             <input
               type="checkbox"
@@ -143,7 +143,7 @@ export function FurusatoNozeiSimulatorForm() {
               />
             </div>
           </div>
-          <p className="text-xs text-stone-500 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             所得税と住民税とで控除額が異なる（住民税の方が小さい）ことによる調整分の概算に用います。同居老親等・障害者控除等、他の人的控除は考慮していません。
           </p>
         </div>
@@ -154,49 +154,49 @@ export function FurusatoNozeiSimulatorForm() {
       <section>
         <h2 className="text-lg font-semibold mb-3">試算結果</h2>
         {!result ? (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         ) : !result.isApplicable ? (
           <div className="border border-amber-400 bg-amber-50 rounded p-4 text-sm text-amber-800 leading-relaxed">
             {result.notApplicableReason}
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="border border-stone-700 bg-stone-800 text-white rounded-lg p-4">
+            <div className="border border-border bg-foreground text-background rounded-lg p-4">
               <div className="text-xs text-stone-300 mb-1">自己負担2,000円のままで済む年間寄附上限額（目安）</div>
               <div className="text-3xl font-semibold">{yen.format(result.donationCeiling)}円</div>
-              <div className="text-xs text-stone-300 mt-1">自己負担額：{yen.format(result.selfPayAmount)}円</div>
+              <div className="text-xs text-muted-foreground mt-1">自己負担額：{yen.format(result.selfPayAmount)}円</div>
             </div>
 
             <div className="grid sm:grid-cols-3 gap-4">
-              <div className="border border-stone-300 bg-white rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">所得税の限界税率</div>
+              <div className="border border-border bg-surface rounded-lg p-4">
+                <div className="text-xs text-muted-foreground mb-1">所得税の限界税率</div>
                 <div className="text-2xl font-semibold">{result.marginalIncomeTaxBracket.ratePercent}%</div>
               </div>
-              <div className="border border-stone-300 bg-white rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">住民税の課税総所得金額（概算）</div>
+              <div className="border border-border bg-surface rounded-lg p-4">
+                <div className="text-xs text-muted-foreground mb-1">住民税の課税総所得金額（概算）</div>
                 <div className="text-2xl font-semibold">{yen.format(result.residentTaxTaxableIncomeApprox)}円</div>
               </div>
               <div className="border border-emerald-400 bg-emerald-50 rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">住民税所得割額（概算）</div>
+                <div className="text-xs text-muted-foreground mb-1">住民税所得割額（概算）</div>
                 <div className="text-2xl font-semibold">{yen.format(result.residentTaxIncomeLevyApprox)}円</div>
-                <div className="text-xs text-stone-500 mt-1">調整控除概算：{yen.format(result.adjustmentDeductionApprox)}円</div>
+                <div className="text-xs text-muted-foreground mt-1">調整控除概算：{yen.format(result.adjustmentDeductionApprox)}円</div>
               </div>
             </div>
 
-            <div className="border border-stone-300 bg-white overflow-x-auto">
+            <div className="border border-border bg-surface overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">項目</th>
                     <th className="px-3 py-2 font-normal">金額</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">所得税の課税所得金額（入力値）</td>
                     <td className="px-3 py-2">{yen.format(result.taxableIncome)}円</td>
                   </tr>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">人的控除差の合計（基礎控除分含む）</td>
                     <td className="px-3 py-2">{yen.format(result.personalDeductionGapTotal)}円</td>
                   </tr>
@@ -209,8 +209,8 @@ export function FurusatoNozeiSimulatorForm() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.assumptions.map((assumption) => (
                   <li key={assumption}>{assumption}</li>
                 ))}

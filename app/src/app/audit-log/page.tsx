@@ -101,8 +101,8 @@ export default async function AuditLogPage({
   const hasActiveFilter = Boolean(entityType || from || to);
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
@@ -113,25 +113,25 @@ export default async function AuditLogPage({
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <h1 className="font-serif text-2xl sm:text-3xl">監査ログ</h1>
-          <p className="text-stone-600 text-sm leading-relaxed max-w-2xl">
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl">
             仕訳・証憑データに対する作成・編集・削除などの操作履歴を、いつ・誰が・何を変更したかとあわせて確認できます。
             電子帳簿保存法の求める「訂正・削除の履歴が残るシステムでの保存」に対応するための記録です。
           </p>
         </div>
 
         {isSample && (
-          <p className="text-xs text-stone-500 border border-stone-300 bg-white rounded-lg px-4 py-3">
+          <p className="text-xs text-muted-foreground border border-border bg-surface rounded-lg px-4 py-3">
             現時点ではサンプルデータを表示しています。実際の記帳データとの連携（Supabase）は別途対応予定です。
           </p>
         )}
 
-        <form method="get" className="flex flex-wrap items-end gap-3 border border-stone-300 bg-white rounded-lg p-4">
-          <label className="flex flex-col gap-1 text-xs text-stone-600">
+        <form method="get" className="flex flex-wrap items-end gap-3 border border-border bg-surface rounded-lg p-4">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             対象種別
             <select
               name="entityType"
               defaultValue={entityType ?? ""}
-              className="border border-stone-300 rounded px-2 py-1.5 text-sm bg-white"
+              className="border border-border rounded px-2 py-1.5 text-sm bg-surface"
             >
               <option value="">すべて</option>
               {entityTypes.map((type) => (
@@ -142,35 +142,35 @@ export default async function AuditLogPage({
             </select>
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-600">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             期間（開始）
             <input
               type="date"
               name="from"
               defaultValue={from ?? ""}
-              className="border border-stone-300 rounded px-2 py-1.5 text-sm bg-white"
+              className="border border-border rounded px-2 py-1.5 text-sm bg-surface"
             />
           </label>
 
-          <label className="flex flex-col gap-1 text-xs text-stone-600">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             期間（終了）
             <input
               type="date"
               name="to"
               defaultValue={to ?? ""}
-              className="border border-stone-300 rounded px-2 py-1.5 text-sm bg-white"
+              className="border border-border rounded px-2 py-1.5 text-sm bg-surface"
             />
           </label>
 
           <button
             type="submit"
-            className="bg-stone-900 text-white text-sm rounded px-4 py-1.5 hover:bg-stone-700"
+            className="bg-accent text-white text-sm rounded px-4 py-1.5 hover:opacity-90"
           >
             絞り込む
           </button>
 
           {hasActiveFilter && (
-            <a href="/audit-log" className="text-xs text-stone-500 underline underline-offset-2">
+            <a href="/audit-log" className="text-xs text-muted-foreground underline underline-offset-2">
               条件をクリア
             </a>
           )}
@@ -179,8 +179,8 @@ export default async function AuditLogPage({
         <AuditLogTable logs={filteredLogs} />
       </PageContainer>
 
-      <footer className="border-t border-stone-300 bg-white mt-4">
-        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 leading-relaxed">
+      <footer className="border-t border-border bg-surface mt-4">
+        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される内容は記帳データの変更履歴（監査ログ）であり、個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
         </div>

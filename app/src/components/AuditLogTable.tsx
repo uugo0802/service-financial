@@ -15,14 +15,14 @@ function formatTimestamp(createdAt: string): string {
 
 function ChangeValue({ value }: { value: unknown }) {
   if (value === undefined) {
-    return <span className="text-stone-400">—</span>;
+    return <span className="text-muted-foreground">—</span>;
   }
   return <code className="whitespace-pre-wrap break-all">{JSON.stringify(value)}</code>;
 }
 
 function ChangesCell({ changes }: { changes: unknown }) {
   if (changes === null || changes === undefined) {
-    return <span className="text-stone-400">—</span>;
+    return <span className="text-muted-foreground">—</span>;
   }
 
   const summary = extractChangeSummary(changes);
@@ -33,11 +33,11 @@ function ChangesCell({ changes }: { changes: unknown }) {
   return (
     <div className="flex flex-col gap-1 text-xs">
       <div>
-        <span className="text-stone-500">変更前: </span>
+        <span className="text-muted-foreground">変更前: </span>
         <ChangeValue value={summary.before} />
       </div>
       <div>
-        <span className="text-stone-500">変更後: </span>
+        <span className="text-muted-foreground">変更後: </span>
         <ChangeValue value={summary.after} />
       </div>
     </div>
@@ -47,7 +47,7 @@ function ChangesCell({ changes }: { changes: unknown }) {
 export function AuditLogTable({ logs }: { logs: AuditLogRow[] }) {
   if (logs.length === 0) {
     return (
-      <div className="border border-stone-300 bg-white rounded-lg p-8 text-center text-sm text-stone-500">
+      <div className="border border-border bg-surface rounded-lg p-8 text-center text-sm text-muted-foreground">
         条件に一致する監査ログが見つかりませんでした。絞り込み条件を変更するか、記帳・仕訳操作が行われると、ここに履歴が積み上がっていきます。
       </div>
     );
@@ -55,10 +55,10 @@ export function AuditLogTable({ logs }: { logs: AuditLogRow[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto border border-stone-300 bg-white rounded-lg">
+      <div className="overflow-x-auto border border-border bg-surface rounded-lg">
         <table className="w-full text-sm border-collapse min-w-[720px]">
           <thead>
-            <tr className="border-b border-stone-300 bg-stone-50 text-left text-xs text-stone-500">
+            <tr className="border-b border-border bg-surface text-left text-xs text-muted-foreground">
               <th className="py-2 px-3 font-semibold">日時</th>
               <th className="py-2 px-3 font-semibold">操作者</th>
               <th className="py-2 px-3 font-semibold">操作</th>
@@ -69,17 +69,17 @@ export function AuditLogTable({ logs }: { logs: AuditLogRow[] }) {
           <tbody>
             {logs.map((log) => (
               <tr key={log.id} className="border-b border-stone-200 last:border-b-0 align-top">
-                <td className="py-2.5 px-3 whitespace-nowrap text-xs text-stone-600">
+                <td className="py-2.5 px-3 whitespace-nowrap text-xs text-muted-foreground">
                   {formatTimestamp(log.created_at)}
                 </td>
                 <td className="py-2.5 px-3 text-xs">{log.user_id ?? "システム"}</td>
                 <td className="py-2.5 px-3">
                   <div className="font-medium">{describeAuditAction(log.action)}</div>
-                  <div className="text-[0.68rem] text-stone-400">{log.action}</div>
+                  <div className="text-[0.68rem] text-muted-foreground">{log.action}</div>
                 </td>
                 <td className="py-2.5 px-3 text-xs">
                   <div>{describeEntityType(log.entity_type)}</div>
-                  {log.entity_id && <div className="text-stone-400">#{log.entity_id}</div>}
+                  {log.entity_id && <div className="text-muted-foreground">#{log.entity_id}</div>}
                 </td>
                 <td className="py-2.5 px-3">
                   <ChangesCell changes={log.changes} />
@@ -90,7 +90,7 @@ export function AuditLogTable({ logs }: { logs: AuditLogRow[] }) {
         </table>
       </div>
 
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-muted-foreground">
         監査ログは仕訳・証憑データへの変更を記録した追記専用の履歴であり、後から編集・削除はできません。
         本ページの表示は記帳内容の変更履歴を確認するためのものであり、税理士法に定める税務代理・税務相談を提供するものではありません。
       </p>

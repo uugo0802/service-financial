@@ -95,9 +95,9 @@ export function NotificationPreferencesForm() {
     !startTimeInvalid && !endTimeInvalid && preferences.quietHours.start === preferences.quietHours.end;
 
   return (
-    <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5 flex flex-col gap-6">
+    <div className="border border-border bg-surface rounded-md p-5 flex flex-col gap-6">
       <div>
-        <div className="text-xs text-stone-500 dark:text-stone-400 mb-2">ダイジェストの配信頻度</div>
+        <div className="text-xs text-muted-foreground mb-2">ダイジェストの配信頻度</div>
         <div className="flex flex-wrap gap-2">
           {DIGEST_FREQUENCY_OPTIONS.map((opt) => (
             <button
@@ -107,21 +107,21 @@ export function NotificationPreferencesForm() {
               aria-pressed={preferences.digestFrequency === opt.key}
               className={`text-sm px-4 py-2 border transition-colors ${
                 preferences.digestFrequency === opt.key
-                  ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                  : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                  ? "bg-accent border-accent text-white"
+                  : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
               }`}
             >
               {opt.label}
             </button>
           ))}
         </div>
-        <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+        <p className="mt-2 text-xs text-muted-foreground">
           {DIGEST_FREQUENCY_OPTIONS.find((o) => o.key === preferences.digestFrequency)?.description}
         </p>
       </div>
 
-      <div className="border-t border-stone-100 dark:border-stone-800 pt-4">
-        <label className="flex items-center gap-2 text-sm text-stone-700 dark:text-stone-200">
+      <div className="border-t border-border/60 pt-4">
+        <label className="flex items-center gap-2 text-sm text-foreground">
           <input
             type="checkbox"
             checked={preferences.quietHours.enabled}
@@ -133,22 +133,22 @@ export function NotificationPreferencesForm() {
         {preferences.quietHours.enabled && (
           <div className="mt-3 flex flex-col gap-3">
             <div className="flex flex-wrap items-end gap-4">
-              <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                 開始時刻
                 <input
                   type="time"
                   value={preferences.quietHours.start}
                   onChange={(e) => updateQuietHours({ start: e.target.value })}
-                  className="border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400"
+                  className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 />
               </label>
-              <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                 終了時刻
                 <input
                   type="time"
                   value={preferences.quietHours.end}
                   onChange={(e) => updateQuietHours({ end: e.target.value })}
-                  className="border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400"
+                  className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 />
               </label>
             </div>
@@ -157,7 +157,7 @@ export function NotificationPreferencesForm() {
             {endTimeInvalid && <p className="text-xs text-red-700">終了時刻が正しい形式（HH:mm）ではありません。</p>}
 
             {!startTimeInvalid && !endTimeInvalid && (
-              <p className="text-xs text-stone-500 dark:text-stone-400">
+              <p className="text-xs text-muted-foreground">
                 {isAlwaysQuiet
                   ? "開始・終了が同じ時刻のため、終日静音として扱われます。"
                   : preferences.quietHours.start > preferences.quietHours.end
@@ -166,7 +166,7 @@ export function NotificationPreferencesForm() {
               </p>
             )}
 
-            <p className="text-xs text-stone-400 dark:text-stone-500">
+            <p className="text-xs text-muted-foreground">
               期限超過（overdue）の申告期限リマインダーは、見逃した場合の影響が大きいため静音時間帯中でも通知されます。
             </p>
           </div>
@@ -184,19 +184,19 @@ export function NotificationPreferencesForm() {
         </div>
       )}
 
-      <div className="flex items-center gap-3 border-t border-stone-100 dark:border-stone-800 pt-4">
+      <div className="flex items-center gap-3 border-t border-border/60 pt-4">
         <button
           type="button"
           onClick={handleSave}
           disabled={!validation.valid}
-          className="text-sm px-4 py-2 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="text-sm px-4 py-2 border border-accent bg-accent text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           設定を保存する
         </button>
         {savedAt !== null && <span className="text-xs text-emerald-700 dark:text-emerald-400">保存しました（この端末のみ）</span>}
       </div>
 
-      <p className="text-xs text-stone-400 dark:text-stone-500 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         この設定はこの端末のブラウザにのみ保存され、実際のメール配信基盤とはまだ連携していません（プロトタイプ）。
       </p>
     </div>

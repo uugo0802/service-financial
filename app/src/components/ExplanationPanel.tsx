@@ -28,7 +28,7 @@ export function ExplanationPanel({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="inline-flex items-center gap-1 text-stone-500 hover:text-stone-700 transition-colors"
+        className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
       >
         <span aria-hidden="true" className="inline-block w-3">
           {open ? "▾" : "▸"}
@@ -39,8 +39,8 @@ export function ExplanationPanel({
         <ul className="mt-1.5 space-y-1.5 border-l-2 border-stone-200 pl-3">
           {steps.map((step, i) => (
             <li key={i}>
-              <span className="font-semibold text-stone-600">{step.label}</span>
-              <span className="text-stone-500">：{step.detail}</span>
+              <span className="font-semibold text-muted-foreground">{step.label}</span>
+              <span className="text-muted-foreground">：{step.detail}</span>
             </li>
           ))}
         </ul>

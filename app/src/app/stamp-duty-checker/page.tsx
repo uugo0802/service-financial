@@ -12,8 +12,8 @@ import {
 
 type StampDutyDocumentType = "receipt" | "contract";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 const DOCUMENT_TYPE_LABEL: Record<StampDutyDocumentType, string> = {
   receipt: "領収書（第17号の1文書・売上代金の受取書）",
@@ -42,20 +42,20 @@ export default function StampDutyCheckerPage() {
     documentType === "receipt" ? RECEIPT_STAMP_DUTY_EXEMPTION_THRESHOLD : CONTRACT_STAMP_DUTY_EXEMPTION_THRESHOLD;
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 印紙税チェッカー</div>
+          <div className="text-xs text-muted-foreground">MVP — 印紙税チェッカー</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">印紙税チェッカー（領収書・請負契約書）</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             フリーランス・マイクロ法人が発行することの多い領収書（売上代金の受取書）や請負契約書について、
             記載金額と「紙で作成・交付するか／電子的に作成・交付するか」を入力すると、必要な収入印紙の金額
             （印紙税額）を国税庁公表の税額表に基づいて機械的に判定します。領収書は5万円未満、契約書は1万円未満が
@@ -68,8 +68,8 @@ export default function StampDutyCheckerPage() {
           </p>
         </section>
 
-        <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
-          <h2 className="text-sm font-semibold text-stone-700">文書の入力</h2>
+        <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
+          <h2 className="text-sm font-semibold text-foreground">文書の入力</h2>
 
           <div>
             <span className={labelClass}>文書の種類</span>
@@ -82,8 +82,8 @@ export default function StampDutyCheckerPage() {
                   onClick={() => setDocumentType(type)}
                   className={`text-sm px-4 py-2 border transition-colors ${
                     documentType === type
-                      ? "bg-stone-900 border-stone-900 text-white"
-                      : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                      ? "bg-accent border-accent text-white"
+                      : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                   }`}
                 >
                   {DOCUMENT_TYPE_LABEL[type]}
@@ -105,9 +105,9 @@ export default function StampDutyCheckerPage() {
                 disabled={!amountStated}
                 onChange={(e) => setAmount(Number(e.target.value))}
                 placeholder="例：100000"
-                className={`${inputClass} disabled:bg-stone-100 disabled:text-stone-400`}
+                className={`${inputClass} disabled:bg-surface disabled:text-muted-foreground`}
               />
-              <label className="mt-2 flex items-center gap-2 text-xs text-stone-500">
+              <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                 <input
                   type="checkbox"
                   checked={!amountStated}
@@ -126,8 +126,8 @@ export default function StampDutyCheckerPage() {
                   onClick={() => setFormat("paper")}
                   className={`flex-1 text-sm px-4 py-2 border transition-colors ${
                     format === "paper"
-                      ? "bg-stone-900 border-stone-900 text-white"
-                      : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                      ? "bg-accent border-accent text-white"
+                      : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                   }`}
                 >
                   紙で作成・交付
@@ -138,8 +138,8 @@ export default function StampDutyCheckerPage() {
                   onClick={() => setFormat("electronic")}
                   className={`flex-1 text-sm px-4 py-2 border transition-colors ${
                     format === "electronic"
-                      ? "bg-stone-900 border-stone-900 text-white"
-                      : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                      ? "bg-accent border-accent text-white"
+                      : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                   }`}
                 >
                   電子的に作成・交付
@@ -148,7 +148,7 @@ export default function StampDutyCheckerPage() {
             </div>
           </div>
 
-          <p className="text-xs text-stone-500 leading-relaxed">
+          <p className="text-xs text-muted-foreground leading-relaxed">
             免税点（この金額未満は非課税）: {exemptionThreshold.toLocaleString("ja-JP")}円。
             紙で相手方に交付した後に金額を書き足す等の変更をした場合や、電子的に作成した文書を後から印刷して
             相手方に交付した場合は、別途課税対象となることがあります（本ツールでは判定していません）。
@@ -176,10 +176,10 @@ export default function StampDutyCheckerPage() {
                   </span>
                   <div className="text-lg font-semibold mt-1">{DOCUMENT_TYPE_LABEL[documentType]}</div>
                 </div>
-                <div className="text-sm text-stone-600 text-right">
+                <div className="text-sm text-muted-foreground text-right">
                   <div>
                     必要な収入印紙の金額:{" "}
-                    <span className="font-semibold text-stone-800 text-base">
+                    <span className="font-semibold text-foreground text-base">
                       {result.stampDutyAmount.toLocaleString("ja-JP")}円
                     </span>
                   </div>
@@ -187,14 +187,14 @@ export default function StampDutyCheckerPage() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold mb-2 text-stone-700">判定理由</h3>
-                <p className="text-sm text-stone-600 leading-relaxed">{result.reason}</p>
+                <h3 className="text-sm font-semibold mb-2 text-foreground">判定理由</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{result.reason}</p>
               </div>
 
               <p className="text-xs text-amber-700 leading-relaxed">{result.disclaimer}</p>
             </div>
           ) : (
-            <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+            <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
           )}
         </section>
       </PageContainer>

@@ -151,37 +151,37 @@ export function InvoiceReconciliationClient() {
   }, []);
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500 dark:text-stone-400">入金消込（請求書マッチング）</div>
+          <div className="text-xs text-muted-foreground">入金消込（請求書マッチング）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-10">
         <section className="flex flex-col gap-4">
           <h1 className="text-2xl font-semibold">入金消込（請求書マッチング）</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             発行済みの請求書のうち<b className="font-medium">まだ入金が確認できていないもの</b>
             （<Link href="/reconcile" className="underline hover:no-underline">未収入金・銀行残高突合</Link>
             とは別の、より具体的な単位での確認です）を、取り込んだ銀行の入金取引と自動で突き合わせます。
           </p>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             入金額が請求書の金額とちょうど一致すれば<b className="font-medium">高信頼度</b>のマッチとして、
             金額が同額の請求書が複数ある場合は振込摘要の請求先名から絞り込んだ<b className="font-medium">中信頼度</b>のマッチとして表示します。
             入金額が請求書の金額を下回る場合は<b className="font-medium">部分入金</b>、
             複数請求書の合計額と一致する場合は<b className="font-medium">まとめ入金の可能性（要確認）</b>として、
             それぞれ誤って「一致」と扱わないよう区別しています。
           </p>
-          <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             {isSampleInvoices
               ? "発行済み請求書のデータは、現時点ではサンプルデータを表示しています（Supabase未接続、または未ログインのため）。"
               : "発行済み請求書のデータは、登録済みの内容（Supabase）を表示しています。"}
           </p>
-          <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             {isSampleData
               ? "銀行の入金取引データも、現時点ではサンプルデータを表示しています。記帳データが登録されると、自動的に実際のデータへ切り替わります。"
               : "銀行の入金取引データは、記帳された実データ（当期の取引）を表示しています。"}
@@ -199,8 +199,8 @@ export function InvoiceReconciliationClient() {
         </section>
       </PageContainer>
 
-      <footer className="border-t border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 mt-4">
-        <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+      <footer className="border-t border-border bg-surface mt-4">
+        <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示されるマッチング候補は入金額・取引摘要に基づく機械的な当たりづけであり、消込の最終確定はご自身、
           または税理士等の専門家にご確認のうえ行ってください。

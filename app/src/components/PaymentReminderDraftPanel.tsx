@@ -23,8 +23,8 @@ import {
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
 const inputClass =
-  "w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400";
-const labelClass = "flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "flex flex-col gap-1 text-xs text-muted-foreground";
 
 type InvoiceSource = "list" | "manual";
 
@@ -96,7 +96,7 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-lg p-5 flex flex-col gap-4">
+      <div className="border border-border bg-surface rounded-lg p-5 flex flex-col gap-4">
         <div className="flex gap-2">
           <button
             type="button"
@@ -104,8 +104,8 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
             disabled={overdueInvoices.length === 0}
             className={`text-sm px-4 py-2 border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
               source === "list"
-                ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                ? "bg-accent border-accent text-white"
+                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
             }`}
           >
             未収一覧から選ぶ
@@ -115,8 +115,8 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
             onClick={() => setSource("manual")}
             className={`text-sm px-4 py-2 border transition-colors ${
               source === "manual"
-                ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                ? "bg-accent border-accent text-white"
+                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
             }`}
           >
             手入力する
@@ -125,7 +125,7 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
 
         {source === "list" ? (
           overdueInvoices.length === 0 ? (
-            <p className="text-sm text-stone-500 dark:text-stone-400">
+            <p className="text-sm text-muted-foreground">
               期日超過の請求書がありません。「手入力する」から直接入力してください。
             </p>
           ) : (
@@ -211,7 +211,7 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
                   className={`text-sm px-3 py-1.5 border transition-colors ${
                     tone === opt.value
                       ? "bg-red-700 border-red-700 text-white"
-                      : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                      : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                   }`}
                 >
                   {opt.label}
@@ -233,7 +233,7 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
       </div>
 
       {!result ? (
-        <div className="border border-dashed border-stone-300 dark:border-stone-700 rounded-lg p-6 text-center text-sm text-stone-500 dark:text-stone-400">
+        <div className="border border-dashed border-stone-300 dark:border-stone-700 rounded-lg p-6 text-center text-sm text-muted-foreground">
           請求書を選択、または入力すると下書きプレビューが表示されます。
         </div>
       ) : !result.ok ? (
@@ -244,7 +244,7 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
           <p>{result.message}</p>
         </div>
       ) : (
-        <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-lg p-5 flex flex-col gap-4">
+        <div className="border border-border bg-surface rounded-lg p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <h3 className="text-sm font-semibold">
               下書きプレビュー（{result.draft.toneLabel}）
@@ -275,7 +275,7 @@ export function PaymentReminderDraftPanel({ overdueInvoices }: PaymentReminderDr
         </div>
       )}
 
-      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{PAYMENT_REMINDER_DISCLAIMER}</p>
+      <p className="text-xs text-muted-foreground leading-relaxed">{PAYMENT_REMINDER_DISCLAIMER}</p>
     </div>
   );
 }

@@ -11,20 +11,20 @@ export function PricingTable({ plans }: { plans: PricingPlan[] }) {
       {plans.map((plan) => (
         <div
           key={plan.id}
-          className="flex flex-col gap-4 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 p-6"
+          className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-6"
         >
           <div>
             <h3 className="font-serif text-xl">{plan.name}</h3>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 leading-relaxed">{plan.targetSegment}</p>
+            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{plan.targetSegment}</p>
           </div>
 
           <div className="flex items-baseline gap-1">
-            <span className="text-xs text-stone-500 dark:text-stone-400">月額</span>
+            <span className="text-xs text-muted-foreground">月額</span>
             <span className="text-3xl font-semibold tabular-nums">{yen.format(plan.monthlyPriceFrom)}</span>
-            <span className="text-sm text-stone-500 dark:text-stone-400">〜（税抜）</span>
+            <span className="text-sm text-muted-foreground">〜（税抜）</span>
           </div>
 
-          <ul className="text-sm text-stone-600 dark:text-stone-300 space-y-2">
+          <ul className="text-sm text-muted-foreground space-y-2">
             {plan.features.map((feature) => (
               <li key={feature} className="flex items-start gap-2">
                 <span className="text-red-700 dark:text-red-400 mt-0.5">・</span>
@@ -34,7 +34,7 @@ export function PricingTable({ plans }: { plans: PricingPlan[] }) {
           </ul>
 
           {plan.note && (
-            <p className="text-xs text-stone-400 dark:text-stone-500 leading-relaxed border-t border-stone-100 dark:border-stone-800 pt-3 mt-auto">
+            <p className="text-xs text-muted-foreground leading-relaxed border-t border-border/60 pt-3 mt-auto">
               {plan.note}
             </p>
           )}

@@ -38,7 +38,7 @@ export interface CsvColumnMapperProps {
 
 const selectClass =
   "w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-red-700 dark:focus:border-red-400";
-const labelClass = "block text-xs text-stone-500 dark:text-stone-400 mb-1";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
 function fieldSelect(
@@ -141,11 +141,11 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
   }
 
   return (
-    <div className={`border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 p-5 flex flex-col gap-4 ${className ?? ""}`}>
+    <div className={`border border-border bg-surface p-5 flex flex-col gap-4 ${className ?? ""}`}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-sm font-semibold">CSVの列を自分で指定して取り込む</h3>
-          <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-xl">
+          <p className="mt-1 text-xs text-muted-foreground leading-relaxed max-w-xl">
             対応銀行の一覧に無い銀行・カード会社のCSVでも、どの列が「日付」「摘要」「金額」（または「出金」「入金」）に
             対応するかをご自身で指定すれば取り込めます。ファイルはサーバーに送信されず、お使いのブラウザ内だけで処理します。
           </p>
@@ -153,7 +153,7 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
         <button
           type="button"
           onClick={() => setExpanded(false)}
-          className="text-xs text-stone-500 dark:text-stone-400 underline hover:no-underline whitespace-nowrap"
+          className="text-xs text-muted-foreground underline hover:no-underline whitespace-nowrap"
         >
           閉じる
         </button>
@@ -175,19 +175,19 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
             }}
           />
         </label>
-        {fileName && <span className="ml-3 text-xs text-stone-500 dark:text-stone-400">{fileName}</span>}
+        {fileName && <span className="ml-3 text-xs text-muted-foreground">{fileName}</span>}
       </div>
 
       {readError && <p className="text-sm text-red-700 dark:text-red-400">{readError}</p>}
 
       {header.length > 0 && (
         <>
-          <div className="text-xs text-stone-500 dark:text-stone-400">
+          <div className="text-xs text-muted-foreground">
             検出したヘッダー列: {header.map((h) => `「${h}」`).join(" ")}
           </div>
 
           <div>
-            <div className="text-xs text-stone-500 dark:text-stone-400 mb-2" id="amount-mode-label">
+            <div className="text-xs text-muted-foreground mb-2" id="amount-mode-label">
               金額の列の形式
             </div>
             <div className="flex items-center gap-3 flex-wrap" role="group" aria-labelledby="amount-mode-label">
@@ -197,8 +197,8 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
                 onClick={() => setAmountMode("signed")}
                 className={`text-sm px-4 py-2 border transition-colors ${
                   amountMode === "signed"
-                    ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                    : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                    ? "bg-accent border-accent text-white"
+                    : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                 }`}
               >
                 金額は1列（符号あり）
@@ -209,8 +209,8 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
                 onClick={() => setAmountMode("split")}
                 className={`text-sm px-4 py-2 border transition-colors ${
                   amountMode === "split"
-                    ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                    : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                    ? "bg-accent border-accent text-white"
+                    : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                 }`}
               >
                 出金・入金が別の列
@@ -274,19 +274,19 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
 
           {result && result.ok && (
             <div className="flex flex-col gap-3">
-              <div className="text-xs text-stone-500 dark:text-stone-400 flex flex-wrap gap-x-6 gap-y-1">
+              <div className="text-xs text-muted-foreground flex flex-wrap gap-x-6 gap-y-1">
                 <span>取込件数: {result.transactions.length}件（スキップ {result.skippedRows}件）</span>
               </div>
 
               {result.transactions.length === 0 ? (
-                <p className="text-sm text-stone-500 dark:text-stone-400">
+                <p className="text-sm text-muted-foreground">
                   列の指定は正しく認識されましたが、データ行が見つかりませんでした。
                 </p>
               ) : (
-                <div className="overflow-x-auto border border-stone-300 dark:border-stone-700">
+                <div className="overflow-x-auto border border-border">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                      <tr className="border-b border-border text-left text-muted-foreground text-xs">
                         <th className="px-3 py-2 font-normal">日付</th>
                         <th className="px-3 py-2 font-normal">摘要</th>
                         <th className="px-3 py-2 font-normal text-right">金額</th>
@@ -294,14 +294,14 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
                     </thead>
                     <tbody>
                       {result.transactions.slice(0, PREVIEW_ROW_LIMIT).map((t) => (
-                        <tr key={t.id} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+                        <tr key={t.id} className="border-b border-border/60 last:border-0">
                           <td className="px-3 py-2 whitespace-nowrap tabular-nums">{t.date}</td>
                           <td className="px-3 py-2 max-w-xs truncate" title={t.description}>
                             {t.description}
                           </td>
                           <td
                             className={`px-3 py-2 text-right whitespace-nowrap tabular-nums ${
-                              t.amount < 0 ? "text-stone-700 dark:text-stone-300" : "text-emerald-700 dark:text-emerald-400"
+                              t.amount < 0 ? "text-foreground" : "text-emerald-700 dark:text-emerald-400"
                             }`}
                           >
                             {yen.format(t.amount)}
@@ -311,7 +311,7 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
                     </tbody>
                   </table>
                   {result.transactions.length > PREVIEW_ROW_LIMIT && (
-                    <p className="px-3 py-2 text-xs text-stone-400 dark:text-stone-500">
+                    <p className="px-3 py-2 text-xs text-muted-foreground">
                       …ほか{result.transactions.length - PREVIEW_ROW_LIMIT}件（プレビューは先頭{PREVIEW_ROW_LIMIT}件のみ表示）
                     </p>
                   )}
@@ -328,8 +328,8 @@ export function CsvColumnMapper({ onApply, startExpanded = false, className }: C
                   }}
                   className={`text-sm px-5 py-2.5 border transition-colors ${
                     result.transactions.length === 0
-                      ? "border-stone-300 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500 cursor-not-allowed"
-                      : "border-stone-900 dark:border-stone-100 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-700 dark:hover:bg-stone-300"
+                      ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                      : "border-accent bg-accent text-white hover:opacity-90"
                   }`}
                 >
                   この内容で取り込む

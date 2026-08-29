@@ -162,26 +162,26 @@ export default function BillingSettingsPage() {
   }
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">プラン・お支払い</div>
+          <div className="text-xs text-muted-foreground">プラン・お支払い</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">プラン・お支払い</h1>
-          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             現在ご契約中のプラン、次回請求日、過去の領収書履歴を確認できます。
           </p>
         </section>
 
-        <section className="border border-stone-300 bg-white p-5 flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-stone-800">現在のプラン</h2>
+        <section className="border border-border bg-surface p-5 flex flex-col gap-3">
+          <h2 className="text-sm font-semibold text-foreground">現在のプラン</h2>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <p className="text-xl font-semibold">{subscriptionView.planName}</p>
             <span
@@ -192,22 +192,22 @@ export default function BillingSettingsPage() {
                     ? "border-sky-300 bg-sky-50 text-sky-700"
                     : subscriptionView.status === "past_due"
                       ? "border-red-300 bg-red-50 text-red-700"
-                      : "border-stone-300 bg-stone-100 text-stone-600"
+                      : "border-border bg-surface text-muted-foreground"
               }`}
             >
               {subscriptionView.statusLabel}
             </span>
           </div>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-stone-600">
-            <dt className="text-stone-400">現在の請求期間</dt>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-muted-foreground">
+            <dt className="text-muted-foreground">現在の請求期間</dt>
             <dd>
               {subscriptionView.currentPeriodStartLabel} 〜 {subscriptionView.currentPeriodEndLabel}
             </dd>
-            <dt className="text-stone-400">次回請求日</dt>
+            <dt className="text-muted-foreground">次回請求日</dt>
             <dd>{subscriptionView.nextBillingDateLabel}</dd>
           </dl>
           {planChange && (
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-muted-foreground">
               {planChange.effectiveDate}にプランを変更しました（変更後: {planChange.toPlanId === subscriptionView.planId ? subscriptionView.planName : planChange.toPlanId}）。
             </p>
           )}
@@ -220,23 +220,23 @@ export default function BillingSettingsPage() {
           </p>
         </section>
 
-        <section className="border border-stone-300 bg-white p-5 flex flex-col gap-3">
+        <section className="border border-border bg-surface p-5 flex flex-col gap-3">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-sm font-semibold text-stone-800">領収書履歴</h2>
+            <h2 className="text-sm font-semibold text-foreground">領収書履歴</h2>
             {summary.hasHistory && (
-              <span className="text-xs text-stone-400">
+              <span className="text-xs text-muted-foreground">
                 お支払い合計 {yen.format(summary.totalPaidAmount)}（{summary.chargeCount}件）
               </span>
             )}
           </div>
 
-          {!summary.hasHistory && <p className="text-sm text-stone-500">まだ請求履歴がありません。</p>}
+          {!summary.hasHistory && <p className="text-sm text-muted-foreground">まだ請求履歴がありません。</p>}
 
           {summary.hasHistory && (
             <TableScrollArea>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-2 py-1.5 font-normal">発行日</th>
                     <th className="px-2 py-1.5 font-normal">プラン</th>
                     <th className="px-2 py-1.5 font-normal text-right">金額</th>
@@ -246,18 +246,18 @@ export default function BillingSettingsPage() {
                 </thead>
                 <tbody>
                   {history.map((entry) => (
-                    <tr key={entry.id} className="border-b border-stone-100 last:border-0">
+                    <tr key={entry.id} className="border-b border-border/60 last:border-0">
                       <td className="px-2 py-1.5 whitespace-nowrap">{entry.dateLabel}</td>
                       <td className="px-2 py-1.5">{entry.planName}</td>
                       <td className="px-2 py-1.5 text-right tabular-nums whitespace-nowrap">
                         {entry.isZeroAmount ? `${yen.format(0)}（無料トライアル）` : yen.format(entry.amount)}
                       </td>
-                      <td className="px-2 py-1.5 whitespace-nowrap text-stone-500">{entry.receiptNumber}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap text-muted-foreground">{entry.receiptNumber}</td>
                       <td className="px-2 py-1.5 text-right">
                         <button
                           type="button"
                           onClick={() => setPrintingReceiptId(entry.id)}
-                          className="text-xs text-stone-700 underline underline-offset-2 hover:text-stone-900"
+                          className="text-xs text-foreground underline underline-offset-2 hover:text-foreground"
                         >
                           印刷 / PDFで保存
                         </button>
@@ -270,11 +270,11 @@ export default function BillingSettingsPage() {
           )}
         </section>
 
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-muted-foreground">
           この画面は開発中のプロトタイプです。表示されているプラン・請求記録はサンプルデータであり、実際の決済処理・データベースへの保存は行われません。
         </p>
 
-        <Link href="/settings" className="text-xs text-stone-500 underline underline-offset-2 self-start">
+        <Link href="/settings" className="text-xs text-muted-foreground underline underline-offset-2 self-start">
           ← 事業者設定に戻る
         </Link>
       </PageContainer>

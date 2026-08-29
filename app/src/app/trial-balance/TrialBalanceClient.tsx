@@ -101,7 +101,7 @@ export function TrialBalanceClient() {
 
   return (
     <>
-      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl -mt-6">
+      <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl -mt-6">
         {isSampleData
           ? `${SAMPLE_ENTITY_NAME}を想定したサンプルデータで当期の取引を表示しています（前期繰越高もサンプル値）。`
           : isSampleBalanceSheetData

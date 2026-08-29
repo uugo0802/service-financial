@@ -14,8 +14,8 @@ interface OpeningBalanceFormProps {
 }
 
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "flex flex-col gap-1 text-xs text-stone-500";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "flex flex-col gap-1 text-xs text-muted-foreground";
 const errorTextClass = "mt-1 text-xs text-red-700";
 
 export function OpeningBalanceForm({ initialDraft, onSubmit }: OpeningBalanceFormProps) {
@@ -51,7 +51,7 @@ export function OpeningBalanceForm({ initialDraft, onSubmit }: OpeningBalanceFor
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-stone-300 bg-white p-5 flex flex-col gap-5" noValidate>
+    <form onSubmit={handleSubmit} className="border border-border bg-surface p-5 flex flex-col gap-5" noValidate>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <label className={labelClass}>
           期首日（前期末日）
@@ -84,7 +84,7 @@ export function OpeningBalanceForm({ initialDraft, onSubmit }: OpeningBalanceFor
             onChange={(e) => set("retainedEarnings", e.target.value)}
             className={inputClass}
           />
-          <span className="text-stone-400">繰越欠損金の場合はマイナスで入力してください。</span>
+          <span className="text-muted-foreground">繰越欠損金の場合はマイナスで入力してください。</span>
           {errors.retainedEarnings && <span className={errorTextClass}>{errors.retainedEarnings}</span>}
         </label>
       </div>
@@ -93,7 +93,7 @@ export function OpeningBalanceForm({ initialDraft, onSubmit }: OpeningBalanceFor
         <button
           type="submit"
           disabled={submitting}
-          className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors disabled:opacity-50"
+          className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors disabled:opacity-50"
         >
           {submitting ? "保存中…" : "期首残高を保存"}
         </button>

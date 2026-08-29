@@ -41,19 +41,17 @@ function getServerSnapshot(): ThemePreference {
 }
 
 /**
- * <html>要素にdata-theme属性を設定/削除してテーマを適用する。
- * "system"の場合はdata-theme属性を削除し、globals.cssのprefers-color-scheme
- * メディアクエリにOSの設定を委ねる。
+ * <html>要素にdata-theme属性を設定してテーマを適用する。
+ *
+ * 2026-08-30変更: 以前は"system"の場合data-theme属性を削除し、globals.cssの
+ * prefers-color-schemeメディアクエリにOSの設定を委ねていたが、Tailwindの
+ * dark:バリアントはdata-theme属性でしか判定できない（globals.cssの
+ * @custom-variant dark参照）ため、"system"であっても常にOSの現在値を解決して
+ * data-theme属性に明示的に反映する。
  */
 function applyTheme(preference: ThemePreference) {
   if (typeof document === "undefined") return;
-
-  const root = document.documentElement;
-  if (preference === "system") {
-    root.removeAttribute("data-theme");
-  } else {
-    root.setAttribute("data-theme", resolveTheme(preference));
-  }
+  document.documentElement.setAttribute("data-theme", resolveTheme(preference));
 }
 
 /**
@@ -69,6 +67,19 @@ export function ThemeToggle() {
     applyTheme(preference);
   }, [preference]);
 
+  // "system"選択中は、OS側のprefers-color-scheme変更をライブに追従させる
+  // （data-theme属性は常に明示値なので、これを行わないと選択中にOSの設定を
+  // 変えてもページを再読み込みするまで反映されなくなる）。
+  useEffect(() => {
+    if (preference !== "system" || typeof window === "undefined" || typeof window.matchMedia !== "function") {
+      return;
+    }
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => applyTheme("system");
+    mql.addEventListener("change", handleChange);
+    return () => mql.removeEventListener("change", handleChange);
+  }, [preference]);
+
   function handleSelect(next: ThemePreference) {
     setThemePreference(next);
     notifyListeners();
@@ -78,7 +89,7 @@ export function ThemeToggle() {
     <div
       role="radiogroup"
       aria-label="表示テーマ"
-      className="inline-flex rounded-md border border-stone-300 p-1 gap-1"
+      className="inline-flex rounded-md border border-border p-1 gap-1"
     >
       {OPTIONS.map((opt) => {
         const selected = preference === opt.value;
@@ -91,8 +102,8 @@ export function ThemeToggle() {
             onClick={() => handleSelect(opt.value)}
             className={`text-sm px-3 py-1.5 rounded transition-colors ${
               selected
-                ? "bg-stone-900 text-white"
-                : "text-stone-600 hover:bg-stone-100"
+                ? "bg-accent text-white"
+                : "text-muted-foreground hover:bg-surface"
             }`}
           >
             {opt.label}

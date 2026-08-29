@@ -133,28 +133,28 @@ export default function NotificationsPage() {
   );
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500 dark:text-stone-400">週次アクティビティダイジェスト（プレビュー）</div>
+          <div className="text-xs text-muted-foreground">週次アクティビティダイジェスト（プレビュー）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">週次アクティビティダイジェスト</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             AIカテゴライズのレビュー待ち・申告期限・銀行残高の未突合状況を1週間分にまとめたダイジェストの下書きです。
             実際のメール配信は行わず、送信内容として組み立てられる構造化データをこの画面で確認できます。
           </p>
         </section>
 
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5 flex flex-col gap-4">
+        <section className="border border-border bg-surface rounded-md p-5 flex flex-col gap-4">
           <div>
-            <div className="text-xs text-stone-500 dark:text-stone-400 mb-2">事業形態（申告期限の計算に使用）</div>
+            <div className="text-xs text-muted-foreground mb-2">事業形態（申告期限の計算に使用）</div>
             <div className="flex gap-2">
               {(
                 [
@@ -168,8 +168,8 @@ export default function NotificationsPage() {
                   onClick={() => setEntityType(opt.key)}
                   className={`text-sm px-4 py-2 border transition-colors ${
                     entityType === opt.key
-                      ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                      : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                      ? "bg-accent border-accent text-white"
+                      : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                   }`}
                 >
                   {opt.label}
@@ -179,12 +179,12 @@ export default function NotificationsPage() {
           </div>
 
           {entityType === "corporate" && (
-            <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400 w-44">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground w-44">
               決算月
               <select
                 value={fiscalYearEndMonth}
                 onChange={(e) => setFiscalYearEndMonth(Number(e.target.value))}
-                className="border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
               >
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
                   <option key={m} value={m}>
@@ -195,7 +195,7 @@ export default function NotificationsPage() {
             </label>
           )}
 
-          <div className="flex flex-col gap-2 text-sm text-stone-600 dark:text-stone-300 border-t border-stone-100 dark:border-stone-800 pt-4">
+          <div className="flex flex-col gap-2 text-sm text-muted-foreground border-t border-border/60 pt-4">
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
@@ -206,7 +206,7 @@ export default function NotificationsPage() {
                 ? "サンプルのレビュー待ち取引を含める（AIカテゴライズの低信頼エスカレーション）"
                 : "記帳された実データのレビュー待ち取引を含める（AIカテゴライズの低信頼エスカレーション）"}
             </label>
-            <p className="text-xs text-stone-400 dark:text-stone-500 pl-6 -mt-1">
+            <p className="text-xs text-muted-foreground pl-6 -mt-1">
               {isSampleData
                 ? "現在は取引データもサンプルデータを表示しています。"
                 : "記帳された実データ（当期の取引）を表示しています。"}
@@ -229,14 +229,14 @@ export default function NotificationsPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-2">通知の詳細設定</h2>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mb-3">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl mb-3">
             ダイジェストの配信頻度と、通知を控えたい静音時間帯（クワイエットアワー）をこの端末に保存できます。
           </p>
           <NotificationPreferencesForm />
         </section>
 
-        <section className="border-t border-stone-300 dark:border-stone-700 pt-6">
-          <p className="text-xs text-stone-400 dark:text-stone-500 leading-relaxed max-w-2xl">
+        <section className="border-t border-border pt-6">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             本ページは開発中のプロトタイプです。
             {isSampleData
               ? "レビュー待ち取引はサンプルデータを表示しています。"

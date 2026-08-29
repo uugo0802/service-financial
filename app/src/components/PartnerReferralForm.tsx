@@ -56,7 +56,7 @@ export function PartnerReferralForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
-        <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1" htmlFor="partner-name">
+        <label className="block text-xs text-muted-foreground mb-1" htmlFor="partner-name">
           お名前・法人名
         </label>
         <input
@@ -64,7 +64,7 @@ export function PartnerReferralForm() {
           type="text"
           value={values.name}
           onChange={(e) => update("name", e.target.value)}
-          className="w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-4 py-3 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-300"
+          className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           aria-invalid={!!errors.name}
         />
         <FieldError message={errors.name} />
@@ -72,7 +72,7 @@ export function PartnerReferralForm() {
 
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
-          <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1" htmlFor="partner-email">
+          <label className="block text-xs text-muted-foreground mb-1" htmlFor="partner-email">
             メールアドレス
           </label>
           <input
@@ -80,13 +80,13 @@ export function PartnerReferralForm() {
             type="email"
             value={values.email}
             onChange={(e) => update("email", e.target.value)}
-            className="w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-4 py-3 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-300"
+            className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
             aria-invalid={!!errors.email}
           />
           <FieldError message={errors.email} />
         </div>
         <div>
-          <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1" htmlFor="partner-phone">
+          <label className="block text-xs text-muted-foreground mb-1" htmlFor="partner-phone">
             電話番号（任意）
           </label>
           <input
@@ -95,7 +95,7 @@ export function PartnerReferralForm() {
             value={values.phone}
             onChange={(e) => update("phone", e.target.value)}
             placeholder="090-1234-5678"
-            className="w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-4 py-3 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-300"
+            className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
             aria-invalid={!!errors.phone}
           />
           <FieldError message={errors.phone} />
@@ -103,7 +103,7 @@ export function PartnerReferralForm() {
       </div>
 
       <div>
-        <div className="text-xs text-stone-500 dark:text-stone-400 mb-2">事業形態</div>
+        <div className="text-xs text-muted-foreground mb-2">事業形態</div>
         <div className="flex gap-3">
           <button
             type="button"
@@ -111,8 +111,8 @@ export function PartnerReferralForm() {
             onClick={() => update("entityType", "individual")}
             className={`text-sm px-4 py-2 border transition-colors ${
               values.entityType === "individual"
-                ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-50 dark:border-stone-50 dark:text-stone-900"
-                : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-400 hover:border-stone-600 dark:hover:border-stone-300"
+                ? "bg-accent border-accent text-white"
+                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
             }`}
           >
             フリーランス・個人事業主
@@ -123,8 +123,8 @@ export function PartnerReferralForm() {
             onClick={() => update("entityType", "corp")}
             className={`text-sm px-4 py-2 border transition-colors ${
               values.entityType === "corp"
-                ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-50 dark:border-stone-50 dark:text-stone-900"
-                : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-400 hover:border-stone-600 dark:hover:border-stone-300"
+                ? "bg-accent border-accent text-white"
+                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
             }`}
           >
             マイクロ法人
@@ -133,14 +133,14 @@ export function PartnerReferralForm() {
       </div>
 
       <div>
-        <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1" htmlFor="partner-category">
+        <label className="block text-xs text-muted-foreground mb-1" htmlFor="partner-category">
           ご興味のあるカテゴリ
         </label>
         <select
           id="partner-category"
           value={values.category}
           onChange={(e) => update("category", e.target.value as PartnerReferralFormValues["category"])}
-          className="w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-4 py-3 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-300"
+          className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           aria-invalid={!!errors.category}
         >
           <option value="">選択してください</option>
@@ -154,7 +154,7 @@ export function PartnerReferralForm() {
       </div>
 
       <div>
-        <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1" htmlFor="partner-message">
+        <label className="block text-xs text-muted-foreground mb-1" htmlFor="partner-message">
           ご相談内容の詳細
         </label>
         <textarea
@@ -163,14 +163,14 @@ export function PartnerReferralForm() {
           value={values.message}
           onChange={(e) => update("message", e.target.value)}
           placeholder="現在の状況や、提携先に確認してほしいことなどをできるだけ具体的にご記入ください。"
-          className="w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-4 py-3 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-300"
+          className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           aria-invalid={!!errors.message}
         />
         <FieldError message={errors.message} />
       </div>
 
       <div>
-        <label className="flex items-start gap-2 text-sm text-stone-700 dark:text-stone-300">
+        <label className="flex items-start gap-2 text-sm text-foreground">
           <input
             type="checkbox"
             checked={values.consent}
@@ -191,8 +191,8 @@ export function PartnerReferralForm() {
         disabled={submitting}
         className={`self-start text-sm px-6 py-3 border transition-colors ${
           submitting
-            ? "border-stone-300 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-600 cursor-not-allowed"
-            : "border-stone-900 dark:border-stone-50 bg-stone-900 dark:bg-stone-50 text-white dark:text-stone-900 hover:bg-stone-700 dark:hover:bg-stone-300"
+            ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+            : "border-stone-900 dark:border-stone-50 bg-stone-900 dark:bg-stone-50 text-white dark:text-foreground hover:bg-stone-700 dark:hover:bg-stone-300"
         }`}
       >
         {submitting ? "送信中…" : "提携先への紹介を申し込む"}

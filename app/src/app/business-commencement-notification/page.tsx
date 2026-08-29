@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function BusinessCommencementNotificationPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen print:bg-white">
-      <header className="border-b border-stone-300 bg-white print:hidden">
+    <div className="bg-background text-foreground min-h-screen print:bg-white">
+      <header className="border-b border-border bg-surface print:hidden">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 個人事業の開業届（下書き作成）</div>
+          <div className="text-xs text-muted-foreground">MVP — 個人事業の開業届（下書き作成）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8 print:px-0 print:py-0">
         <section className="print:hidden">
           <h1 className="text-2xl font-semibold mb-2">個人事業の開業届（下書き作成）</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             これから事業を開始するフリーランス・個人事業主が、提出先税務署・提出者情報・開業日・事業の概要・
             給与等の支払の状況（従業員を雇うかどうか）・青色申告承認申請書の同時提出有無を入力すると、
             「個人事業の開業・廃業等届出書」（開業の場合）の下書きデータのプレビューを表示します。廃業届や、

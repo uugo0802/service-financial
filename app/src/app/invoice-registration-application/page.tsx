@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function InvoiceRegistrationApplicationPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 適格請求書発行事業者の登録申請書（下書き作成）</div>
+          <div className="text-xs text-muted-foreground">MVP — 適格請求書発行事業者の登録申請書（下書き作成）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">適格請求書発行事業者の登録申請書（下書き作成）</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             まだインボイス登録番号（適格請求書発行事業者の登録番号）を取得していない方が、事業者区分・氏名又は名称・
             納税地・提出先税務署・免税事業者からの選択の有無・登録希望日を入力すると、登録申請書の下書きデータの
             プレビューを表示します。既に取得済みの登録番号の形式チェックは、別ツール（インボイス登録番号バリデーター）

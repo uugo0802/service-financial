@@ -36,7 +36,7 @@ export function TaxEstimateExplanationPanel({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="inline-flex items-center gap-1 text-stone-500 hover:text-stone-700 transition-colors"
+        className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
       >
         <span aria-hidden="true" className="inline-block w-3">
           {open ? "▾" : "▸"}
@@ -51,26 +51,26 @@ export function TaxEstimateExplanationPanel({
                 <span
                   aria-hidden="true"
                   className={`mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold ${
-                    step.isFinal ? "bg-stone-800 text-white" : "bg-stone-200 text-stone-600"
+                    step.isFinal ? "bg-accent text-white" : "bg-surface text-muted-foreground"
                   }`}
                 >
                   {i + 1}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">
-                    <span className={`font-semibold ${step.isFinal ? "text-stone-900" : "text-stone-600"}`}>{step.label}</span>
+                    <span className={`font-semibold ${step.isFinal ? "text-foreground" : "text-muted-foreground"}`}>{step.label}</span>
                     {step.amount !== null && (
-                      <span className={`tabular-nums whitespace-nowrap ${step.isFinal ? "font-semibold text-stone-900" : "text-stone-500"}`}>
+                      <span className={`tabular-nums whitespace-nowrap ${step.isFinal ? "font-semibold text-foreground" : "text-muted-foreground"}`}>
                         {yenFormatter.format(step.amount)}円
                       </span>
                     )}
                   </div>
-                  <p className="text-stone-500 leading-relaxed mt-0.5">{step.detail}</p>
+                  <p className="text-muted-foreground leading-relaxed mt-0.5">{step.detail}</p>
                 </div>
               </li>
             ))}
           </ol>
-          <p className="mt-3 pt-2 border-t border-stone-200 text-stone-400 leading-relaxed">
+          <p className="mt-3 pt-2 border-t border-stone-200 text-muted-foreground leading-relaxed">
             これは、入力データから本アプリがこの試算をどのように計算したかの過程を機械的に表示したものであり、個別の税務相談や節税のご提案ではありません。実際の申告にあたっては、必ずご自身（または税理士）でご確認ください。
           </p>
         </div>

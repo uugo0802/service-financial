@@ -49,29 +49,29 @@ export default function RemindersPage() {
   const reminders = useMemo(() => getDeadlineReminders(tasks, asOf), [tasks, asOf]);
 
   const inputClass =
-    "w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-400";
-  const labelClass = "flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400";
+    "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+  const labelClass = "flex flex-col gap-1 text-xs text-muted-foreground";
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500 dark:text-stone-400">申告期限・タスクリマインダー</div>
+          <div className="text-xs text-muted-foreground">申告期限・タスクリマインダー</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">申告期限・タスクリマインダー</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             個人事業主・マイクロ法人それぞれの申告期限をもとに、次にやるべきタスクと期限までの日数を表示します。
           </p>
         </section>
 
-        <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-5 flex flex-col gap-4">
+        <section className="border border-border bg-surface rounded-md p-5 flex flex-col gap-4">
           <div className="flex gap-2">
             {(
               [
@@ -85,8 +85,8 @@ export default function RemindersPage() {
                 onClick={() => setMode(opt.key)}
                 className={`text-sm px-4 py-2 border transition-colors ${
                   mode === opt.key
-                    ? "bg-stone-900 border-stone-900 text-white dark:bg-stone-100 dark:border-stone-100 dark:text-stone-900"
-                    : "bg-white dark:bg-stone-900 border-stone-400 dark:border-stone-600 text-stone-600 dark:text-stone-300 hover:border-stone-600 dark:hover:border-stone-400"
+                    ? "bg-accent border-accent text-white"
+                    : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
                 }`}
               >
                 {opt.label}
@@ -105,7 +105,7 @@ export default function RemindersPage() {
                   className={inputClass}
                 />
               </label>
-              <label className="flex items-end gap-2 text-sm text-stone-600 dark:text-stone-300 pb-2">
+              <label className="flex items-end gap-2 text-sm text-muted-foreground pb-2">
                 <input
                   type="checkbox"
                   checked={isInvoiceRegistered}

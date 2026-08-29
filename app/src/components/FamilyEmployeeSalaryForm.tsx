@@ -15,8 +15,8 @@ import { calculateFamilyEmployeeSalary, FamilyEmployeeSalaryResult } from "@/lib
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 export function FamilyEmployeeSalaryForm() {
   const [declaredMaxAmount, setDeclaredMaxAmount] = useState("");
@@ -53,7 +53,7 @@ export function FamilyEmployeeSalaryForm() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="fes-tax-year">
             対象の年（西暦）
@@ -113,9 +113,9 @@ export function FamilyEmployeeSalaryForm() {
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-stone-600 mb-2">専従者要件（該当するものにチェック）</div>
+          <div className="text-xs font-semibold text-muted-foreground mb-2">専従者要件（該当するものにチェック）</div>
           <div className="flex flex-col gap-2">
-            <label className="flex items-start gap-2 text-sm text-stone-700">
+            <label className="flex items-start gap-2 text-sm text-foreground">
               <input
                 type="checkbox"
                 checked={cohabiting}
@@ -124,7 +124,7 @@ export function FamilyEmployeeSalaryForm() {
               />
               <span>事業主と生計を一にする配偶者その他の親族である（生計を一にする）</span>
             </label>
-            <label className="flex items-start gap-2 text-sm text-stone-700">
+            <label className="flex items-start gap-2 text-sm text-foreground">
               <input
                 type="checkbox"
                 checked={primarilyEngaged}
@@ -143,28 +143,28 @@ export function FamilyEmployeeSalaryForm() {
         <h2 className="text-lg font-semibold mb-3">判定結果</h2>
         {result ? (
           <div className="flex flex-col gap-6">
-            <div className="border border-stone-300 bg-white p-4 flex flex-col gap-2">
-              <div className="flex justify-between text-sm text-stone-600">
+            <div className="border border-border bg-surface p-4 flex flex-col gap-2">
+              <div className="flex justify-between text-sm text-muted-foreground">
                 <span>専従者要件の判定</span>
                 <span className={`font-semibold ${result.eligible ? "text-emerald-700" : "text-red-700"}`}>
                   {result.eligible ? "要件を満たす（該当する可能性が高い）" : "要件を満たさない可能性があります"}
                 </span>
               </div>
-              <div className="flex justify-between text-sm text-stone-600">
+              <div className="flex justify-between text-sm text-muted-foreground">
                 <span>届出書の上限額を超えているか</span>
-                <span className={`font-semibold ${result.exceedsDeclaredCap ? "text-red-700" : "text-stone-700"}`}>
+                <span className={`font-semibold ${result.exceedsDeclaredCap ? "text-red-700" : "text-foreground"}`}>
                   {result.exceedsDeclaredCap ? "超えています" : "超えていません"}
                 </span>
               </div>
-              <div className="flex justify-between text-base font-semibold border-t border-stone-200 pt-2">
+              <div className="flex justify-between text-base font-semibold border-t border-border pt-2">
                 <span>必要経費に算入できる金額（概算）</span>
                 <span className="tabular-nums">{yen.format(result.deductibleAmount)}円</span>
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold text-stone-700 mb-2">専従者要件チェックリスト</h3>
-              <ul className="border border-stone-300 bg-white divide-y divide-stone-200">
+              <h3 className="text-sm font-semibold text-foreground mb-2">専従者要件チェックリスト</h3>
+              <ul className="border border-border bg-surface divide-y divide-border">
                 {result.eligibilityChecklist.map((c) => (
                   <li key={c.key} className="flex items-start gap-3 p-3">
                     <span
@@ -177,7 +177,7 @@ export function FamilyEmployeeSalaryForm() {
                     </span>
                     <div className="text-sm">
                       <div className="text-stone-800">{c.label}</div>
-                      <div className="text-xs text-stone-500 mt-0.5">{c.description}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">{c.description}</div>
                     </div>
                   </li>
                 ))}
@@ -197,8 +197,8 @@ export function FamilyEmployeeSalaryForm() {
 
             {result.notes.length > 0 && (
               <div>
-                <h3 className="text-sm font-semibold text-stone-600 mb-2">参考情報</h3>
-                <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2">参考情報</h3>
+                <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                   {result.notes.map((n) => (
                     <li key={n}>{n}</li>
                   ))}
@@ -207,7 +207,7 @@ export function FamilyEmployeeSalaryForm() {
             )}
           </div>
         ) : (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted-foreground">
             届出書に記載した給与の上限額・実際に支払った給与の額・専従者の生年月日を入力すると、
             必要経費に算入できる金額の目安と、専従者要件のチェックリストを表示します。
           </p>

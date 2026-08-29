@@ -216,27 +216,27 @@ function AmountText({ amount }: { amount: number }) {
   return (
     <span
       className={
-        amount < 0 ? "text-stone-700 dark:text-stone-200 tabular-nums" : "text-emerald-700 dark:text-emerald-400 tabular-nums"
+        amount < 0 ? "text-foreground tabular-nums" : "text-emerald-700 dark:text-emerald-400 tabular-nums"
       }
     >
       {yen.format(amount)}
-      <span className="text-xs text-stone-400 dark:text-stone-500"> 円</span>
+      <span className="text-xs text-muted-foreground"> 円</span>
     </span>
   );
 }
 
 function TransactionResultRow({ result }: { result: TransactionSearchResult }) {
   return (
-    <li className="border-b border-stone-100 last:border-0 dark:border-stone-800">
+    <li className="border-b border-border/60 last:border-0">
       <Link
         href={result.href}
-        className="flex flex-col gap-1 px-4 py-3 hover:bg-stone-50 transition-colors dark:hover:bg-stone-800 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+        className="flex flex-col gap-1 px-4 py-3 hover:bg-surface transition-colors sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
       >
         <span className="flex flex-col">
-          <span className="text-sm text-stone-900 dark:text-stone-50">{result.title}</span>
-          {result.subtitle && <span className="text-xs text-stone-500 dark:text-stone-400">{result.subtitle}</span>}
+          <span className="text-sm text-foreground">{result.title}</span>
+          {result.subtitle && <span className="text-xs text-muted-foreground">{result.subtitle}</span>}
         </span>
-        <span className="flex items-baseline gap-3 text-xs text-stone-500 dark:text-stone-400 whitespace-nowrap">
+        <span className="flex items-baseline gap-3 text-xs text-muted-foreground whitespace-nowrap">
           <span className="tabular-nums">{result.sortDate}</span>
           <AmountText amount={result.amount} />
         </span>
@@ -247,19 +247,19 @@ function TransactionResultRow({ result }: { result: TransactionSearchResult }) {
 
 function DocumentResultRow({ result }: { result: DocumentSearchResultItem }) {
   return (
-    <li className="border-b border-stone-100 last:border-0 dark:border-stone-800">
+    <li className="border-b border-border/60 last:border-0">
       <Link
         href={result.href}
-        className="flex flex-col gap-1 px-4 py-3 hover:bg-stone-50 transition-colors dark:hover:bg-stone-800 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+        className="flex flex-col gap-1 px-4 py-3 hover:bg-surface transition-colors sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
       >
         <span className="flex flex-col">
-          <span className="text-sm text-stone-900 dark:text-stone-50">{result.title}</span>
-          <span className="text-xs text-stone-500 dark:text-stone-400">
+          <span className="text-sm text-foreground">{result.title}</span>
+          <span className="text-xs text-muted-foreground">
             {result.subtitle && <>{result.subtitle} ／ </>}
             {result.fileName}
           </span>
         </span>
-        <span className="flex items-baseline gap-3 text-xs text-stone-500 dark:text-stone-400 whitespace-nowrap">
+        <span className="flex items-baseline gap-3 text-xs text-muted-foreground whitespace-nowrap">
           <span className="tabular-nums">{result.sortDate}</span>
           <AmountText amount={result.amount} />
         </span>
@@ -270,14 +270,14 @@ function DocumentResultRow({ result }: { result: DocumentSearchResultItem }) {
 
 function ClientResultRow({ result }: { result: ClientSearchResult }) {
   return (
-    <li className="border-b border-stone-100 last:border-0 dark:border-stone-800">
+    <li className="border-b border-border/60 last:border-0">
       <Link
         href={result.href}
-        className="flex flex-col gap-1 px-4 py-3 hover:bg-stone-50 transition-colors dark:hover:bg-stone-800 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+        className="flex flex-col gap-1 px-4 py-3 hover:bg-surface transition-colors sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
       >
         <span className="flex flex-col">
-          <span className="text-sm text-stone-900 dark:text-stone-50">{result.title}</span>
-          {result.subtitle && <span className="text-xs text-stone-500 dark:text-stone-400">{result.subtitle}</span>}
+          <span className="text-sm text-foreground">{result.title}</span>
+          {result.subtitle && <span className="text-xs text-muted-foreground">{result.subtitle}</span>}
         </span>
       </Link>
     </li>
@@ -286,16 +286,16 @@ function ClientResultRow({ result }: { result: ClientSearchResult }) {
 
 function InvoiceResultRow({ result }: { result: InvoiceSearchResult }) {
   return (
-    <li className="border-b border-stone-100 last:border-0 dark:border-stone-800">
+    <li className="border-b border-border/60 last:border-0">
       <Link
         href={result.href}
-        className="flex flex-col gap-1 px-4 py-3 hover:bg-stone-50 transition-colors dark:hover:bg-stone-800 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+        className="flex flex-col gap-1 px-4 py-3 hover:bg-surface transition-colors sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
       >
         <span className="flex flex-col">
-          <span className="text-sm text-stone-900 dark:text-stone-50">{result.title}</span>
-          {result.subtitle && <span className="text-xs text-stone-500 dark:text-stone-400">{result.subtitle}</span>}
+          <span className="text-sm text-foreground">{result.title}</span>
+          {result.subtitle && <span className="text-xs text-muted-foreground">{result.subtitle}</span>}
         </span>
-        <span className="flex items-baseline gap-3 text-xs text-stone-500 dark:text-stone-400 whitespace-nowrap">
+        <span className="flex items-baseline gap-3 text-xs text-muted-foreground whitespace-nowrap">
           <span className="tabular-nums">{result.sortDate}</span>
           <AmountText amount={result.amount} />
         </span>
@@ -374,20 +374,20 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-950 text-stone-900 dark:text-stone-50 min-h-screen">
-      <header className="border-b border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500 dark:text-stone-400">横断検索</div>
+          <div className="text-xs text-muted-foreground">横断検索</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">取引・証憑・取引先・請求書を横断検索する</h1>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             1つのキーワードで、取引明細・証憑（レシート・請求書）・取引先マスタ・発行済み請求書をまとめて検索します。
             より詳しい条件（日付・金額の範囲など）で絞り込みたい場合は、それぞれの検索画面（
             <Link href="/transactions" className="underline hover:no-underline">
@@ -411,17 +411,17 @@ export default function SearchPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="border border-stone-300 bg-white p-5 flex flex-col gap-4 dark:border-stone-700 dark:bg-stone-900"
+          className="border border-border bg-surface p-5 flex flex-col gap-4"
           noValidate
         >
-          <label className="flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             キーワード
             <input
               type="text"
               placeholder="例: 〇〇不動産、A社案件、Amazon など"
               value={queryInput}
               onChange={(e) => setQueryInput(e.target.value)}
-              className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600 dark:border-stone-600 dark:bg-stone-900"
+              className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
               autoFocus
             />
           </label>
@@ -429,14 +429,14 @@ export default function SearchPage() {
           <div className="flex flex-wrap gap-3">
             <button
               type="submit"
-              className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-stone-300"
+              className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
             >
               検索
             </button>
             <button
               type="button"
               onClick={handleClear}
-              className="text-sm px-5 py-2.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors dark:border-stone-600 dark:bg-stone-900 dark:hover:border-stone-400"
+              className="text-sm px-5 py-2.5 border border-border bg-surface hover:border-foreground/40 transition-colors"
             >
               条件をクリア
             </button>
@@ -444,14 +444,14 @@ export default function SearchPage() {
         </form>
 
         {!hasSearched ? (
-          <p className="text-sm text-stone-500 dark:text-stone-400 border border-dashed border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-6 text-center">
+          <p className="text-sm text-muted-foreground border border-dashed border-border bg-surface px-4 py-6 text-center">
             キーワードを入力して検索してください。
           </p>
         ) : (
           <div className="flex flex-col gap-8">
-            <h2 className="text-sm text-stone-500 dark:text-stone-400">
-              検索結果 <span className="font-medium text-stone-700 dark:text-stone-200">{results.length}件</span>
-              <span className="text-stone-400 dark:text-stone-500">
+            <h2 className="text-sm text-muted-foreground">
+              検索結果 <span className="font-medium text-foreground">{results.length}件</span>
+              <span className="text-muted-foreground">
                 {" "}
                 （取引{grouped.transaction.length}件・証憑{grouped.document.length}件・取引先{grouped.client.length}件・請求書
                 {grouped.invoice.length}件）
@@ -459,7 +459,7 @@ export default function SearchPage() {
             </h2>
 
             {results.length === 0 ? (
-              <p className="text-sm text-stone-500 dark:text-stone-400 border border-dashed border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 px-4 py-6 text-center">
+              <p className="text-sm text-muted-foreground border border-dashed border-border bg-surface px-4 py-6 text-center">
                 「{query}」に一致する取引・証憑・取引先・請求書が見つかりませんでした。キーワードを見直してください。
               </p>
             ) : (
@@ -467,15 +467,15 @@ export default function SearchPage() {
                 const items = grouped[section.kind];
                 return (
                   <section key={section.kind} className="flex flex-col gap-3">
-                    <h3 className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-400">
-                      {section.label} <span className="text-stone-400 dark:text-stone-500">（{items.length}件）</span>
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {section.label} <span className="text-muted-foreground">（{items.length}件）</span>
                     </h3>
                     {items.length === 0 ? (
-                      <p className="text-sm text-stone-400 dark:text-stone-500 px-4 py-3 border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900">
+                      <p className="text-sm text-muted-foreground px-4 py-3 border border-border bg-surface">
                         {section.emptyMessage}
                       </p>
                     ) : (
-                      <ul className="border border-stone-300 bg-white dark:border-stone-700 dark:bg-stone-900">
+                      <ul className="border border-border bg-surface">
                         {section.kind === "transaction" &&
                           grouped.transaction.map((result) => <TransactionResultRow key={result.id} result={result} />)}
                         {section.kind === "document" &&
@@ -494,8 +494,8 @@ export default function SearchPage() {
         )}
       </PageContainer>
 
-      <footer className="border-t border-stone-300 bg-white mt-4 dark:border-stone-700 dark:bg-stone-900">
-        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
+      <footer className="border-t border-border bg-surface mt-4">
+        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される内容は記帳データ・証憑データ・取引先データ・請求書データの下書き・概算シミュレーションです。個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
           取引・証憑はサンプルデータです。取引先は

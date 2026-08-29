@@ -154,7 +154,7 @@ export function BulkCsvJournalImportForm() {
   }
 
   if (tenantState === "loading") {
-    return <p className="text-sm text-stone-500">読み込み中…</p>;
+    return <p className="text-sm text-muted-foreground">読み込み中…</p>;
   }
 
   if (tenantState === "unconfigured") {
@@ -166,13 +166,13 @@ export function BulkCsvJournalImportForm() {
   }
 
   if (tenantState === "unauthenticated") {
-    return <div className="border border-stone-300 bg-white text-sm p-4 text-stone-600">ログインすると過去のCSVをまとめて記帳できます。</div>;
+    return <div className="border border-border bg-surface text-sm p-4 text-muted-foreground">ログインすると過去のCSVをまとめて記帳できます。</div>;
   }
 
   const cashAccounts = accounts.filter((a) => a.account_type === "asset");
 
   return (
-    <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 p-5 flex flex-col gap-4">
+    <div className="border border-border bg-surface p-5 flex flex-col gap-4">
       <div className="max-w-sm">
         <AccountSelect
           label="記帳先の現金・預金勘定"
@@ -203,17 +203,17 @@ export function BulkCsvJournalImportForm() {
           />
         </label>
         {progress && (
-          <span className="ml-3 text-xs text-stone-500 dark:text-stone-400">
+          <span className="ml-3 text-xs text-muted-foreground">
             {progress.done}/{progress.total}ファイル処理済み
           </span>
         )}
       </div>
 
       {fileResults.length > 0 && (
-        <div className="text-xs text-stone-500 dark:text-stone-400 flex flex-col gap-1">
+        <div className="text-xs text-muted-foreground flex flex-col gap-1">
           {fileResults.map((r) => (
             <div key={r.fileName} className="flex items-baseline gap-2">
-              <span className="font-medium text-stone-700 dark:text-stone-300">{r.fileName}</span>
+              <span className="font-medium text-foreground">{r.fileName}</span>
               {r.error ? (
                 <span className="text-red-700 dark:text-red-400">{r.error}</span>
               ) : (
@@ -226,7 +226,7 @@ export function BulkCsvJournalImportForm() {
 
       {totalCount > 0 && (
         <>
-          <div className="text-xs text-stone-500 dark:text-stone-400 flex flex-wrap gap-x-6 gap-y-1">
+          <div className="text-xs text-muted-foreground flex flex-wrap gap-x-6 gap-y-1">
             <span>合計取込件数: {totalCount}件</span>
             <span>要確認: {needsReviewCount}件</span>
             {crossFileDuplicateIds.size > 0 && (
@@ -234,10 +234,10 @@ export function BulkCsvJournalImportForm() {
             )}
           </div>
 
-          <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 max-h-80 overflow-y-auto">
+          <div className="overflow-x-auto border border-border dark:border-stone-700 max-h-80 overflow-y-auto">
             <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-white dark:bg-stone-900">
-                <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+              <thead className="sticky top-0 bg-surface">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">日付</th>
                   <th className="px-3 py-2 font-normal">摘要</th>
                   <th className="px-3 py-2 font-normal text-right">金額</th>
@@ -251,7 +251,7 @@ export function BulkCsvJournalImportForm() {
                   return (
                     <tr
                       key={t.id}
-                      className={`border-b border-stone-100 dark:border-stone-800 last:border-0 ${needsReview ? "bg-red-50 dark:bg-red-950/30" : ""}`}
+                      className={`border-b border-border/60 last:border-0 ${needsReview ? "bg-red-50 dark:bg-red-950/30" : ""}`}
                     >
                       <td className="px-3 py-2 whitespace-nowrap tabular-nums">{t.date}</td>
                       <td className="px-3 py-2 max-w-xs truncate" title={t.description}>
@@ -262,7 +262,7 @@ export function BulkCsvJournalImportForm() {
                           </span>
                         )}
                       </td>
-                      <td className={`px-3 py-2 text-right whitespace-nowrap tabular-nums ${t.amount < 0 ? "text-stone-700 dark:text-stone-300" : "text-emerald-700 dark:text-emerald-400"}`}>
+                      <td className={`px-3 py-2 text-right whitespace-nowrap tabular-nums ${t.amount < 0 ? "text-foreground" : "text-emerald-700 dark:text-emerald-400"}`}>
                         {yen.format(t.amount)}
                       </td>
                       <td className="px-3 py-2">{t.account}</td>
@@ -285,13 +285,13 @@ export function BulkCsvJournalImportForm() {
               onClick={handleImport}
               className={`text-sm px-5 py-2.5 border transition-colors ${
                 !cashAccountId || importing || processing
-                  ? "border-stone-300 dark:border-stone-700 bg-stone-100 dark:bg-stone-800 text-stone-400 dark:text-stone-500 cursor-not-allowed"
-                  : "border-stone-900 dark:border-stone-100 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-700 dark:hover:bg-stone-300"
+                  ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                  : "border-accent bg-accent text-white hover:opacity-90"
               }`}
             >
               {importing ? "記帳中…" : `この内容で記帳する（${totalCount}件）`}
             </button>
-            {!cashAccountId && <span className="ml-3 text-xs text-stone-400 dark:text-stone-500">記帳先の現金・預金勘定を選択してください</span>}
+            {!cashAccountId && <span className="ml-3 text-xs text-muted-foreground">記帳先の現金・預金勘定を選択してください</span>}
             {importError && <span className="ml-3 text-xs text-red-700 dark:text-red-400">{importError}</span>}
             {importResult && (
               <span className="ml-3 text-xs text-emerald-700 dark:text-emerald-400">

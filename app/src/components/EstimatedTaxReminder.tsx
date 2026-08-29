@@ -20,7 +20,7 @@ const URGENCY_STYLES: Record<EstimatedTaxUrgency, { badge: string; card: string;
   },
   normal: {
     badge: "bg-emerald-700 text-white",
-    card: "border-stone-300 bg-white",
+    card: "border-border bg-surface",
     label: "余裕あり",
   },
 };
@@ -46,8 +46,8 @@ export function EstimatedTaxReminder({ maxItems, ...input }: EstimatedTaxReminde
 
   if (visible.length === 0) {
     return (
-      <div className="border border-stone-300 bg-white rounded-lg p-4">
-        <p className="text-sm text-stone-600">
+      <div className="border border-border bg-surface rounded-lg p-4">
+        <p className="text-sm text-muted-foreground">
           入力されている前年の確定申告に基づく所得税額・源泉徴収税額に基づくと、
           {result.taxYear}年分の予定納税は不要と見込まれます
           （予定納税基準額が15万円を超える場合に必要になります）。
@@ -61,7 +61,7 @@ export function EstimatedTaxReminder({ maxItems, ...input }: EstimatedTaxReminde
       {visible.map((installment) => (
         <InstallmentCard key={installment.id} installment={installment} />
       ))}
-      <p className="text-xs text-stone-400 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         表示している期日・金額は一般的な制度としきい値に基づく概算です（個別の税務相談ではありません）。
         各期の金額は予定納税基準額の3分の1として簡易計算しており、実際の金額は税務署から送付される
         「予定納税額の通知書」が優先されます。所得が前年より大きく減った場合などは「予定納税額の
@@ -81,17 +81,17 @@ function InstallmentCard({ installment }: { installment: EstimatedTaxInstallment
         <span className={`inline-block w-fit text-xs px-2 py-0.5 rounded-full font-medium ${style.badge}`}>
           {style.label}
         </span>
-        <span className="text-sm font-semibold text-stone-900">{installment.label}</span>
-        <span className="text-xs text-stone-600">
+        <span className="text-sm font-semibold text-foreground">{installment.label}</span>
+        <span className="text-xs text-muted-foreground">
           納付期間: {installment.periodStart} 〜 {installment.periodEnd}
         </span>
-        <span className="text-xs text-stone-500">期日: {installment.periodEnd}</span>
+        <span className="text-xs text-muted-foreground">期日: {installment.periodEnd}</span>
       </div>
       <div className="text-right">
-        <div className="text-2xl font-semibold tabular-nums text-stone-900">
+        <div className="text-2xl font-semibold tabular-nums text-foreground">
           {daysRemainingText(installment.daysRemaining)}
         </div>
-        <div className="text-sm tabular-nums text-stone-600">概算納付額: {formatYen(installment.amount)}</div>
+        <div className="text-sm tabular-nums text-muted-foreground">概算納付額: {formatYen(installment.amount)}</div>
       </div>
     </div>
   );

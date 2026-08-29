@@ -81,10 +81,10 @@ export function MileageAllocationCalculator() {
   return (
     <div className="flex flex-col gap-8">
       <form onSubmit={handleCalculate} className="flex flex-col gap-4">
-        <div className="overflow-x-auto border border-stone-300">
+        <div className="overflow-x-auto border border-border">
           <table className="w-full text-sm min-w-[640px]">
             <thead>
-              <tr className="bg-stone-100 text-left text-xs text-stone-500">
+              <tr className="bg-surface text-left text-xs text-muted-foreground">
                 <th className="px-3 py-2 font-normal">日付</th>
                 <th className="px-3 py-2 font-normal">目的・摘要</th>
                 <th className="px-3 py-2 font-normal">事業利用km</th>
@@ -94,14 +94,14 @@ export function MileageAllocationCalculator() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.id} className="border-t border-stone-200">
+                <tr key={row.id} className="border-t border-border">
                   <td className="px-3 py-2">
                     <input
                       type="date"
                       value={row.date}
                       onChange={(e) => updateRow(row.id, { date: e.target.value })}
                       aria-label="走行日"
-                      className="w-full border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+                      className="w-full border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -111,7 +111,7 @@ export function MileageAllocationCalculator() {
                       onChange={(e) => updateRow(row.id, { purpose: e.target.value })}
                       placeholder="例: 取引先訪問"
                       aria-label="目的・摘要"
-                      className="w-full border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+                      className="w-full border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -123,7 +123,7 @@ export function MileageAllocationCalculator() {
                       onChange={(e) => updateRow(row.id, { businessKmInput: e.target.value })}
                       placeholder="0"
                       aria-label="事業利用km"
-                      className="w-28 border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+                      className="w-28 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
                     />
                   </td>
                   <td className="px-3 py-2">
@@ -135,14 +135,14 @@ export function MileageAllocationCalculator() {
                       onChange={(e) => updateRow(row.id, { totalKmInput: e.target.value })}
                       placeholder="0"
                       aria-label="総走行km"
-                      className="w-28 border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+                      className="w-28 border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
                     />
                   </td>
                   <td className="px-3 py-2 text-right">
                     <button
                       type="button"
                       onClick={() => removeRow(row.id)}
-                      className="text-xs text-stone-500 hover:text-red-700"
+                      className="text-xs text-muted-foreground hover:text-red-700"
                     >
                       削除
                     </button>
@@ -157,14 +157,14 @@ export function MileageAllocationCalculator() {
           <button
             type="button"
             onClick={addRow}
-            className="text-sm px-4 py-2 border border-stone-400 text-stone-600 hover:border-stone-600"
+            className="text-sm px-4 py-2 border border-border text-muted-foreground hover:border-foreground/40"
           >
             行を追加
           </button>
         </div>
 
         <label className="flex flex-col gap-1 max-w-xs text-sm">
-          <span className="text-xs text-stone-500">車両費の年間支払額（税込・円）</span>
+          <span className="text-xs text-muted-foreground">車両費の年間支払額（税込・円）</span>
           <input
             type="number"
             min={0}
@@ -176,14 +176,14 @@ export function MileageAllocationCalculator() {
             }}
             placeholder="0"
             aria-label="車両費の年間支払額"
-            className="border border-stone-400 bg-white px-2 py-1.5 text-sm outline-none focus:border-stone-600"
+            className="border border-border bg-surface px-2 py-1.5 text-sm outline-none focus:border-foreground/40"
           />
         </label>
 
         <div>
           <button
             type="submit"
-            className="text-sm px-6 py-2 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+            className="text-sm px-6 py-2 border border-accent bg-accent text-white hover:opacity-90"
           >
             計算する
           </button>
@@ -197,40 +197,40 @@ export function MileageAllocationCalculator() {
           </h3>
 
           {result.aggregate.totalKm === 0 ? (
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-muted-foreground">
               総走行kmの合計が0のため、事業按分率を計算できません（0%として扱われます）。走行距離ログを入力してください。
             </p>
           ) : (
             <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm max-w-md">
-              <dt className="text-stone-500">事業利用km合計</dt>
+              <dt className="text-muted-foreground">事業利用km合計</dt>
               <dd>{result.aggregate.totalBusinessKm.toLocaleString("ja-JP")} km</dd>
-              <dt className="text-stone-500">総走行km合計</dt>
+              <dt className="text-muted-foreground">総走行km合計</dt>
               <dd>{result.aggregate.totalKm.toLocaleString("ja-JP")} km</dd>
-              <dt className="text-stone-500">算出された事業按分率</dt>
+              <dt className="text-muted-foreground">算出された事業按分率</dt>
               <dd>{formatPercent(result.aggregate.businessUsePercent)}</dd>
             </dl>
           )}
 
-          <div className="overflow-x-auto border border-stone-300">
+          <div className="overflow-x-auto border border-border">
             <table className="w-full text-sm min-w-[480px]">
               <thead>
-                <tr className="bg-stone-100 text-left text-xs text-stone-500">
+                <tr className="bg-surface text-left text-xs text-muted-foreground">
                   <th className="px-3 py-2 font-normal">車両費（支払額）</th>
                   <th className="px-3 py-2 font-normal">事業経費</th>
                   <th className="px-3 py-2 font-normal">家事関連費（対象外）</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-t border-stone-200">
+                <tr className="border-t border-border">
                   <td className="px-3 py-2">{formatYen(result.totalAmount)}</td>
                   <td className="px-3 py-2 font-medium">{formatYen(result.businessAmount)}</td>
-                  <td className="px-3 py-2 text-stone-500">{formatYen(result.personalAmount)}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{formatYen(result.personalAmount)}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <p className="text-xs text-stone-500 leading-relaxed">{result.generalNote}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{result.generalNote}</p>
         </section>
       )}
     </div>

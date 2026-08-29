@@ -100,7 +100,7 @@ export function AssetLifecycleAlertBanner({ assets, period, referenceDate, optio
       )}
 
       {hasFullyDepreciated && (
-        <div className="border border-stone-300 bg-stone-50 rounded-lg p-4 text-sm text-stone-700">
+        <div className="border border-stone-300 bg-stone-50 rounded-lg p-4 text-sm text-foreground">
           <p className="font-semibold">償却完了済みの資産があります</p>
           <ul className="mt-2 space-y-1">
             {alerts.fullyDepreciated.map((a) => (
@@ -114,7 +114,7 @@ export function AssetLifecycleAlertBanner({ assets, period, referenceDate, optio
         </div>
       )}
 
-      <p className="text-xs text-stone-400 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         表示している内容は、登録済みの資産・耐用年数に基づく一般的なルールの機械的な計算による概算・リマインダーであり、
         個別の税務相談ではありません。少額減価償却資産の年間上限判定は depreciation.ts の判定ロジックをそのまま用いています。
         正式な内容は必ずご自身（または税理士等の専門家）でご確認ください。

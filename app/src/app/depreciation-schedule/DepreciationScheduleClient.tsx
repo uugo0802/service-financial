@@ -132,7 +132,7 @@ export function DepreciationScheduleClient() {
 
   return (
     <>
-      <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed max-w-2xl -mt-2">
+      <p className="text-xs text-stone-500 leading-relaxed max-w-2xl -mt-2">
         {isSampleData
           ? `${SAMPLE_ENTITY_NAME}を想定したサンプルの固定資産データで別表十六（一）の下書きを表示しています。`
           : "固定資産台帳に登録された実データに基づいて別表十六（一）の下書きを表示しています。"}

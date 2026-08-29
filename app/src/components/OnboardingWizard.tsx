@@ -28,8 +28,8 @@ interface OnboardingWizardProps {
 }
 
 const inputClass =
-  "w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-stone-600 dark:focus:border-stone-300";
-const labelClass = "flex flex-col gap-1 text-xs text-stone-500 dark:text-stone-400";
+  "w-full border border-stone-400 dark:border-stone-600 bg-white dark:bg-stone-900 px-3 py-2 text-sm outline-none focus:border-foreground/40 dark:focus:border-stone-300";
+const labelClass = "flex flex-col gap-1 text-xs text-muted-foreground";
 const errorTextClass = "mt-1 text-xs text-red-700 dark:text-red-400";
 
 const FISCAL_MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -86,10 +86,10 @@ export function OnboardingWizard({ initialDraft, onComplete }: OnboardingWizardP
   }
 
   return (
-    <div className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 p-5">
+    <div className="border border-border bg-surface p-5">
       <div className="flex items-center justify-between gap-4 mb-1">
         <h3 className="text-sm font-semibold">初回設定ウィザード</h3>
-        <span className="text-xs text-stone-500 dark:text-stone-400 tabular-nums">{progressPercent}%</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{progressPercent}%</span>
       </div>
       <div className="h-1.5 bg-stone-100 dark:bg-stone-800 rounded-full overflow-hidden mb-4">
         <div
@@ -117,21 +117,21 @@ export function OnboardingWizard({ initialDraft, onComplete }: OnboardingWizardP
                 aria-current={active ? "step" : undefined}
                 className={`flex items-center gap-2 text-xs px-3 py-1.5 border rounded-full transition-colors ${
                   active
-                    ? "border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900"
+                    ? "border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-foreground"
                     : stepCompleted
                       ? "border-emerald-600 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 dark:border-emerald-500 dark:text-emerald-400 dark:bg-emerald-950"
                       : unlocked
-                        ? "border-stone-400 text-stone-600 hover:border-stone-600 dark:border-stone-600 dark:text-stone-300"
-                        : "border-stone-200 text-stone-300 cursor-not-allowed dark:border-stone-800 dark:text-stone-700"
+                        ? "border-stone-400 text-muted-foreground hover:border-foreground/40 dark:border-stone-600 dark:text-muted-foreground"
+                        : "border-stone-200 text-stone-300 cursor-not-allowed dark:border-stone-800 dark:text-foreground"
                 }`}
               >
                 <span
                   className={`w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[0.65rem] ${
                     active
-                      ? "bg-white text-stone-900 dark:bg-stone-900 dark:text-stone-100"
+                      ? "bg-white text-foreground dark:bg-stone-900 dark:text-stone-100"
                       : stepCompleted
                         ? "bg-emerald-600 text-white"
-                        : "bg-stone-200 text-stone-500 dark:bg-stone-700 dark:text-stone-300"
+                        : "bg-stone-200 text-muted-foreground dark:bg-stone-700 dark:text-muted-foreground"
                   }`}
                 >
                   {stepCompleted ? "✓" : stepNumber}
@@ -188,12 +188,12 @@ function StepPanel({
   return (
     <div className="border border-stone-200 dark:border-stone-700 p-4">
       <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-xs text-stone-400 dark:text-stone-500">
+        <span className="text-xs text-muted-foreground">
           ステップ {stepNumber} / {ONBOARDING_TOTAL_STEPS}
         </span>
         <h4 className="text-sm font-semibold">{definition.titleJa}</h4>
       </div>
-      <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed mb-4">{definition.descriptionJa}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-4">{definition.descriptionJa}</p>
 
       <div className="mb-4">
         {definition.id === "entityType" && (
@@ -246,13 +246,13 @@ function StepPanel({
               {errors.fiscalYearEndMonth && <span className={errorTextClass}>{errors.fiscalYearEndMonth}</span>}
             </label>
           ) : (
-            <p className="text-xs text-stone-500 dark:text-stone-400 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 px-3 py-2">
+            <p className="text-xs text-muted-foreground bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 px-3 py-2">
               個人事業主は暦年（1月〜12月）で確定するため、決算月の設定は不要です。
             </p>
           ))}
 
         {definition.id === "blueReturn" && (
-          <label className="flex items-start gap-2 text-sm text-stone-700 dark:text-stone-200">
+          <label className="flex items-start gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={draft.blueReturn}
@@ -261,7 +261,7 @@ function StepPanel({
             />
             <span>
               青色申告の承認を受けている
-              <span className="block text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+              <span className="block text-xs text-muted-foreground mt-0.5">
                 税額の概算シミュレーションにおける青色申告特別控除の適用有無に反映されます。
                 実際の税務署への届出・承認状況と異なる場合は、必ずご自身でご確認のうえ変更してください。
               </span>
@@ -287,14 +287,14 @@ function StepPanel({
           type="button"
           disabled={stepNumber === 1}
           onClick={onBack}
-          className="text-sm px-4 py-2 border border-stone-300 dark:border-stone-600 text-stone-500 dark:text-stone-400 disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-500 dark:hover:border-stone-400 transition-colors"
+          className="text-sm px-4 py-2 border border-stone-300 dark:border-stone-600 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-500 dark:hover:border-stone-400 transition-colors"
         >
           戻る
         </button>
         <button
           type="button"
           onClick={onNext}
-          className="text-sm px-4 py-2 border border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-stone-900 hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors"
+          className="text-sm px-4 py-2 border border-stone-900 bg-stone-900 text-white dark:border-stone-100 dark:bg-stone-100 dark:text-foreground hover:bg-stone-700 dark:hover:bg-stone-300 transition-colors"
         >
           {isLastStep ? "設定を確定する" : "次へ"}
         </button>
@@ -306,7 +306,7 @@ function StepPanel({
 function ReviewItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-stone-400 dark:text-stone-500">{label}</dt>
+      <dt className="text-xs text-muted-foreground">{label}</dt>
       <dd className="text-stone-800 dark:text-stone-100">{value}</dd>
     </div>
   );

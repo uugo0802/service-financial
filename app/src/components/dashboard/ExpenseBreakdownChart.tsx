@@ -122,7 +122,7 @@ export function ExpenseBreakdownChart({ breakdown, title }: { breakdown: Expense
                     y={y + BAR_HEIGHT / 2}
                     textAnchor="end"
                     dominantBaseline="middle"
-                    className="fill-stone-600 dark:fill-stone-300"
+                    className="fill-muted-foreground"
                     fontSize={11}
                   >
                     {truncateLabel(s.account)}
@@ -138,7 +138,7 @@ export function ExpenseBreakdownChart({ breakdown, title }: { breakdown: Expense
                     x={barEnd + 8}
                     y={y + BAR_HEIGHT / 2}
                     dominantBaseline="middle"
-                    className="fill-stone-500 dark:fill-stone-400"
+                    className="fill-muted-foreground"
                     fontSize={11}
                   >
                     {s.percent}%

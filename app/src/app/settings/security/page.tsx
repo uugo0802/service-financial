@@ -58,20 +58,20 @@ export default function SecuritySettingsPage() {
   }
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">セキュリティ設定</div>
+          <div className="text-xs text-muted-foreground">セキュリティ設定</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">二要素認証（2FA）</h1>
-          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             認証アプリ（Google Authenticator・1Password等）を使ったTOTPベースの二要素認証を設定・管理できます。
             記帳データや税務情報など機微な情報を取り扱うため、二要素認証の設定を推奨します。
           </p>
@@ -87,13 +87,13 @@ export default function SecuritySettingsPage() {
           <>
             <TwoFactorSetupForm onEnrolled={refresh} />
 
-            <section className="border border-stone-300 bg-white p-5 flex flex-col gap-3">
-              <h2 className="text-sm font-semibold text-stone-800">登録済みの認証アプリ</h2>
+            <section className="border border-border bg-surface p-5 flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-foreground">登録済みの認証アプリ</h2>
 
-              {loading && <p className="text-sm text-stone-500">読み込み中…</p>}
+              {loading && <p className="text-sm text-muted-foreground">読み込み中…</p>}
               {listError && <p className="text-sm text-red-700">{listError}</p>}
               {!loading && !listError && factors.length === 0 && (
-                <p className="text-sm text-stone-500">登録済みの二要素認証はありません。</p>
+                <p className="text-sm text-muted-foreground">登録済みの二要素認証はありません。</p>
               )}
 
               {factors.length > 0 && (
@@ -101,13 +101,13 @@ export default function SecuritySettingsPage() {
                   {factors.map((factor) => (
                     <li
                       key={factor.id}
-                      className="flex items-center justify-between border border-stone-200 px-3 py-2 text-sm"
+                      className="flex items-center justify-between border border-border px-3 py-2 text-sm"
                     >
                       <div className="flex items-baseline gap-2">
                         <span>{factor.friendlyName ?? factor.id}</span>
                         <span
                           className={`text-xs ${
-                            factor.status === "verified" ? "text-emerald-700" : "text-stone-400"
+                            factor.status === "verified" ? "text-emerald-700" : "text-muted-foreground"
                           }`}
                         >
                           {factor.status === "verified" ? "有効" : "未検証"}
@@ -117,7 +117,7 @@ export default function SecuritySettingsPage() {
                         type="button"
                         onClick={() => handleUnenroll(factor.id)}
                         disabled={removingId === factor.id}
-                        className="text-xs text-red-700 underline underline-offset-2 disabled:text-stone-400"
+                        className="text-xs text-red-700 underline underline-offset-2 disabled:text-muted-foreground"
                       >
                         {removingId === factor.id ? "解除中…" : "解除"}
                       </button>
@@ -129,7 +129,7 @@ export default function SecuritySettingsPage() {
           </>
         )}
 
-        <Link href="/settings" className="text-xs text-stone-500 underline underline-offset-2 self-start">
+        <Link href="/settings" className="text-xs text-muted-foreground underline underline-offset-2 self-start">
           ← 事業者設定に戻る
         </Link>
       </PageContainer>

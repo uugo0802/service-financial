@@ -32,29 +32,29 @@ export default function InterimPaymentPage() {
   );
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">中間申告・中間納付リマインダー</div>
+          <div className="text-xs text-muted-foreground">中間申告・中間納付リマインダー</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">中間申告・中間納付リマインダー</h1>
-          <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             前期（直前の事業年度）の確定法人税額・確定消費税額が一定額を超えるマイクロ法人は、
             決算だけでなく事業年度の途中でも「中間申告・中間納付」が必要になります。
             前期確定税額と当期の事業年度開始日を入力すると、今期の中間申告・中間納付の要否・期日・概算額を表示します。
           </p>
         </section>
 
-        <section className="border border-stone-300 bg-white rounded-lg p-5">
-          <h2 className="text-sm font-semibold mb-3 text-stone-700">なぜ中間申告・中間納付が重要か</h2>
-          <ul className="text-sm text-stone-600 leading-relaxed list-disc list-inside space-y-1">
+        <section className="border border-border bg-surface rounded-lg p-5">
+          <h2 className="text-sm font-semibold mb-3 text-foreground">なぜ中間申告・中間納付が重要か</h2>
+          <ul className="text-sm text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
             <li>
               対象になっているのに申告・納付を忘れると、延滞税がかかったり、決算時に一括で大きな金額を
               納める資金繰りの負担が発生したりします。
@@ -71,9 +71,9 @@ export default function InterimPaymentPage() {
         </section>
 
         <section>
-          <div className="text-xs text-stone-500 mb-4">前期の確定税額・当期の事業年度開始日を入力してください</div>
+          <div className="text-xs text-muted-foreground mb-4">前期の確定税額・当期の事業年度開始日を入力してください</div>
           <div className="flex flex-col gap-4 max-w-md">
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               前期確定法人税額（国税、地方法人税を含まない）
               <input
                 type="number"
@@ -81,11 +81,11 @@ export default function InterimPaymentPage() {
                 min={0}
                 value={priorYearCorporateTaxInput}
                 onChange={(e) => setPriorYearCorporateTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="例: 300000"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               前期確定消費税額（国税部分、地方消費税を除く）
               <input
                 type="number"
@@ -93,17 +93,17 @@ export default function InterimPaymentPage() {
                 min={0}
                 value={priorYearConsumptionTaxInput}
                 onChange={(e) => setPriorYearConsumptionTaxInput(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 placeholder="例: 600000"
               />
             </label>
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               当期の事業年度開始日
               <input
                 type="date"
                 value={fiscalYearStartDate}
                 onChange={(e) => setFiscalYearStartDate(e.target.value)}
-                className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
               />
             </label>
           </div>
@@ -113,7 +113,7 @@ export default function InterimPaymentPage() {
                 key={label}
                 type="button"
                 onClick={() => setFiscalYearStartDate(toDateInputValue(currentYear, i + 1))}
-                className="text-xs px-2 py-1 border border-stone-300 bg-white text-stone-500 hover:border-stone-500"
+                className="text-xs px-2 py-1 border border-border bg-surface text-muted-foreground hover:border-foreground/40"
               >
                 {label}開始
               </button>
@@ -132,10 +132,10 @@ export default function InterimPaymentPage() {
 
         <section>
           <h2 className="text-lg font-semibold mb-3">判定結果の内訳</h2>
-          <TableScrollArea innerClassName="border border-stone-300 bg-white">
+          <TableScrollArea innerClassName="border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">税目</th>
                   <th className="px-3 py-2 font-normal">前期確定税額</th>
                   <th className="px-3 py-2 font-normal">区分・しきい値</th>
@@ -143,12 +143,12 @@ export default function InterimPaymentPage() {
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-stone-100">
+                <tr className="border-b border-border/60">
                   <td className="px-3 py-2">法人税</td>
                   <td className="px-3 py-2 tabular-nums">
                     ¥{result.corporateTax.priorYearCorporateTax.toLocaleString("ja-JP")}
                   </td>
-                  <td className="px-3 py-2 text-stone-500">
+                  <td className="px-3 py-2 text-muted-foreground">
                     20万円超で必要（しきい値 ¥{result.corporateTax.thresholdAmount.toLocaleString("ja-JP")}）
                   </td>
                   <td className="px-3 py-2 text-right font-medium">
@@ -160,7 +160,7 @@ export default function InterimPaymentPage() {
                   <td className="px-3 py-2 tabular-nums">
                     ¥{result.consumptionTax.priorYearConsumptionTax.toLocaleString("ja-JP")}
                   </td>
-                  <td className="px-3 py-2 text-stone-500">
+                  <td className="px-3 py-2 text-muted-foreground">
                     48万円超400万円以下で年1回。400万円超はより頻繁（本ツールは年1回区分のみ計算）
                   </td>
                   <td className="px-3 py-2 text-right font-medium">
@@ -174,8 +174,8 @@ export default function InterimPaymentPage() {
           </TableScrollArea>
         </section>
 
-        <section className="border-t border-stone-300 pt-6">
-          <p className="text-xs text-stone-400 leading-relaxed max-w-2xl">
+        <section className="border-t border-border pt-6">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             本ページで表示される要否・期日・金額は、前期確定税額と一般的な制度上のしきい値・暦情報に基づく参考値であり、
             個別の税務相談・助言ではありません。中間納付額は前期確定税額の1/2という簡便な計算（予定申告方式、
             前期が12か月の事業年度であることを前提）であり、仮決算による中間申告や、消費税の年3回・年11回区分の

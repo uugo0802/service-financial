@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function FurusatoNozeiPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — ふるさと納税 上限額シミュレーター</div>
+          <div className="text-xs text-muted-foreground">MVP — ふるさと納税 上限額シミュレーター</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">ふるさと納税 上限額シミュレーター</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             ふるさと納税は、寄附額のうち2,000円を超える部分が所得税の還付・翌年度住民税の控除として
             戻ってくる制度ですが、住民税所得割額の20%という「特例控除」の上限があるため、これを
             超えて寄附すると自己負担が2,000円を超えてしまいます。所得税の課税所得金額と、配偶者控除・

@@ -6,10 +6,10 @@ import { legalDocuments } from "@/lib/legal/content";
 // ServiceWorkerRegister と同様にlayout.tsxへ差し込んでも既存UIへの影響は最小限に抑えられる。
 export function LegalFooterLinks() {
   return (
-    <footer className="border-t border-stone-300 bg-white print:hidden">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-stone-500">
+    <footer className="border-t border-border bg-surface print:hidden">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
         {legalDocuments.map((doc) => (
-          <Link key={doc.id} href={doc.path} className="hover:text-stone-700 hover:underline underline-offset-2">
+          <Link key={doc.id} href={doc.path} className="hover:text-foreground hover:underline underline-offset-2">
             {doc.title}
           </Link>
         ))}

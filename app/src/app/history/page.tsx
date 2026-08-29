@@ -57,8 +57,8 @@ export default function HistoryPage() {
   const archive = buildYearArchive(SAMPLE_FILING_HISTORY);
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
@@ -69,7 +69,7 @@ export default function HistoryPage() {
       <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <h1 className="font-serif text-2xl sm:text-3xl">過去の記帳・申告アーカイブ</h1>
-          <p className="text-stone-600 text-sm leading-relaxed max-w-2xl">
+          <p className="text-muted-foreground text-sm leading-relaxed max-w-2xl">
             これまでに記録された年度ごとの記帳・概算申告データを一覧で振り返ることができます。
             年を重ねるほど、ここに積み上がる記録があなた自身の経営の「履歴書」になります。
           </p>
@@ -79,7 +79,7 @@ export default function HistoryPage() {
 
         <div className="flex flex-col gap-3">
           <h2 className="font-serif text-lg">年度の確定・ロック</h2>
-          <p className="text-stone-600 text-xs leading-relaxed max-w-2xl">
+          <p className="text-muted-foreground text-xs leading-relaxed max-w-2xl">
             申告が完了した年度は「確定（ロック）」することで、その年度に属する仕訳の編集・削除を防止できます
             （電子帳簿保存法が求める「訂正・削除ができないシステムでの保存」への対応）。ロック解除には理由の入力が必要です。
           </p>
@@ -91,8 +91,8 @@ export default function HistoryPage() {
         </div>
       </PageContainer>
 
-      <footer className="border-t border-stone-300 bg-white mt-4">
-        <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-stone-500 leading-relaxed">
+      <footer className="border-t border-border bg-surface mt-4">
+        <div className="mx-auto max-w-4xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される金額は記帳データに基づく概算シミュレーションです。個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
         </div>

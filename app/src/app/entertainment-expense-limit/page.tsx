@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function EntertainmentExpenseLimitPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 交際費等の損金不算入額計算機</div>
+          <div className="text-xs text-muted-foreground">MVP — 交際費等の損金不算入額計算機</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">交際費等の損金不算入額計算機</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             資本金1億円以下の中小法人は、交際費等について(a)年800万円までの定額控除限度額（事業年度が
             12か月に満たない場合は月割り）と、(b)接待飲食費の50%相当額（上限なし）のうち、有利な方を
             選択して損金に算入できます（租税特別措置法61条の4）。交際費等の合計額・接待飲食費の内数・

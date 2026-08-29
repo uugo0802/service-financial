@@ -7,8 +7,8 @@ import {
   type EntertainmentExpenseLimitInput,
 } from "@/lib/tax/entertainmentExpenseLimit";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 const defaultInput: EntertainmentExpenseLimitInput = {
   totalEntertainmentExpense: 6_000_000,
@@ -42,8 +42,8 @@ export function EntertainmentExpenseLimitCalculator() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
-        <h2 className="text-sm font-semibold text-stone-700">交際費等の入力</h2>
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
+        <h2 className="text-sm font-semibold text-foreground">交際費等の入力</h2>
         <div className="grid sm:grid-cols-3 gap-3 items-end">
           <div>
             <label className={labelClass} htmlFor="total-entertainment-expense">
@@ -90,7 +90,7 @@ export function EntertainmentExpenseLimitCalculator() {
             />
           </div>
         </div>
-        <p className="text-xs text-stone-500 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           交際費等の合計額・接待飲食費とも、1人当たり5,000円以下の飲食費（一定の書類の保存等の
           要件を満たし、そもそも交際費等に該当しないもの）は含めずに入力してください。定額控除限度額は
           年{FIXED_DEDUCTION_LIMIT_ANNUAL.toLocaleString("ja-JP")}円で、事業年度が12か月に満たない場合は
@@ -123,21 +123,21 @@ export function EntertainmentExpenseLimitCalculator() {
                     : "定額控除限度額"}
                 </div>
               </div>
-              <div className="text-sm text-stone-600 text-right">
+              <div className="text-sm text-muted-foreground text-right">
                 <div>
-                  損金算入額: <span className="font-semibold text-stone-800">{result.deductibleAmount.toLocaleString("ja-JP")}円</span>
+                  損金算入額: <span className="font-semibold text-foreground">{result.deductibleAmount.toLocaleString("ja-JP")}円</span>
                 </div>
                 <div>
                   損金不算入額（別表四加算）:{" "}
-                  <span className="font-semibold text-stone-800">{result.nonDeductibleAmount.toLocaleString("ja-JP")}円</span>
+                  <span className="font-semibold text-foreground">{result.nonDeductibleAmount.toLocaleString("ja-JP")}円</span>
                 </div>
               </div>
             </div>
 
-            <div className="border border-stone-300 bg-white overflow-x-auto">
+            <div className="border border-border bg-surface overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">選択肢</th>
                     <th className="px-3 py-2 font-normal">計算内容</th>
                     <th className="px-3 py-2 font-normal">損金算入額</th>
@@ -145,7 +145,7 @@ export function EntertainmentExpenseLimitCalculator() {
                 </thead>
                 <tbody>
                   <tr
-                    className={`border-b border-stone-100 last:border-b-0 ${
+                    className={`border-b border-border/60 last:border-b-0 ${
                       result.favorableOption === "fixed_deduction_limit" ? "bg-emerald-50" : ""
                     }`}
                   >
@@ -155,16 +155,16 @@ export function EntertainmentExpenseLimitCalculator() {
                         <span className="ml-2 text-xs text-emerald-700 font-normal">採用</span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-stone-600">
+                    <td className="px-3 py-2 text-muted-foreground">
                       限度額 {result.fixedDeductionLimit.toLocaleString("ja-JP")}円（事業年度
                       {result.roundedFiscalYearMonths}か月分）と交際費等合計額のいずれか小さい方
                     </td>
-                    <td className="px-3 py-2 text-stone-800 whitespace-nowrap">
+                    <td className="px-3 py-2 text-foreground whitespace-nowrap">
                       {result.fixedDeductionDeductibleAmount.toLocaleString("ja-JP")}円
                     </td>
                   </tr>
                   <tr
-                    className={`border-b border-stone-100 last:border-b-0 ${
+                    className={`border-b border-border/60 last:border-b-0 ${
                       result.favorableOption === "half_of_entertainment_meal_expense" ? "bg-emerald-50" : ""
                     }`}
                   >
@@ -174,8 +174,8 @@ export function EntertainmentExpenseLimitCalculator() {
                         <span className="ml-2 text-xs text-emerald-700 font-normal">採用</span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-stone-600">接待飲食費 × 50%（上限なし）</td>
-                    <td className="px-3 py-2 text-stone-800 whitespace-nowrap">
+                    <td className="px-3 py-2 text-muted-foreground">接待飲食費 × 50%（上限なし）</td>
+                    <td className="px-3 py-2 text-foreground whitespace-nowrap">
                       {result.halfOfEntertainmentMealExpenseAmount.toLocaleString("ja-JP")}円
                     </td>
                   </tr>
@@ -184,8 +184,8 @@ export function EntertainmentExpenseLimitCalculator() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">計算過程</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">計算過程</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.notes.map((note, index) => (
                   <li key={index}>{note}</li>
                 ))}
@@ -195,7 +195,7 @@ export function EntertainmentExpenseLimitCalculator() {
             <p className="text-xs text-amber-700 leading-relaxed">{result.disclaimer}</p>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         )}
       </section>
     </div>

@@ -9,20 +9,20 @@ export const metadata: Metadata = {
 
 export default function ApportionmentPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 家事按分（家事関連費按分）の計算</div>
+          <div className="text-xs text-muted-foreground">MVP — 家事按分（家事関連費按分）の計算</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">家事按分（家事関連費按分）の計算</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             自宅の一部を事業用に使用している場合、家賃・水道光熱費・通信費などの「家事関連費」は、
             事業使用割合に応じた金額のみを必要経費に算入できます。総額と按分基準（床面積按分または使用時間按分）を
             入力すると、必要経費となる金額（円未満切り捨て）を自動計算します。

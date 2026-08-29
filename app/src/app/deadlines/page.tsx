@@ -39,27 +39,27 @@ export default function DeadlinesPage() {
   }, [deadlines]);
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">申告期限カレンダー</div>
+          <div className="text-xs text-muted-foreground">申告期限カレンダー</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">申告期限リマインダー</h1>
-          <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             事業形態（フリーランス・個人事業主／マイクロ法人）ごとの一般的な申告期限を一覧表示します。
             表示されるのはあくまで法定の原則的な期限（暦情報）であり、あなたの状況に応じた個別の税務相談ではありません。
           </p>
         </section>
 
         <section>
-          <div className="text-xs text-stone-500 mb-2">事業形態（設定が未連携のため、こちらで仮選択できます）</div>
+          <div className="text-xs text-muted-foreground mb-2">事業形態（設定が未連携のため、こちらで仮選択できます）</div>
           <div className="flex items-center gap-3 flex-wrap">
             <button
               type="button"
@@ -67,8 +67,8 @@ export default function DeadlinesPage() {
               onClick={() => setEntityType("individual")}
               className={`min-w-[13rem] text-sm px-5 py-3 border transition-colors ${
                 entityType === "individual"
-                  ? "bg-stone-900 border-stone-900 text-white"
-                  : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                  ? "bg-accent border-accent text-white"
+                  : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
               }`}
             >
               フリーランス・個人事業主
@@ -79,8 +79,8 @@ export default function DeadlinesPage() {
               onClick={() => setEntityType("corporate")}
               className={`min-w-[13rem] text-sm px-5 py-3 border transition-colors ${
                 entityType === "corporate"
-                  ? "bg-stone-900 border-stone-900 text-white"
-                  : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                  ? "bg-accent border-accent text-white"
+                  : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
               }`}
             >
               マイクロ法人
@@ -89,12 +89,12 @@ export default function DeadlinesPage() {
 
           {entityType === "corporate" && (
             <div className="mt-4">
-              <label className="flex flex-col gap-1 text-xs text-stone-500 w-44">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground w-44">
                 決算月
                 <select
                   value={fiscalYearEndMonth}
                   onChange={(e) => setFiscalYearEndMonth(Number(e.target.value))}
-                  className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                  className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 >
                   {MONTH_LABELS.map((label, i) => (
                     <option key={label} value={i + 1}>
@@ -123,15 +123,15 @@ export default function DeadlinesPage() {
               type="button"
               onClick={handleDownloadIcs}
               disabled={deadlines.length === 0}
-              className="text-sm px-4 py-2 border border-stone-400 bg-white text-stone-700 hover:border-stone-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-sm px-4 py-2 border border-border bg-surface text-foreground hover:border-foreground/40 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               カレンダーに追加 (.ics)
             </button>
           </div>
-          <TableScrollArea innerClassName="border border-stone-300 bg-white">
+          <TableScrollArea innerClassName="border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">項目</th>
                   <th className="px-3 py-2 font-normal whitespace-nowrap">期日</th>
                   <th className="px-3 py-2 font-normal text-right whitespace-nowrap">残り日数</th>
@@ -139,7 +139,7 @@ export default function DeadlinesPage() {
               </thead>
               <tbody>
                 {deadlines.map((deadline) => (
-                  <tr key={deadline.id} className="border-b border-stone-100 last:border-0">
+                  <tr key={deadline.id} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2">{deadline.label}</td>
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">{deadline.dueDate}</td>
                     <td
@@ -154,8 +154,8 @@ export default function DeadlinesPage() {
           </TableScrollArea>
         </section>
 
-        <section className="border-t border-stone-300 pt-6">
-          <p className="text-xs text-stone-400 leading-relaxed max-w-2xl">
+        <section className="border-t border-border pt-6">
+          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             本ページの期日は、フリーランス・個人事業主については所得税確定申告（3月15日）・消費税確定申告（3月31日、課税事業者のみ）、
             マイクロ法人については決算月から2ヶ月以内（法人税・地方法人税・消費税、および法人住民税・事業税）という一般的な原則に基づく参考値です。
             土日祝日により実際の期限は前後する場合があります。個別の状況に応じた判断は必ず国税庁・お住まいの自治体・税理士等の専門家にご確認ください。

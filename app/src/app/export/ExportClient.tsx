@@ -82,16 +82,16 @@ export function ExportClient() {
       <section>
         <h2 className="text-lg font-semibold mb-3">
           仕訳明細（プレビュー）
-          <span className="text-sm font-normal text-stone-500 dark:text-stone-400 ml-2">
+          <span className="text-sm font-normal text-muted-foreground ml-2">
             {isSampleData
               ? `現時点ではサンプルデータを表示しています（${transactions.length}件）`
               : `記帳された仕訳データを表示しています（${transactions.length}件）`}
           </span>
         </h2>
-        <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <TableScrollArea innerClassName="border border-border bg-surface">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+              <tr className="border-b border-border text-left text-muted-foreground text-xs">
                 <th className="px-3 py-2 font-normal">日付</th>
                 <th className="px-3 py-2 font-normal">摘要</th>
                 <th className="px-3 py-2 font-normal text-right">金額</th>
@@ -102,14 +102,14 @@ export function ExportClient() {
             </thead>
             <tbody>
               {transactions.map((entry) => (
-                <tr key={entry.id} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+                <tr key={entry.id} className="border-b border-border/60 last:border-0">
                   <td className="px-3 py-2 whitespace-nowrap tabular-nums">{entry.date}</td>
                   <td className="px-3 py-2 max-w-xs truncate" title={entry.description}>
                     {entry.description}
                   </td>
                   <td
                     className={`px-3 py-2 text-right tabular-nums ${
-                      entry.amount < 0 ? "text-stone-700 dark:text-stone-300" : "text-emerald-700 dark:text-emerald-400"
+                      entry.amount < 0 ? "text-foreground" : "text-emerald-700 dark:text-emerald-400"
                     }`}
                   >
                     {yen.format(entry.amount)}
@@ -128,12 +128,12 @@ export function ExportClient() {
 
       <section>
         <h2 className="text-lg font-semibold mb-3">税額概算サマリー（プレビュー）</h2>
-        <TableScrollArea innerClassName="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+        <TableScrollArea innerClassName="border border-border bg-surface">
           <table className="w-full text-sm">
             <tbody>
               {summaryRows.map((row, i) => (
-                <tr key={`${row.label}-${i}`} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
-                  <td className="px-3 py-2 text-stone-500 dark:text-stone-400 whitespace-nowrap align-top w-56">
+                <tr key={`${row.label}-${i}`} className="border-b border-border/60 last:border-0">
+                  <td className="px-3 py-2 text-muted-foreground whitespace-nowrap align-top w-56">
                     {row.label}
                   </td>
                   <td className="px-3 py-2">{row.value}</td>
@@ -144,10 +144,10 @@ export function ExportClient() {
         </TableScrollArea>
       </section>
 
-      <section className="border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md p-6 flex flex-col gap-4">
+      <section className="border border-border bg-surface rounded-md p-6 flex flex-col gap-4">
         <div>
           <h2 className="text-lg font-semibold mb-1">CSVファイルをダウンロード</h2>
-          <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             上記の仕訳明細と税額概算サマリーを1つのCSVファイルとして書き出します。
             税理士へメールで送付したり、ご自身のPC・クラウドストレージに保管したりしてご利用ください。
           </p>

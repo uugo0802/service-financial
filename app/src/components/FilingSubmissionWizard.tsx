@@ -30,10 +30,10 @@ export function FilingSubmissionWizard({
   const current = wizard.steps.find((s) => s.id === wizard.displayedStep) ?? wizard.steps[0];
 
   return (
-    <div className="border border-stone-300 bg-white p-5">
+    <div className="border border-border bg-surface p-5">
       <div className="flex items-center justify-between gap-4 mb-1">
         <h3 className="text-sm font-semibold">{SYSTEM_LABEL[system]} 送信ガイド</h3>
-        <span className="text-xs text-stone-500 tabular-nums">{wizard.progressPercent}%</span>
+        <span className="text-xs text-muted-foreground tabular-nums">{wizard.progressPercent}%</span>
       </div>
       <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden mb-4">
         <div
@@ -66,13 +66,13 @@ export function FilingSubmissionWizard({
                     : completed
                       ? "border-emerald-600 text-emerald-700 bg-emerald-50 hover:bg-emerald-100"
                       : unlocked
-                        ? "border-stone-400 text-stone-600 hover:border-stone-600"
+                        ? "border-stone-400 text-muted-foreground hover:border-foreground/40"
                         : "border-stone-200 text-stone-300 cursor-not-allowed"
                 }`}
               >
                 <span
                   className={`w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[0.65rem] ${
-                    active ? "bg-white text-stone-900" : completed ? "bg-emerald-600 text-white" : "bg-stone-200 text-stone-500"
+                    active ? "bg-white text-foreground" : completed ? "bg-emerald-600 text-white" : "bg-stone-200 text-muted-foreground"
                   }`}
                 >
                   {completed ? "✓" : step.id}
@@ -134,10 +134,10 @@ function StepPanel({
   return (
     <div className="border border-stone-200 p-4">
       <div className="flex items-baseline gap-2 mb-2">
-        <span className="text-xs text-stone-400">ステップ {step.id} / {totalSteps}</span>
+        <span className="text-xs text-muted-foreground">ステップ {step.id} / {totalSteps}</span>
         <h4 className="text-sm font-semibold">{step.title}</h4>
       </div>
-      <p className="text-sm text-stone-600 leading-relaxed mb-3">{step.description}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-3">{step.description}</p>
 
       {draftDownload && (
         <div className="mb-4">
@@ -156,7 +156,7 @@ function StepPanel({
         </p>
       </div>
 
-      <label className="flex items-start gap-2 text-xs text-stone-600 mb-4 cursor-pointer">
+      <label className="flex items-start gap-2 text-xs text-muted-foreground mb-4 cursor-pointer">
         <input type="checkbox" className="mt-0.5" checked={acknowledged} onChange={(e) => setAcknowledged(e.target.checked)} />
         上記の内容を理解し、この操作はご本人（またはご本人の権限）で行うことを確認しました。
       </label>
@@ -166,7 +166,7 @@ function StepPanel({
           type="button"
           disabled={step.id === 1}
           onClick={onBack}
-          className="text-sm px-4 py-2 border border-stone-300 text-stone-500 disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-500 transition-colors"
+          className="text-sm px-4 py-2 border border-stone-300 text-muted-foreground disabled:opacity-40 disabled:cursor-not-allowed hover:border-stone-500 transition-colors"
         >
           戻る
         </button>

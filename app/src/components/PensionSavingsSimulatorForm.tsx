@@ -7,8 +7,8 @@ import {
   simulatePensionSavings,
 } from "@/lib/tax/pensionSavingsSimulator";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 const yen = new Intl.NumberFormat("ja-JP");
 
 /**
@@ -42,7 +42,7 @@ export function PensionSavingsSimulatorForm() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-5 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-5 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="pension-taxable-income">
             控除前の課税所得（円）
@@ -56,17 +56,17 @@ export function PensionSavingsSimulatorForm() {
             placeholder="例：5000000"
             className={inputClass}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             青色申告特別控除・基礎控除・社会保険料控除など、他の所得控除をすべて適用した後の課税所得の見込みを入力してください。
           </p>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
+        <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between gap-2 mb-1">
             <label className={labelClass} htmlFor="pension-mutual-aid">
               小規模企業共済の年間想定拠出額（円）
             </label>
-            <span className="text-xs text-stone-400 whitespace-nowrap">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
               上限 {yen.format(SMALL_BUSINESS_MUTUAL_AID_ANNUAL_CAP)}円/年
             </span>
           </div>
@@ -78,7 +78,7 @@ export function PensionSavingsSimulatorForm() {
             step="1000"
             value={Math.min(Number(mutualAidContribution) || 0, SMALL_BUSINESS_MUTUAL_AID_ANNUAL_CAP)}
             onChange={(e) => setMutualAidContribution(e.target.value)}
-            className="w-full accent-stone-700"
+            className="w-full accent-accent"
             aria-labelledby="pension-mutual-aid"
           />
           <input
@@ -90,15 +90,15 @@ export function PensionSavingsSimulatorForm() {
             placeholder="例：420000"
             className={`${inputClass} mt-2`}
           />
-          <p className="text-xs text-stone-500 mt-1">月額1,000円〜70,000円（500円単位）の範囲で加入できます。</p>
+          <p className="text-xs text-muted-foreground mt-1">月額1,000円〜70,000円（500円単位）の範囲で加入できます。</p>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
+        <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between gap-2 mb-1">
             <label className={labelClass} htmlFor="pension-ideco">
               iDeCoの年間想定拠出額（円）
             </label>
-            <span className="text-xs text-stone-400 whitespace-nowrap">
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
               上限（第1号被保険者目安）{yen.format(IDECO_SOLE_PROPRIETOR_ANNUAL_CAP)}円/年
             </span>
           </div>
@@ -110,7 +110,7 @@ export function PensionSavingsSimulatorForm() {
             step="1000"
             value={Math.min(Number(idecoContribution) || 0, IDECO_SOLE_PROPRIETOR_ANNUAL_CAP)}
             onChange={(e) => setIdecoContribution(e.target.value)}
-            className="w-full accent-stone-700"
+            className="w-full accent-accent"
             aria-labelledby="pension-ideco"
           />
           <input
@@ -122,7 +122,7 @@ export function PensionSavingsSimulatorForm() {
             placeholder="例：240000"
             className={`${inputClass} mt-2`}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             上限は国民年金の加入状況（国民年金基金・付加保険料との合算枠）により異なります。ここでは、自営業者（第1号被保険者）で他の年金制度に加入していない場合の目安を用いています。
           </p>
         </div>
@@ -144,48 +144,48 @@ export function PensionSavingsSimulatorForm() {
               </div>
             )}
 
-            <div className="border border-stone-300 bg-white rounded-lg p-4">
-              <div className="text-xs text-stone-500 mb-1">拠出前の課税所得が該当する所得税の限界税率</div>
+            <div className="border border-border bg-surface rounded-lg p-4">
+              <div className="text-xs text-muted-foreground mb-1">拠出前の課税所得が該当する所得税の限界税率</div>
               <div className="text-2xl font-semibold">{result.marginalBracket.ratePercent}%</div>
             </div>
 
             <div className="grid sm:grid-cols-3 gap-4">
               <div className="border border-emerald-400 bg-emerald-50 rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">所得税の減少額（概算）</div>
+                <div className="text-xs text-muted-foreground mb-1">所得税の減少額（概算）</div>
                 <div className="text-2xl font-semibold">{yen.format(result.incomeTaxReduction)}円</div>
-                <div className="text-xs text-stone-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   {yen.format(result.incomeTaxBefore)}円 → {yen.format(result.incomeTaxAfter)}円
                 </div>
               </div>
               <div className="border border-emerald-400 bg-emerald-50 rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">住民税の減少額（概算・標準税率10%換算）</div>
+                <div className="text-xs text-muted-foreground mb-1">住民税の減少額（概算・標準税率10%換算）</div>
                 <div className="text-2xl font-semibold">{yen.format(result.residentTaxReduction)}円</div>
               </div>
-              <div className="border border-stone-700 bg-stone-800 text-white rounded-lg p-4">
+              <div className="border border-border bg-foreground text-background rounded-lg p-4">
                 <div className="text-xs text-stone-300 mb-1">合計の節税額（概算）</div>
                 <div className="text-2xl font-semibold">{yen.format(result.totalTaxReduction)}円</div>
-                <div className="text-xs text-stone-300 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   実質割引率の目安：拠出額の約{(result.effectiveDiscountRate * 100).toFixed(1)}%
                 </div>
               </div>
             </div>
 
-            <div className="border border-stone-300 bg-white overflow-x-auto">
+            <div className="border border-border bg-surface overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">項目</th>
                     <th className="px-3 py-2 font-normal">入力した拠出額</th>
                     <th className="px-3 py-2 font-normal">控除対象額（上限適用後）</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">小規模企業共済</td>
                     <td className="px-3 py-2">{yen.format(result.requestedContribution.smallBusinessMutualAid)}円</td>
                     <td className="px-3 py-2">{yen.format(result.deductibleContribution.smallBusinessMutualAid)}円</td>
                   </tr>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">iDeCo</td>
                     <td className="px-3 py-2">{yen.format(result.requestedContribution.ideco)}円</td>
                     <td className="px-3 py-2">{yen.format(result.deductibleContribution.ideco)}円</td>
@@ -200,8 +200,8 @@ export function PensionSavingsSimulatorForm() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.assumptions.map((assumption) => (
                   <li key={assumption}>{assumption}</li>
                 ))}
@@ -211,7 +211,7 @@ export function PensionSavingsSimulatorForm() {
             <p className="text-xs text-amber-700 leading-relaxed">{result.disclaimer}</p>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         )}
       </section>
     </div>

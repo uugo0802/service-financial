@@ -17,7 +17,7 @@ interface JournalEntryFormProps {
 }
 
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
 const errorTextClass = "mt-1 text-xs text-red-700";
 
 export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: JournalEntryFormProps) {
@@ -43,9 +43,9 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
   }
 
   return (
-    <form onSubmit={handleSubmit} className="border border-stone-300 bg-white p-5 flex flex-col gap-4" noValidate>
+    <form onSubmit={handleSubmit} className="border border-border bg-surface p-5 flex flex-col gap-4" noValidate>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           日付
           <input
             type="date"
@@ -56,7 +56,7 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
           {errors.date && <span className={errorTextClass}>{errors.date}</span>}
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           金額（収入は正、支出は負の数値）
           <input
             type="text"
@@ -69,7 +69,7 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
           {errors.amount && <span className={errorTextClass}>{errors.amount}</span>}
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-stone-500 sm:col-span-2">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2">
           摘要
           <input
             type="text"
@@ -81,7 +81,7 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
           {errors.description && <span className={errorTextClass}>{errors.description}</span>}
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           勘定科目
           <input
             type="text"
@@ -93,7 +93,7 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
           {errors.account && <span className={errorTextClass}>{errors.account}</span>}
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           消費税区分
           <select
             value={draft.taxCategory}
@@ -109,7 +109,7 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
           {errors.taxCategory && <span className={errorTextClass}>{errors.taxCategory}</span>}
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-stone-500 sm:col-span-2">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2">
           メモ（任意）
           <input
             type="text"
@@ -124,7 +124,7 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
       <div className="flex gap-3">
         <button
           type="submit"
-          className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+          className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
         >
           {mode === "create" ? "仕訳を追加" : "変更を保存"}
         </button>
@@ -132,7 +132,7 @@ export function JournalEntryForm({ mode, initialDraft, onSubmit, onCancel }: Jou
           <button
             type="button"
             onClick={onCancel}
-            className="text-sm px-5 py-2.5 border border-stone-400 bg-white hover:border-stone-600 transition-colors"
+            className="text-sm px-5 py-2.5 border border-border bg-surface hover:border-foreground/40 transition-colors"
           >
             キャンセル
           </button>

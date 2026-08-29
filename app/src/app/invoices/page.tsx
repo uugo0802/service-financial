@@ -76,20 +76,20 @@ export default function InvoicesPage() {
   const receivablesSummary = computeReceivablesSummary(buildSampleReceivableInvoices(asOfDate), asOfDate);
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 請求書（適格請求書/インボイス）発行</div>
+          <div className="text-xs text-muted-foreground">MVP — 請求書（適格請求書/インボイス）発行</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">取引先への請求書を作成する</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             明細（品目・数量・単価・税率）を入力すると、税率（8%/10%混在可）ごとに区分した合計額・消費税額と、
             請求金額合計を自動計算します。適格請求書発行事業者の登録番号を入力すると、記載事項の充足状況もあわせて表示します。
           </p>
@@ -105,7 +105,7 @@ export default function InvoicesPage() {
 
         <section>
           <h2 className="text-2xl font-semibold mb-2">定期請求書（サブスクリプション/顧問料クライアント向け）</h2>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             毎月/四半期ごとに同じ内容で発行する顧問料・サブスクリプション請求をテンプレートとして登録すると、
             対象期間に発生する発行日を確認しながら、その場で請求書を作成できます。
           </p>
@@ -117,7 +117,7 @@ export default function InvoicesPage() {
 
         <section>
           <h2 className="text-2xl font-semibold mb-2">未収入金（発行済み請求書の入金状況）</h2>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             発行済みの請求書のうち、まだ入金が確認できていない金額（未収入金）を支払期日からの経過日数別に集計します。
             期日を超過している請求書は超過日数が長い順に一覧表示されます。
           </p>

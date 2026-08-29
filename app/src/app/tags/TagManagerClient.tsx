@@ -37,7 +37,7 @@ import {
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
 const errorTextClass = "mt-1 text-xs text-red-700";
 
 // タグ作成時にユーザーが選べる配色の候補（既存ダッシュボードのカテゴリカルパレット
@@ -198,14 +198,14 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
   return (
     <div className="flex flex-col gap-8">
       {/* タグ管理: 作成・改名・削除 */}
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-stone-800">タグを管理する</h2>
-        <p className="text-xs text-stone-500 leading-relaxed">
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground">タグを管理する</h2>
+        <p className="text-xs text-muted-foreground leading-relaxed">
           クライアント名・案件名など、収益性を追いたい単位でタグを作成し、下の取引一覧でタグを付けてください。
         </p>
 
         <form onSubmit={handleCreateTag} className="flex flex-wrap items-end gap-3" noValidate>
-          <label className="flex flex-col gap-1 text-xs text-stone-500 flex-1 min-w-[10rem]">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground flex-1 min-w-[10rem]">
             新しいタグ名
             <input
               type="text"
@@ -217,7 +217,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
             {createError && <span className={errorTextClass}>{createError}</span>}
           </label>
 
-          <div className="flex flex-col gap-1 text-xs text-stone-500">
+          <div className="flex flex-col gap-1 text-xs text-muted-foreground">
             色
             <div className="flex gap-1.5 items-center py-2">
               {TAG_COLOR_CHOICES.map((color) => (
@@ -236,18 +236,18 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
 
           <button
             type="submit"
-            className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+            className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
           >
             タグを追加
           </button>
         </form>
 
         {tags.length === 0 ? (
-          <p className="text-sm text-stone-500">まだタグが登録されていません。</p>
+          <p className="text-sm text-muted-foreground">まだタグが登録されていません。</p>
         ) : (
           <ul className="flex flex-col gap-2">
             {tags.map((tag) => (
-              <li key={tag.id} className="flex items-center gap-3 border-b border-stone-100 pb-2 last:border-0">
+              <li key={tag.id} className="flex items-center gap-3 border-b border-border/60 pb-2 last:border-0">
                 <span className="inline-block w-2.5 h-2.5 rounded-full shrink-0" style={{ background: tag.color ?? "#898781" }} />
                 {editingTagId === tag.id ? (
                   <form onSubmit={handleRenameTag} className="flex items-center gap-2 flex-1">
@@ -258,21 +258,21 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
                       className={inputClass}
                       autoFocus
                     />
-                    <button type="submit" className="text-xs text-stone-700 underline hover:text-stone-900 shrink-0">
+                    <button type="submit" className="text-xs text-foreground underline hover:text-foreground shrink-0">
                       保存
                     </button>
-                    <button type="button" onClick={cancelEditing} className="text-xs text-stone-500 underline hover:text-stone-700 shrink-0">
+                    <button type="button" onClick={cancelEditing} className="text-xs text-muted-foreground underline hover:text-foreground shrink-0">
                       キャンセル
                     </button>
                     {editError && <span className={errorTextClass}>{editError}</span>}
                   </form>
                 ) : (
                   <>
-                    <span className="flex-1 text-sm text-stone-800">{tag.label}</span>
+                    <span className="flex-1 text-sm text-foreground">{tag.label}</span>
                     <button
                       type="button"
                       onClick={() => startEditing(tag)}
-                      className="text-xs text-stone-600 underline hover:text-stone-900"
+                      className="text-xs text-muted-foreground underline hover:text-foreground"
                     >
                       名前を変更
                     </button>
@@ -292,38 +292,38 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
       </section>
 
       {/* 収益性サマリー */}
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-stone-800">タグ別 収益性サマリー</h2>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground">タグ別 収益性サマリー</h2>
         <TagBreakdownPanel rows={profitability} />
       </section>
 
       {/* 未タグ付けの重要な取引へのナッジ */}
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <h2 className="text-sm font-semibold text-stone-800">タグ未設定の主要な取引</h2>
-          <label className="flex items-center gap-2 text-xs text-stone-500">
+          <h2 className="text-sm font-semibold text-foreground">タグ未設定の主要な取引</h2>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
             重要性の閾値（この金額以上の未タグ取引を表示）
             <input
               type="text"
               inputMode="numeric"
               value={thresholdInput}
               onChange={(e) => setThresholdInput(e.target.value)}
-              className="w-28 border border-stone-400 bg-white px-2 py-1 text-sm outline-none focus:border-stone-600"
+              className="w-28 border border-border bg-surface px-2 py-1 text-sm outline-none focus:border-foreground/40"
             />
             円
           </label>
         </div>
 
         {untagged.length === 0 ? (
-          <p className="text-sm text-stone-500">閾値以上の未タグ付け取引はありません。</p>
+          <p className="text-sm text-muted-foreground">閾値以上の未タグ付け取引はありません。</p>
         ) : (
           <ul className="flex flex-col gap-1 text-sm">
             {untagged.map((tx) => (
-              <li key={tx.id} className="flex justify-between border-b border-stone-100 py-1.5 last:border-0">
-                <span className="text-stone-700">
+              <li key={tx.id} className="flex justify-between border-b border-border/60 py-1.5 last:border-0">
+                <span className="text-foreground">
                   {tx.date} {tx.description}
                 </span>
-                <span className="tabular-nums text-stone-600">{yen.format(tx.amount)}円</span>
+                <span className="tabular-nums text-muted-foreground">{yen.format(tx.amount)}円</span>
               </li>
             ))}
           </ul>
@@ -331,15 +331,15 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
       </section>
 
       {/* 取引ごとのタグ付け */}
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h2 className="text-sm font-semibold text-stone-800">取引にタグを付ける</h2>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h2 className="text-sm font-semibold text-foreground">取引にタグを付ける</h2>
         {tags.length === 0 ? (
-          <p className="text-sm text-stone-500">先にタグを1つ以上作成してください。</p>
+          <p className="text-sm text-muted-foreground">先にタグを1つ以上作成してください。</p>
         ) : (
           <TableScrollArea>
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-xs text-stone-500">
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2 pr-4">日付</th>
                   <th className="py-2 pr-4">摘要</th>
                   <th className="py-2 pr-4 text-right">金額</th>
@@ -350,7 +350,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
                 {transactions.map((tx) => {
                   const assignedTagIds = new Set(tagIdsForTransaction(assignments, tx.id));
                   return (
-                    <tr key={tx.id} className="border-b border-stone-100 align-top">
+                    <tr key={tx.id} className="border-b border-border/60 align-top">
                       <td className="py-2 pr-4 whitespace-nowrap">{tx.date}</td>
                       <td className="py-2 pr-4">{tx.description}</td>
                       <td className="py-2 pr-4 text-right tabular-nums whitespace-nowrap">{yen.format(tx.amount)}円</td>
@@ -358,7 +358,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
                         {tags.map((tag) => {
                           const checked = assignedTagIds.has(tag.id);
                           return (
-                            <label key={tag.id} className="flex items-center gap-1.5 text-xs text-stone-600 whitespace-nowrap">
+                            <label key={tag.id} className="flex items-center gap-1.5 text-xs text-muted-foreground whitespace-nowrap">
                               <input
                                 type="checkbox"
                                 checked={checked}
@@ -378,7 +378,7 @@ export function TagManagerClient({ initialTags, initialAssignments, transactions
         )}
       </section>
 
-      <p className="text-xs text-stone-400">
+      <p className="text-xs text-muted-foreground">
         {isSampleData
           ? "タグ・タグ付けはサンプルデータを表示しています（Supabase未接続、または未ログインのため）。取引一覧は開発中のプロトタイプのためサンプルデータのままです。"
           : "タグ・タグ付けは登録済みの内容（Supabase）を表示・保存しています。取引一覧は開発中のプロトタイプのためサンプルデータのままです。"}

@@ -19,8 +19,8 @@ import {
   buildCorporateEstablishmentNotificationBundle,
 } from "@/lib/tax/corporateEstablishmentNotificationForm";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 
 export function CorporateEstablishmentNotificationForm() {
@@ -98,9 +98,9 @@ export function CorporateEstablishmentNotificationForm() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="print:hidden flex flex-col gap-6 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="print:hidden flex flex-col gap-6 bg-surface border border-border rounded p-4">
         <div>
-          <h2 className="text-sm font-semibold text-stone-700 mb-3">法人の基本情報</h2>
+          <h2 className="text-sm font-semibold text-foreground mb-3">法人の基本情報</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="cen-company-name">
@@ -184,7 +184,7 @@ export function CorporateEstablishmentNotificationForm() {
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-stone-700 mb-3">事業年度・資本金・事業目的</h2>
+          <h2 className="text-sm font-semibold text-foreground mb-3">事業年度・資本金・事業目的</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="cen-fiscal-year-start">
@@ -253,7 +253,7 @@ export function CorporateEstablishmentNotificationForm() {
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-stone-700 mb-3">支店・出張所等</h2>
+          <h2 className="text-sm font-semibold text-foreground mb-3">支店・出張所等</h2>
           <label className="flex items-center gap-2 text-sm mb-3">
             <input type="checkbox" checked={hasBranches} onChange={(e) => setHasBranches(e.target.checked)} />
             支店・出張所等がある
@@ -276,7 +276,7 @@ export function CorporateEstablishmentNotificationForm() {
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-stone-700 mb-3">従業員の雇用（代表者本人への役員報酬のみの場合を含む）</h2>
+          <h2 className="text-sm font-semibold text-foreground mb-3">従業員の雇用（代表者本人への役員報酬のみの場合を含む）</h2>
           <label className="flex items-center gap-2 text-sm mb-3">
             <input
               type="checkbox"
@@ -303,7 +303,7 @@ export function CorporateEstablishmentNotificationForm() {
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-stone-700 mb-3">青色申告の承認申請</h2>
+          <h2 className="text-sm font-semibold text-foreground mb-3">青色申告の承認申請</h2>
           <label className={labelClass} htmlFor="cen-blue-return-fiscal-year">
             青色申告の承認を受けようとする事業年度
           </label>
@@ -318,7 +318,7 @@ export function CorporateEstablishmentNotificationForm() {
         </div>
 
         <div>
-          <h2 className="text-sm font-semibold text-stone-700 mb-3">提出先（ご自身でご確認のうえ入力してください）</h2>
+          <h2 className="text-sm font-semibold text-foreground mb-3">提出先（ご自身でご確認のうえ入力してください）</h2>
           <div className="grid sm:grid-cols-3 gap-4">
             <div>
               <label className={labelClass} htmlFor="cen-tax-office">
@@ -367,7 +367,7 @@ export function CorporateEstablishmentNotificationForm() {
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded border border-stone-400 bg-white px-4 py-2 text-sm font-medium text-stone-800 shadow-sm hover:bg-stone-100"
+          className="rounded border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-surface"
         >
           印刷 / PDFで保存
         </button>
@@ -391,7 +391,7 @@ function DocumentPreview({ doc }: { doc: CorporateEstablishmentNotificationDocum
     <section className="flex flex-col gap-4 print:break-inside-avoid">
       <div>
         <h2 className="text-lg font-semibold">{doc.documentTitle}</h2>
-        <p className="text-xs text-stone-500">提出先の種類：{doc.destinationKindLabel}</p>
+        <p className="text-xs text-muted-foreground">提出先の種類：{doc.destinationKindLabel}</p>
       </div>
 
       <div
@@ -406,7 +406,7 @@ function DocumentPreview({ doc }: { doc: CorporateEstablishmentNotificationDocum
         >
           {isComplete ? "必須項目 入力済み" : "未入力の必須項目あり"}
         </span>
-        <span className="text-sm text-stone-700">下書きです。提出はご自身の責任で行ってください。</span>
+        <span className="text-sm text-foreground">下書きです。提出はご自身の責任で行ってください。</span>
       </div>
 
       {doc.warnings.length > 0 && (
@@ -420,15 +420,15 @@ function DocumentPreview({ doc }: { doc: CorporateEstablishmentNotificationDocum
         </div>
       )}
 
-      <div className="border border-stone-300 bg-white divide-y divide-stone-200">
+      <div className="border border-border bg-surface divide-y divide-border">
         {doc.sections.map((section) => (
           <div key={section.title} className="p-4">
-            <h3 className="text-sm font-semibold text-stone-700 mb-2">{section.title}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">{section.title}</h3>
             <dl className="text-sm space-y-1">
               {section.fields.map((field) => (
                 <div key={field.label} className="flex flex-col sm:flex-row sm:gap-2">
-                  <dt className="text-stone-500 sm:w-72 shrink-0">{field.label}</dt>
-                  <dd className="text-stone-900">{field.value}</dd>
+                  <dt className="text-muted-foreground sm:w-72 shrink-0">{field.label}</dt>
+                  <dd className="text-foreground">{field.value}</dd>
                 </div>
               ))}
             </dl>
@@ -438,8 +438,8 @@ function DocumentPreview({ doc }: { doc: CorporateEstablishmentNotificationDocum
 
       {doc.notes.length > 0 && (
         <div className="print:hidden">
-          <h3 className="text-sm font-semibold mb-2 text-stone-700">留意事項</h3>
-          <ul className="text-xs text-stone-600 leading-relaxed list-disc list-inside space-y-1">
+          <h3 className="text-sm font-semibold mb-2 text-foreground">留意事項</h3>
+          <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
             {doc.notes.map((note) => (
               <li key={note}>{note}</li>
             ))}
@@ -448,8 +448,8 @@ function DocumentPreview({ doc }: { doc: CorporateEstablishmentNotificationDocum
       )}
 
       <div className="print:hidden">
-        <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-        <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+        <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+        <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
           {doc.assumptions.map((assumption) => (
             <li key={assumption}>{assumption}</li>
           ))}

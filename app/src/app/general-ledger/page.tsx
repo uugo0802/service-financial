@@ -124,35 +124,35 @@ export default function GeneralLedgerPage() {
   );
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">総勘定元帳</div>
+          <div className="text-xs text-muted-foreground">総勘定元帳</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">総勘定元帳</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             勘定科目を選択すると、その科目に関わるすべての仕訳を日付順に一覧表示し、借方・貸方・累計残高（残高）を確認できます。
             <b>これは記帳内容の確認を補助する参考表示であり、正式な決算書類ではありません。</b>
           </p>
-          <p className="text-xs text-stone-400 mb-6">
+          <p className="text-xs text-muted-foreground mb-6">
             {isSampleData ? "現在はサンプルデータを表示しています。" : "記帳された実データを表示しています。"}
           </p>
 
-          <div className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
+          <div className="border border-border bg-surface p-5 flex flex-col gap-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <label className="flex flex-col gap-1 text-xs text-stone-500">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                 勘定科目
                 <select
                   value={selectedAccount}
                   onChange={(e) => setSelectedAccountInput(e.target.value)}
-                  className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                  className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 >
                   {accounts.length === 0 && <option value="">（仕訳がありません）</option>}
                   {accounts.map((account) => (
@@ -163,33 +163,33 @@ export default function GeneralLedgerPage() {
                 </select>
               </label>
 
-              <label className="flex flex-col gap-1 text-xs text-stone-500">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                 前期繰越（開始残高）
                 <input
                   type="number"
                   value={openingBalanceInput}
                   onChange={(e) => setOpeningBalanceInput(e.target.value)}
-                  className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                  className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 />
               </label>
 
-              <label className="flex flex-col gap-1 text-xs text-stone-500">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                 取引年月日（開始）
                 <input
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                  className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 />
               </label>
 
-              <label className="flex flex-col gap-1 text-xs text-stone-500">
+              <label className="flex flex-col gap-1 text-xs text-muted-foreground">
                 取引年月日（終了）
                 <input
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+                  className="w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
                 />
               </label>
             </div>
@@ -201,8 +201,8 @@ export default function GeneralLedgerPage() {
         </section>
       </PageContainer>
 
-      <footer className="border-t border-stone-300 bg-white mt-4">
-        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-stone-500 leading-relaxed">
+      <footer className="border-t border-border bg-surface mt-4">
+        <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される金額は記帳データに基づく参考表示です。個別具体的な税務相談が必要な場合は、税理士等の専門家にご相談ください。
         </div>

@@ -20,15 +20,19 @@ const THEME_STORAGE_KEY = "theme-preference";
 // フォールバックにしか従えない（＝ページごとに表示テーマが揃わない根本原因だった）。
 // next/scriptのbeforeInteractiveで<head>に注入し、hydration前・初回ペイント前に
 // 同期実行させることでチラつき（FOUC）も防ぐ。
+//
+// 2026-08-30変更: "system"の場合もdata-theme属性を必ず明示値("light"/"dark")で
+// 設定する（以前は属性を外してCSSのprefers-color-schemeメディアクエリに委ねていたが、
+// Tailwindのdark:バリアントはdata-theme属性でしか判定できない設定に変更したため
+// ―globals.cssの@custom-variant dark参照、components/ThemeToggle.tsxも同じ方針）。
 const THEME_INIT_SCRIPT = `
 (function() {
   try {
     var pref = localStorage.getItem(${JSON.stringify(THEME_STORAGE_KEY)});
-    if (pref === "light" || pref === "dark") {
-      document.documentElement.setAttribute("data-theme", pref);
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
+    var resolved = pref === "light" || pref === "dark"
+      ? pref
+      : (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", resolved);
   } catch (e) {}
 })();
 `;

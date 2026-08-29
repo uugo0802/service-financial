@@ -10,8 +10,8 @@ import {
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 const percent = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 2 });
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 /**
  * 家事按分（家事関連費按分）計算フォーム。
@@ -103,7 +103,7 @@ export function ApportionmentCalculator() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="apportionment-total-amount">家事関連費の総額（円）</label>
           <input
@@ -185,8 +185,8 @@ export function ApportionmentCalculator() {
       <section>
         <h2 className="text-lg font-semibold mb-3">計算結果</h2>
         {result ? (
-          <div className="border border-stone-300 bg-white p-4 flex flex-col gap-2">
-            <div className="flex justify-between text-sm text-stone-600">
+          <div className="border border-border bg-surface p-4 flex flex-col gap-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>事業使用割合</span>
               <span className="tabular-nums">{percent.format(result.businessUseRatioPercent)}%</span>
             </div>
@@ -194,10 +194,10 @@ export function ApportionmentCalculator() {
               <span>必要経費となる金額</span>
               <span className="tabular-nums">{yen.format(result.deductibleAmount)}円</span>
             </div>
-            <p className="text-xs text-stone-400">{result.basisDescription}</p>
+            <p className="text-xs text-muted-foreground">{result.basisDescription}</p>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">総額と按分基準の値を入力すると、必要経費となる金額を計算します。</p>
+          <p className="text-sm text-muted-foreground">総額と按分基準の値を入力すると、必要経費となる金額を計算します。</p>
         )}
         <p className="mt-3 text-xs text-amber-700 leading-relaxed">
           {result ? result.disclaimer : "床面積・使用時間などの按分基準が事業の実態に照らして合理的かどうかは、納税者ご自身（または税理士等の専門家）の判断事項です。このツールは入力された基準・比率に基づく機械的な計算結果を示すのみであり、税務代理・個別具体的な税務相談には該当しません。"}

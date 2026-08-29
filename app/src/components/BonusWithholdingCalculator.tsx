@@ -5,8 +5,8 @@ import { calculateBonusWithholding } from "@/lib/payroll/bonusWithholding";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 /**
  * 賞与（ボーナス）の総支給額から、源泉徴収税額（賞与に対する源泉徴収税額表・甲欄の
@@ -51,7 +51,7 @@ export function BonusWithholdingCalculator() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="bonus-gross-amount">
             賞与（ボーナス）の総支給額（円）
@@ -122,12 +122,12 @@ export function BonusWithholdingCalculator() {
       <section>
         <h2 className="text-lg font-semibold mb-3">計算結果</h2>
         {result ? (
-          <div className="border border-stone-300 bg-white p-4 flex flex-col gap-2">
-            <div className="flex justify-between text-sm text-stone-600">
+          <div className="border border-border bg-surface p-4 flex flex-col gap-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>賞与の社会保険料等控除後の金額（課税ベース）</span>
               <span className="tabular-nums">{yen.format(result.bonusTaxableBase)}円</span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>前月給与の扶養調整後の金額</span>
               <span className="tabular-nums">
                 {yen.format(
@@ -136,7 +136,7 @@ export function BonusWithholdingCalculator() {
                 円
               </span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>適用した税率（概算）</span>
               <span className="tabular-nums">{result.appliedRatePercent}%</span>
             </div>
@@ -144,13 +144,13 @@ export function BonusWithholdingCalculator() {
               <span>源泉徴収税額（概算・賞与分）</span>
               <span className="tabular-nums">{yen.format(result.withholdingTax)}円</span>
             </div>
-            <div className="flex justify-between text-base font-semibold border-t border-stone-200 pt-2">
+            <div className="flex justify-between text-base font-semibold border-t border-border pt-2">
               <span>差引支給額（概算）</span>
               <span className="tabular-nums">{yen.format(result.netPay)}円</span>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted-foreground">
             賞与の総支給額と前月の給与等の金額を入力すると、源泉徴収税額（概算）と差引支給額を計算します。
           </p>
         )}

@@ -10,8 +10,8 @@ import {
   simulateSimplifiedVsGeneralTaxation,
 } from "@/lib/tax/simplifiedTaxationSimulator";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 const CHEAPER_METHOD_LABELS = {
   simplified: "簡易課税",
@@ -79,7 +79,7 @@ export function SimplifiedTaxationSimulator() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="simplified-base-year-taxable-sales">基準期間（原則2年前）の課税売上高（円）</label>
           <input
@@ -91,18 +91,18 @@ export function SimplifiedTaxationSimulator() {
             placeholder="例：30000000"
             className={inputClass}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             この金額が5,000万円を超えていると、当期は簡易課税を選択できません。
           </p>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
+        <div className="border-t border-border pt-4">
           <div className="flex items-center justify-between mb-2">
             <label className={labelClass}>当期の課税売上高（税抜・事業区分別内訳）</label>
             <button
               type="button"
               onClick={addRow}
-              className="text-xs text-stone-600 border border-stone-400 rounded px-2 py-1 hover:bg-stone-100"
+              className="text-xs text-muted-foreground border border-stone-400 rounded px-2 py-1 hover:bg-stone-100"
             >
               + 事業区分を追加
             </button>
@@ -141,7 +141,7 @@ export function SimplifiedTaxationSimulator() {
                   type="button"
                   onClick={() => removeRow(row.key)}
                   disabled={rows.length <= 1}
-                  className="text-xs text-stone-500 border border-stone-300 rounded px-2 py-2 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="text-xs text-muted-foreground border border-stone-300 rounded px-2 py-2 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   削除
                 </button>
@@ -150,7 +150,7 @@ export function SimplifiedTaxationSimulator() {
           </div>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
+        <div className="border-t border-border pt-4">
           <label className={labelClass} htmlFor="simplified-actual-taxable-purchases">原則課税を選んだ場合の当期の課税仕入高・実額（税抜、円）</label>
           <input
             id="simplified-actual-taxable-purchases"
@@ -161,7 +161,7 @@ export function SimplifiedTaxationSimulator() {
             placeholder="例：3000000"
             className={inputClass}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             仕入・外注費・経費など、課税仕入れに該当する支出の合計額の見込みを入力してください。
           </p>
         </div>
@@ -183,29 +183,29 @@ export function SimplifiedTaxationSimulator() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div
                 className={`border rounded-lg p-4 ${
-                  result.recommendedMethod === "simplified" ? "border-emerald-400 bg-emerald-50" : "border-stone-300 bg-white"
+                  result.recommendedMethod === "simplified" ? "border-emerald-400 bg-emerald-50" : "border-border bg-surface"
                 }`}
               >
-                <div className="text-xs text-stone-500 mb-1">簡易課税（概算）</div>
+                <div className="text-xs text-muted-foreground mb-1">簡易課税（概算）</div>
                 <div className="text-2xl font-semibold">{result.simplified.taxDue.toLocaleString("ja-JP")}円</div>
-                <div className="text-xs text-stone-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   控除対象仕入税額（みなし仕入率適用）: {result.simplified.deductibleInputTax.toLocaleString("ja-JP")}円
                 </div>
               </div>
               <div
                 className={`border rounded-lg p-4 ${
-                  result.recommendedMethod === "general" ? "border-emerald-400 bg-emerald-50" : "border-stone-300 bg-white"
+                  result.recommendedMethod === "general" ? "border-emerald-400 bg-emerald-50" : "border-border bg-surface"
                 }`}
               >
-                <div className="text-xs text-stone-500 mb-1">原則課税（概算）</div>
+                <div className="text-xs text-muted-foreground mb-1">原則課税（概算）</div>
                 <div className="text-2xl font-semibold">{result.general.taxDue.toLocaleString("ja-JP")}円</div>
-                <div className="text-xs text-stone-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   控除対象仕入税額（実額）: {result.general.deductibleInputTax.toLocaleString("ja-JP")}円
                 </div>
               </div>
             </div>
 
-            <div className="border border-stone-300 bg-white rounded-lg p-4 flex items-center justify-between gap-4 flex-wrap">
+            <div className="border border-border bg-surface rounded-lg p-4 flex items-center justify-between gap-4 flex-wrap">
               <div>
                 <span className="inline-block w-fit text-xs px-2 py-0.5 rounded-full font-medium bg-stone-700 text-white">
                   参考：金額だけで見た場合
@@ -216,16 +216,16 @@ export function SimplifiedTaxationSimulator() {
                 </div>
               </div>
               {result.eligible && (
-                <div className="text-sm text-stone-600 max-w-xs">
+                <div className="text-sm text-muted-foreground max-w-xs">
                   当期は選択可能なため、この試算どおり{CHEAPER_METHOD_LABELS[result.recommendedMethod]}が有利な目安になります。
                 </div>
               )}
             </div>
 
-            <div className="border border-stone-300 bg-white overflow-x-auto">
+            <div className="border border-border bg-surface overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">事業区分</th>
                     <th className="px-3 py-2 font-normal">課税売上高</th>
                     <th className="px-3 py-2 font-normal">みなし仕入率</th>
@@ -234,7 +234,7 @@ export function SimplifiedTaxationSimulator() {
                 </thead>
                 <tbody>
                   {result.simplified.categoryBreakdown.map((c) => (
-                    <tr key={c.category} className="border-b border-stone-100 last:border-b-0">
+                    <tr key={c.category} className="border-b border-border/60 last:border-b-0">
                       <td className="px-3 py-2 whitespace-nowrap">{c.categoryLabel}</td>
                       <td className="px-3 py-2">{c.taxableSales.toLocaleString("ja-JP")}円</td>
                       <td className="px-3 py-2">{Math.round(c.deemedPurchaseRate * 100)}%</td>
@@ -251,8 +251,8 @@ export function SimplifiedTaxationSimulator() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.assumptions.map((assumption) => (
                   <li key={assumption}>{assumption}</li>
                 ))}
@@ -262,7 +262,7 @@ export function SimplifiedTaxationSimulator() {
             <p className="text-xs text-amber-700 leading-relaxed">{result.disclaimer}</p>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         )}
       </section>
     </div>

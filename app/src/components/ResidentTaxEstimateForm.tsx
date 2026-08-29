@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { estimateIndividualResidentTax } from "@/lib/tax/individualResidentTaxEstimate";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 const yen = new Intl.NumberFormat("ja-JP");
 
 /**
@@ -35,7 +35,7 @@ export function ResidentTaxEstimateForm() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-5 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-5 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="resident-tax-taxable-income">
             所得税の課税所得金額（円）
@@ -49,12 +49,12 @@ export function ResidentTaxEstimateForm() {
             placeholder="例：4000000"
             className={inputClass}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             確定申告書における「課税される所得金額」を入力してください。住民税独自の所得控除額（基礎控除43万円等）による再計算は行わず、この金額をそのまま住民税の課税所得金額の概算として用います。
           </p>
         </div>
 
-        <div className="border-t border-stone-200 pt-4">
+        <div className="border-t border-border pt-4">
           <label className={labelClass} htmlFor="resident-tax-donation-amount">
             ふるさと納税等の年間寄附金額（円）
           </label>
@@ -67,7 +67,7 @@ export function ResidentTaxEstimateForm() {
             placeholder="例：0"
             className={inputClass}
           />
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             寄附を行っていない場合は0円のままで構いません。寄附金税額控除（基本控除分＋特例控除分）を所得割額から差し引いて試算します。
           </p>
         </div>
@@ -78,61 +78,61 @@ export function ResidentTaxEstimateForm() {
       <section>
         <h2 className="text-lg font-semibold mb-3">試算結果</h2>
         {!result ? (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="border border-stone-700 bg-stone-800 text-white rounded-lg p-4">
+            <div className="border border-border bg-foreground text-background rounded-lg p-4">
               <div className="text-xs text-stone-300 mb-1">翌年度の個人住民税額（見込み・概算）</div>
               <div className="text-3xl font-semibold">{yen.format(result.totalEstimatedResidentTax)}円</div>
-              <div className="text-xs text-stone-300 mt-1">
+              <div className="text-xs text-muted-foreground mt-1">
                 所得割 {yen.format(result.incomeLevy.afterCredit)}円 ＋ 均等割 {yen.format(result.perCapitaLevy.total)}円
               </div>
             </div>
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="border border-emerald-400 bg-emerald-50 rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">所得割額（概算）</div>
+                <div className="text-xs text-muted-foreground mb-1">所得割額（概算）</div>
                 <div className="text-2xl font-semibold">{yen.format(result.incomeLevy.afterCredit)}円</div>
-                <div className="text-xs text-stone-500 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   税額控除前 {yen.format(result.incomeLevy.beforeCredit)}円（道府県民税4%＋市町村民税6%）
                 </div>
                 {result.incomeLevy.donationCredit.total > 0 && (
-                  <div className="text-xs text-stone-500 mt-1">
+                  <div className="text-xs text-muted-foreground mt-1">
                     寄附金税額控除 −{yen.format(result.incomeLevy.donationCredit.total)}円
                   </div>
                 )}
               </div>
-              <div className="border border-stone-300 bg-white rounded-lg p-4">
-                <div className="text-xs text-stone-500 mb-1">均等割額</div>
+              <div className="border border-border bg-surface rounded-lg p-4">
+                <div className="text-xs text-muted-foreground mb-1">均等割額</div>
                 <div className="text-2xl font-semibold">{yen.format(result.perCapitaLevy.total)}円</div>
-                <div className="text-xs text-stone-500 mt-1">道府県民税＋市町村民税＋森林環境税の標準額</div>
+                <div className="text-xs text-muted-foreground mt-1">道府県民税＋市町村民税＋森林環境税の標準額</div>
               </div>
             </div>
 
-            <div className="border border-stone-300 bg-white overflow-x-auto">
+            <div className="border border-border bg-surface overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">項目</th>
                     <th className="px-3 py-2 font-normal">金額</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">道府県民税所得割（課税所得×4%）</td>
                     <td className="px-3 py-2">{yen.format(result.incomeLevy.prefectural)}円</td>
                   </tr>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">市町村民税所得割（課税所得×6%）</td>
                     <td className="px-3 py-2">{yen.format(result.incomeLevy.municipal)}円</td>
                   </tr>
                   {result.incomeLevy.donationCredit.total > 0 && (
                     <>
-                      <tr className="border-b border-stone-100">
+                      <tr className="border-b border-border/60">
                         <td className="px-3 py-2 whitespace-nowrap">寄附金税額控除（基本控除分）</td>
                         <td className="px-3 py-2">−{yen.format(result.incomeLevy.donationCredit.basic)}円</td>
                       </tr>
-                      <tr className="border-b border-stone-100">
+                      <tr className="border-b border-border/60">
                         <td className="px-3 py-2 whitespace-nowrap">寄附金税額控除（特例控除分）</td>
                         <td className="px-3 py-2">−{yen.format(result.incomeLevy.donationCredit.special)}円</td>
                       </tr>
@@ -142,15 +142,15 @@ export function ResidentTaxEstimateForm() {
                     <td className="px-3 py-2 whitespace-nowrap">所得割額（100円未満切り捨て後）</td>
                     <td className="px-3 py-2">{yen.format(result.incomeLevy.afterCredit)}円</td>
                   </tr>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">道府県民税均等割</td>
                     <td className="px-3 py-2">{yen.format(result.perCapitaLevy.prefectural)}円</td>
                   </tr>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">市町村民税均等割</td>
                     <td className="px-3 py-2">{yen.format(result.perCapitaLevy.municipal)}円</td>
                   </tr>
-                  <tr className="border-b border-stone-100">
+                  <tr className="border-b border-border/60">
                     <td className="px-3 py-2 whitespace-nowrap">森林環境税</td>
                     <td className="px-3 py-2">{yen.format(result.perCapitaLevy.forestEnvironmentTax)}円</td>
                   </tr>
@@ -163,8 +163,8 @@ export function ResidentTaxEstimateForm() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.assumptions.map((assumption) => (
                   <li key={assumption}>{assumption}</li>
                 ))}

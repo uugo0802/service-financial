@@ -27,7 +27,7 @@ export function SideIncomeEstimateForm() {
   return (
     <div className="flex flex-col gap-8">
       <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4 max-w-md">
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           給与収入（年間・税込の額面、源泉徴収前）
           <input
             type="number"
@@ -37,12 +37,12 @@ export function SideIncomeEstimateForm() {
             onChange={(e) => setSalaryRevenueInput(e.target.value)}
             placeholder="例: 5000000"
             aria-label="給与収入"
-            className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+            className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
           />
-          <span className="text-stone-400">源泉徴収票の「支払金額」欄の金額を入力してください</span>
+          <span className="text-muted-foreground">源泉徴収票の「支払金額」欄の金額を入力してください</span>
         </label>
 
-        <label className="flex flex-col gap-1 text-xs text-stone-500">
+        <label className="flex flex-col gap-1 text-xs text-muted-foreground">
           事業所得（副業・個人事業の年間利益、必要経費・青色申告特別控除を差し引いた後の金額）
           <input
             type="number"
@@ -51,9 +51,9 @@ export function SideIncomeEstimateForm() {
             onChange={(e) => setBusinessProfitInput(e.target.value)}
             placeholder="例: 1000000"
             aria-label="事業所得"
-            className="border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+            className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
           />
-          <span className="text-stone-400">
+          <span className="text-muted-foreground">
             赤字（マイナス）の場合はマイナスの値で入力してください（給与所得と損益通算します）
           </span>
         </label>
@@ -64,50 +64,50 @@ export function SideIncomeEstimateForm() {
           計算結果（総合課税の概算）
         </h3>
 
-        <div className="overflow-x-auto border border-stone-300">
+        <div className="overflow-x-auto border border-border">
           <table className="w-full text-sm min-w-[480px]">
             <thead>
-              <tr className="bg-stone-100 text-left text-xs text-stone-500">
+              <tr className="bg-surface text-left text-xs text-muted-foreground">
                 <th className="px-3 py-2 font-normal">項目</th>
                 <th className="px-3 py-2 font-normal text-right">金額</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">給与収入</td>
                 <td className="px-3 py-2 text-right tabular-nums">{formatYen(result.salaryRevenue)}</td>
               </tr>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">給与所得控除</td>
-                <td className="px-3 py-2 text-right tabular-nums text-stone-500">
+                <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
                   −{formatYen(result.employmentIncomeDeduction)}
                 </td>
               </tr>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">給与所得</td>
                 <td className="px-3 py-2 text-right tabular-nums font-medium">{formatYen(result.salaryIncome)}</td>
               </tr>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">事業所得（副業）</td>
                 <td className="px-3 py-2 text-right tabular-nums font-medium">{formatYen(result.businessProfit)}</td>
               </tr>
-              <tr className="border-t border-stone-300 bg-stone-50">
+              <tr className="border-t border-border bg-stone-50">
                 <td className="px-3 py-2 font-semibold">合計所得金額</td>
                 <td className="px-3 py-2 text-right tabular-nums font-semibold">{formatYen(result.totalIncome)}</td>
               </tr>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">基礎控除</td>
-                <td className="px-3 py-2 text-right tabular-nums text-stone-500">−{formatYen(480_000)}</td>
+                <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">−{formatYen(480_000)}</td>
               </tr>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">課税所得金額</td>
                 <td className="px-3 py-2 text-right tabular-nums font-medium">{formatYen(result.taxableIncome)}</td>
               </tr>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">所得税額（適用税率 {result.incomeTax.marginalRate}%）</td>
                 <td className="px-3 py-2 text-right tabular-nums">{formatYen(result.incomeTax.tax)}</td>
               </tr>
-              <tr className="border-t border-stone-200">
+              <tr className="border-t border-border">
                 <td className="px-3 py-2">復興特別所得税（2.1%）</td>
                 <td className="px-3 py-2 text-right tabular-nums">{formatYen(result.reconstructionSurtax)}</td>
               </tr>
@@ -121,7 +121,7 @@ export function SideIncomeEstimateForm() {
           </table>
         </div>
 
-        <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+        <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
           {result.assumptions.map((assumption, index) => (
             <li key={index}>{assumption}</li>
           ))}

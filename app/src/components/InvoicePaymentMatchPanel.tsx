@@ -103,7 +103,7 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
 
       <section>
         <h3 className="text-sm font-semibold mb-1">まとめ入金の可能性（要確認）</h3>
-        <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">
+        <p className="text-xs text-muted-foreground mb-3 leading-relaxed max-w-2xl">
           複数の請求書の合計額が1回の入金額と一致しました。どの組み合わせが実際に支払われたかはこのツールでは
           自動判定せず（一般的な組み合わせ探索は行いません）、要確認としてのみフラグを立てています。
         </p>
@@ -122,11 +122,11 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
                   <div className="flex flex-wrap items-baseline justify-between gap-2">
                     <div className="text-sm">
                       <span className="font-medium">{item.transaction.date}</span>{" "}
-                      <span className="text-stone-600 dark:text-stone-300">{item.transaction.description}</span>
+                      <span className="text-muted-foreground">{item.transaction.description}</span>
                     </div>
                     <span className="tabular-nums font-semibold">{yen.format(item.transaction.amount)}</span>
                   </div>
-                  <p className="text-xs text-stone-600 dark:text-stone-300">
+                  <p className="text-xs text-muted-foreground">
                     請求先候補: {item.clientName} ／ 対象請求書候補: {item.candidateInvoiceNumbers.join(" + ")}
                   </p>
                   <p className="text-xs text-red-800 dark:text-red-300">{item.note}</p>
@@ -137,7 +137,7 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
                       <button
                         type="button"
                         onClick={() => decide(key, "confirmed")}
-                        className="text-xs px-3 py-1.5 border border-stone-400 dark:border-stone-600 rounded hover:border-red-700 dark:hover:border-red-400"
+                        className="text-xs px-3 py-1.5 border border-border rounded hover:border-red-700 dark:hover:border-red-400"
                       >
                         確認済みにする（消込は別途手動で行ってください）
                       </button>
@@ -153,17 +153,17 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
       <section>
         <h3 className="text-sm font-semibold mb-2">
           未消込の入金
-          <span className="text-xs font-normal text-stone-500 dark:text-stone-400 ml-2">
+          <span className="text-xs font-normal text-muted-foreground ml-2">
             {result.unmatchedDeposits.length}件
           </span>
         </h3>
         {result.unmatchedDeposits.length === 0 ? (
           <EmptyState text="未消込の入金取引はありません。" />
         ) : (
-          <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+          <div className="overflow-x-auto border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">日付</th>
                   <th className="px-3 py-2 font-normal">摘要</th>
                   <th className="px-3 py-2 font-normal text-right">金額</th>
@@ -172,7 +172,7 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
               </thead>
               <tbody>
                 {result.unmatchedDeposits.map((u) => (
-                  <tr key={u.transaction.transactionId} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+                  <tr key={u.transaction.transactionId} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">{u.transaction.date}</td>
                     <td className="px-3 py-2 max-w-xs truncate" title={u.transaction.description}>
                       {u.transaction.description}
@@ -180,7 +180,7 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
                     <td className="px-3 py-2 text-right tabular-nums text-emerald-700 dark:text-emerald-400">
                       {yen.format(u.transaction.amount)}
                     </td>
-                    <td className="px-3 py-2 text-xs text-stone-500 dark:text-stone-400">{u.reason}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{u.reason}</td>
                   </tr>
                 ))}
               </tbody>
@@ -192,17 +192,17 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
       <section>
         <h3 className="text-sm font-semibold mb-2">
           対応する入金が見つからない未収請求書
-          <span className="text-xs font-normal text-stone-500 dark:text-stone-400 ml-2">
+          <span className="text-xs font-normal text-muted-foreground ml-2">
             {result.unmatchedInvoices.length}件
           </span>
         </h3>
         {result.unmatchedInvoices.length === 0 ? (
           <EmptyState text="対応する入金が見つからない未収請求書はありません。" />
         ) : (
-          <div className="overflow-x-auto border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900">
+          <div className="overflow-x-auto border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">請求書番号</th>
                   <th className="px-3 py-2 font-normal">請求先</th>
                   <th className="px-3 py-2 font-normal text-right">未収金額</th>
@@ -210,7 +210,7 @@ export function InvoicePaymentMatchPanel({ invoices, transactions }: InvoicePaym
               </thead>
               <tbody>
                 {result.unmatchedInvoices.map((inv) => (
-                  <tr key={inv.invoiceNumber} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+                  <tr key={inv.invoiceNumber} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2 tabular-nums">{inv.invoiceNumber}</td>
                     <td className="px-3 py-2">{inv.clientName || "（請求先未入力）"}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(inv.outstandingAmount)}</td>
@@ -235,11 +235,11 @@ function SummaryTile({ label, value, accent }: { label: string; value: number; a
   const accentClass = {
     emerald: "text-emerald-700 dark:text-emerald-400",
     amber: "text-amber-700 dark:text-amber-500",
-    stone: "text-stone-700 dark:text-stone-300",
+    stone: "text-foreground",
   }[accent];
   return (
     <div className="border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 rounded p-4">
-      <p className="text-xs text-stone-500 dark:text-stone-400">{label}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p className={`text-2xl font-semibold tabular-nums mt-1 ${accentClass}`}>{value}</p>
     </div>
   );
@@ -247,7 +247,7 @@ function SummaryTile({ label, value, accent }: { label: string; value: number; a
 
 function EmptyState({ text }: { text: string }) {
   return (
-    <div className="border border-dashed border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded p-6 text-center text-sm text-stone-500 dark:text-stone-400">
+    <div className="border border-dashed border-border bg-surface rounded p-6 text-center text-sm text-muted-foreground">
       {text}
     </div>
   );
@@ -256,7 +256,7 @@ function EmptyState({ text }: { text: string }) {
 function DecisionBadge({ label, tone, onClear }: { label: string; tone: "emerald" | "stone"; onClear: () => void }) {
   const toneClass = {
     emerald: "border-emerald-400 text-emerald-800 dark:border-emerald-600 dark:text-emerald-300",
-    stone: "border-stone-400 text-stone-600 dark:border-stone-600 dark:text-stone-300",
+    stone: "border-stone-400 text-muted-foreground dark:border-stone-600 dark:text-muted-foreground",
   }[tone];
   return (
     <div className={`inline-flex items-center gap-2 text-xs border rounded px-2 py-1 ${toneClass}`}>
@@ -304,9 +304,9 @@ function MatchSection({
     <section>
       <h3 className="text-sm font-semibold mb-1">
         {title}
-        <span className="text-xs font-normal text-stone-500 dark:text-stone-400 ml-2">{candidates.length}件</span>
+        <span className="text-xs font-normal text-muted-foreground ml-2">{candidates.length}件</span>
       </h3>
-      <p className="text-xs text-stone-500 dark:text-stone-400 mb-3 leading-relaxed max-w-2xl">{description}</p>
+      <p className="text-xs text-muted-foreground mb-3 leading-relaxed max-w-2xl">{description}</p>
 
       {candidates.length === 0 ? (
         <EmptyState text="該当する候補はありません。" />
@@ -325,11 +325,11 @@ function MatchSection({
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div className="text-sm">
                     <span className="font-medium">{candidate.transaction.date}</span>{" "}
-                    <span className="text-stone-600 dark:text-stone-300">{candidate.transaction.description}</span>
+                    <span className="text-muted-foreground">{candidate.transaction.description}</span>
                   </div>
                   <span className="tabular-nums font-semibold">{yen.format(candidate.transaction.amount)}</span>
                 </div>
-                <p className="text-xs text-stone-600 dark:text-stone-300">
+                <p className="text-xs text-muted-foreground">
                   請求書 <span className="font-medium">{candidate.invoiceNumber}</span> ／ 請求先: {candidate.clientName} ／
                   未収金額: <span className="tabular-nums">{yen.format(candidate.invoiceOutstandingAmount)}</span>
                   {showRemainingBalance && candidate.remainingBalanceAfterMatch !== undefined && (
@@ -340,7 +340,7 @@ function MatchSection({
                     </>
                   )}
                 </p>
-                <p className="text-xs text-stone-500 dark:text-stone-400">{candidate.reason}</p>
+                <p className="text-xs text-muted-foreground">{candidate.reason}</p>
 
                 <div className="flex items-center gap-2">
                   {decision === "confirmed" && <DecisionBadge label="消込を確定しました" tone="emerald" onClear={() => onClear(key)} />}
@@ -357,7 +357,7 @@ function MatchSection({
                       <button
                         type="button"
                         onClick={() => onReject(key)}
-                        className="text-xs px-3 py-1.5 border border-stone-400 dark:border-stone-600 rounded hover:border-red-700 dark:hover:border-red-400"
+                        className="text-xs px-3 py-1.5 border border-border rounded hover:border-red-700 dark:hover:border-red-400"
                       >
                         違う（却下）
                       </button>

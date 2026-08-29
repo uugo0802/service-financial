@@ -5,8 +5,8 @@ import { calculateYearEndAdjustment } from "@/lib/payroll/yearEndAdjustment";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 const OUTCOME_LABEL: Record<string, string> = {
   shortfall: "徴収不足（追加で徴収・納付が必要）",
@@ -57,7 +57,7 @@ export function YearEndAdjustmentCalculator() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass} htmlFor="year-end-annual-gross-compensation">
             年間の給与等の総支給額（月々の役員報酬・給与＋賞与の合計、円）
@@ -126,34 +126,34 @@ export function YearEndAdjustmentCalculator() {
       <section>
         <h2 className="text-lg font-semibold mb-3">計算結果</h2>
         {result ? (
-          <div className="border border-stone-300 bg-white p-4 flex flex-col gap-2">
-            <div className="flex justify-between text-sm text-stone-600">
+          <div className="border border-border bg-surface p-4 flex flex-col gap-2">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>給与所得控除</span>
               <span className="tabular-nums">{yen.format(result.salaryIncomeDeduction)}円</span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>給与所得</span>
               <span className="tabular-nums">{yen.format(result.salaryIncome)}円</span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>基礎控除・扶養控除（概算）</span>
               <span className="tabular-nums">
                 {yen.format(result.basicDeduction + result.dependentDeduction)}円
               </span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>課税所得（概算）</span>
               <span className="tabular-nums">{yen.format(result.taxableIncome)}円</span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600 border-t border-stone-200 pt-2">
+            <div className="flex justify-between text-sm text-muted-foreground border-t border-stone-200 pt-2">
               <span>年間の所得税・復興特別所得税額（概算）</span>
               <span className="tabular-nums">{yen.format(result.totalAnnualTaxDue)}円</span>
             </div>
-            <div className="flex justify-between text-sm text-stone-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <span>その年にすでに源泉徴収した税額の合計</span>
               <span className="tabular-nums">{yen.format(result.alreadyWithheld)}円</span>
             </div>
-            <div className="flex justify-between text-base font-semibold border-t border-stone-200 pt-2">
+            <div className="flex justify-between text-base font-semibold border-t border-border pt-2">
               <span>年末調整による差額（概算）</span>
               <span className="tabular-nums">
                 {yen.format(Math.abs(result.difference))}円（{OUTCOME_LABEL[result.outcome]}）
@@ -161,7 +161,7 @@ export function YearEndAdjustmentCalculator() {
             </div>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-muted-foreground">
             年間の給与等の総支給額を入力すると、年末調整による過不足額（概算）を計算します。
           </p>
         )}

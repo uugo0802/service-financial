@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function SimplifiedTaxationPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 簡易課税 vs 原則課税 選択シミュレーター</div>
+          <div className="text-xs text-muted-foreground">MVP — 簡易課税 vs 原則課税 選択シミュレーター</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">簡易課税 vs 原則課税 選択シミュレーター</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             基準期間の課税売上高、当期の課税売上高（事業区分別内訳）、原則課税を選んだ場合の課税仕入高の
             見込みを入力すると、簡易課税・原則課税それぞれで見込まれる消費税額を概算で比較します。
             簡易課税は基準期間の課税売上高が5,000万円以下の場合のみ選択でき、選択すると原則として

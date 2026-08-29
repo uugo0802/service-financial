@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function TaxableStatusPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 消費税課税事業者判定シミュレーター</div>
+          <div className="text-xs text-muted-foreground">MVP — 消費税課税事業者判定シミュレーター</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">消費税課税事業者判定シミュレーター</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             基準期間（原則2年前）・特定期間（原則前年の上半期6か月）の課税売上高、新設法人の資本金特例、
             インボイス発行事業者（適格請求書発行事業者）としての登録の有無を入力すると、当期が消費税の
             「課税事業者」か「免税事業者」かを、どのルールが判定の決め手になったかを示しながら計算します。

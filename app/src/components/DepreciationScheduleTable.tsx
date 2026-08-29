@@ -16,25 +16,25 @@ function formatRate(rate: number): string {
 export function DepreciationScheduleTable({ form }: { form: DepreciationScheduleForm }) {
   return (
     <section className="flex flex-col gap-4">
-      <div className="border-2 border-stone-800 dark:border-stone-300">
-        <div className="flex items-baseline justify-between gap-3 border-b-2 border-stone-800 dark:border-stone-300 px-3 py-2">
+      <div className="border-2 border-foreground">
+        <div className="flex items-baseline justify-between gap-3 border-b-2 border-foreground px-3 py-2">
           <div className="text-sm font-semibold tracking-widest">{form.formTitle}</div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 shrink-0">{form.formLabel}</div>
+          <div className="text-xs text-stone-500 shrink-0">{form.formLabel}</div>
         </div>
 
-        <div className="px-3 py-2 text-xs text-stone-500 dark:text-stone-400">
+        <div className="px-3 py-2 text-xs text-stone-500">
           事業年度: {form.fiscalPeriod.start} 〜 {form.fiscalPeriod.end}
         </div>
 
         {form.rows.length === 0 ? (
-          <p className="px-3 pb-4 text-sm text-stone-500 dark:text-stone-400">
+          <p className="px-3 pb-4 text-sm text-stone-500">
             対象期間・登録資産のもとでは、定額法による明細に記載できる資産がありません。
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b border-stone-400 dark:border-stone-600 text-left text-stone-500 dark:text-stone-400 text-xs">
+                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
                   <th className="px-2 py-2 font-normal whitespace-nowrap">種類・名称</th>
                   <th className="px-2 py-2 font-normal whitespace-nowrap">取得年月</th>
                   <th className="px-2 py-2 font-normal whitespace-nowrap">事業供用年月</th>
@@ -53,7 +53,7 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
               </thead>
               <tbody>
                 {form.rows.map((row) => (
-                  <tr key={row.assetId} className="border-b border-stone-100 dark:border-stone-800 last:border-0 align-top">
+                  <tr key={row.assetId} className="border-b border-stone-100 last:border-0 align-top">
                     <td className="px-2 py-2 whitespace-nowrap">{row.assetName}</td>
                     <td className="px-2 py-2 whitespace-nowrap tabular-nums">{row.acquisitionDate}</td>
                     <td className="px-2 py-2 whitespace-nowrap tabular-nums">{row.serviceStartDate}</td>
@@ -61,7 +61,7 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
                     <td className="px-2 py-2 text-right tabular-nums">{yen.format(row.acquisitionCost)}</td>
                     <td className="px-2 py-2 text-right tabular-nums">{yen.format(row.netAcquisitionCost)}</td>
                     <td className="px-2 py-2 text-right tabular-nums">{yen.format(row.depreciationBase)}</td>
-                    <td className="px-2 py-2 whitespace-nowrap text-xs text-stone-600 dark:text-stone-300">定額法</td>
+                    <td className="px-2 py-2 whitespace-nowrap text-xs text-stone-500">定額法</td>
                     <td className="px-2 py-2 text-right tabular-nums">{formatRate(row.depreciationRate)}</td>
                     <td className="px-2 py-2 text-right tabular-nums whitespace-nowrap">{row.monthsInService}ヶ月</td>
                     <td className="px-2 py-2 text-right tabular-nums">{yen.format(row.ordinaryDepreciationLimit)}</td>
@@ -69,14 +69,14 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
                       {yen.format(row.currentYearDepreciationExpense)}
                     </td>
                     <td className="px-2 py-2 text-right tabular-nums">{yen.format(row.endingBookValue)}</td>
-                    <td className="px-2 py-2 text-xs text-stone-500 dark:text-stone-400 max-w-[14rem]">
+                    <td className="px-2 py-2 text-xs text-stone-500 max-w-[14rem]">
                       {row.remarks.length > 0 ? row.remarks.join(" ") : "—"}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-stone-800 dark:border-stone-300 font-semibold">
+                <tr className="border-t-2 border-foreground font-semibold">
                   <td className="px-2 py-2" colSpan={4}>
                     合計
                   </td>
@@ -118,7 +118,7 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
         </div>
       )}
 
-      <ul className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed list-disc list-inside space-y-1">
+      <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
         {form.notes.map((note, i) => (
           <li key={i}>{note}</li>
         ))}

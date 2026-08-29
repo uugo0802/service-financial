@@ -45,20 +45,20 @@ const SAMPLE_COUNTERPARTIES: Counterparty[] = [
 
 export default function ClientsPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">取引先・仕入先マスタ</div>
+          <div className="text-xs text-muted-foreground">取引先・仕入先マスタ</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">取引先・仕入先マスタ</h1>
-          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             売上先（顧客）・仕入先を一度登録しておくと、名称の表記ゆれを防ぎ、既定の勘定科目やインボイス登録番号を取引明細・請求書作成のたびに入力し直す手間を減らせます。
           </p>
           <p className="text-xs text-amber-700 max-w-2xl leading-relaxed mt-2">
@@ -68,7 +68,7 @@ export default function ClientsPage() {
 
         <ClientMasterTable initialRecords={SAMPLE_COUNTERPARTIES} />
 
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-muted-foreground">
           この画面は開発中のプロトタイプです。登録した取引先情報はこのブラウザセッション内のみで保持され、実際のデータベースには保存されません。
         </p>
       </PageContainer>

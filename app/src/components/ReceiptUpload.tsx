@@ -160,7 +160,7 @@ export function ReceiptUpload({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+      <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
         レシート・請求書をカメラで撮影、または画像ファイル・PDF（スキャンデータ、単一ページのみ対応）を選択してアップロードすると、
         Claudeが読み取り内容から日付・金額・取引先を抽出し、勘定科目・消費税区分を自動判定します。
         <b>読み取り結果は必ずご自身で確認・修正してから確定してください。</b>
@@ -173,8 +173,8 @@ export function ReceiptUpload({
           <label
             className={`inline-flex min-w-[11rem] items-center justify-center gap-3 border px-5 py-3 text-sm transition-colors ${
               loading
-                ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-                : "border-stone-400 bg-white cursor-pointer hover:border-red-700"
+                ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                : "border-border bg-surface cursor-pointer hover:border-red-700"
             }`}
           >
             <span>{getCameraCaptureLabel(loading)}</span>
@@ -197,8 +197,8 @@ export function ReceiptUpload({
         <label
           className={`inline-flex min-w-[11rem] items-center justify-center gap-3 border px-5 py-3 text-sm transition-colors ${
             loading
-              ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-              : "border-stone-400 bg-white cursor-pointer hover:border-red-700"
+              ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+              : "border-border bg-surface cursor-pointer hover:border-red-700"
           }`}
         >
           <span>{getFilePickerLabel(loading)}</span>
@@ -215,7 +215,7 @@ export function ReceiptUpload({
             }}
           />
         </label>
-        {confirmedCount > 0 && <span className="text-xs text-stone-500">確定済み: {confirmedCount}件</span>}
+        {confirmedCount > 0 && <span className="text-xs text-muted-foreground">確定済み: {confirmedCount}件</span>}
       </div>
 
       {error && <p className="text-sm text-red-700">{error}</p>}
@@ -248,11 +248,11 @@ export function ReceiptUpload({
               href={previewUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex max-w-xs flex-col items-center justify-center gap-2 border border-stone-300 bg-stone-50 p-6 text-center text-xs text-stone-600 hover:border-red-700"
+              className="flex max-w-xs flex-col items-center justify-center gap-2 border border-stone-300 bg-stone-50 p-6 text-center text-xs text-muted-foreground hover:border-red-700"
             >
               <span aria-hidden className="text-3xl">📄</span>
               <span className="break-all">{previewFileName}</span>
-              <span className="text-stone-400">クリックしてPDFを開く</span>
+              <span className="text-muted-foreground">クリックしてPDFを開く</span>
             </a>
           ) : (
             // eslint-disable-next-line @next/next/no-img-element -- ユーザーが選択したローカル画像のプレビューのため next/image の最適化対象外
@@ -260,7 +260,7 @@ export function ReceiptUpload({
           )}
 
           {candidate && (
-            <div className="flex-1 flex flex-col gap-3 border border-stone-300 bg-white p-4">
+            <div className="flex-1 flex flex-col gap-3 border border-border bg-surface p-4">
               {duplicateWarning && (
                 <div role="status" className="border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
                   <p className="font-semibold">同じ日付・金額・取引先のレシートを既にこのセッションで確定済みです（重複の可能性）</p>
@@ -279,7 +279,7 @@ export function ReceiptUpload({
               <Field label="日付">
                 <input
                   type="date"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"
+                  className="w-full border border-border rounded px-2 py-1.5 text-sm"
                   value={candidate.date ?? ""}
                   onChange={(e) => updateField("date", e.target.value || null)}
                 />
@@ -287,7 +287,7 @@ export function ReceiptUpload({
               <Field label="取引先">
                 <input
                   type="text"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"
+                  className="w-full border border-border rounded px-2 py-1.5 text-sm"
                   value={candidate.counterparty ?? ""}
                   onChange={(e) => updateField("counterparty", e.target.value || null)}
                   placeholder="例: 株式会社〇〇"
@@ -296,7 +296,7 @@ export function ReceiptUpload({
               <Field label="金額（円）">
                 <input
                   type="number"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"
+                  className="w-full border border-border rounded px-2 py-1.5 text-sm"
                   value={candidate.amount ?? ""}
                   onChange={(e) => updateField("amount", e.target.value === "" ? null : Number(e.target.value))}
                 />
@@ -304,14 +304,14 @@ export function ReceiptUpload({
               <Field label="勘定科目">
                 <input
                   type="text"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm"
+                  className="w-full border border-border rounded px-2 py-1.5 text-sm"
                   value={candidate.account}
                   onChange={(e) => updateField("account", e.target.value)}
                 />
               </Field>
               <Field label="消費税区分">
                 <select
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm bg-white"
+                  className="w-full border border-border rounded px-2 py-1.5 text-sm bg-surface"
                   value={candidate.taxCategory}
                   onChange={(e) => updateField("taxCategory", e.target.value as ReceiptJournalCandidate["taxCategory"])}
                 >
@@ -322,14 +322,14 @@ export function ReceiptUpload({
                   ))}
                 </select>
               </Field>
-              {candidate.reasoning && <p className="text-xs text-stone-500">判定根拠: {candidate.reasoning}</p>}
+              {candidate.reasoning && <p className="text-xs text-muted-foreground">判定根拠: {candidate.reasoning}</p>}
 
               <ScanMetadataPanel candidate={candidate} />
 
               <button
                 type="button"
                 onClick={handleConfirm}
-                className="mt-2 text-sm px-4 py-2 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors self-start"
+                className="mt-2 text-sm px-4 py-2 border border-accent bg-accent text-white hover:opacity-90 transition-colors self-start"
               >
                 この内容で確定する
               </button>
@@ -343,7 +343,7 @@ export function ReceiptUpload({
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1 text-xs text-stone-500">
+    <label className="flex flex-col gap-1 text-xs text-muted-foreground">
       {label}
       {children}
     </label>
@@ -353,8 +353,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 function ScanMetadataPanel({ candidate }: { candidate: ReceiptJournalCandidate }) {
   const m = candidate.scanMetadata;
   return (
-    <div className="mt-2 border-t border-stone-200 pt-3 text-xs text-stone-500 space-y-1">
-      <div className="font-semibold text-stone-600">保存メタデータ（電子帳簿保存法 スキャナ保存要件の確認用）</div>
+    <div className="mt-2 border-t border-stone-200 pt-3 text-xs text-muted-foreground space-y-1">
+      <div className="font-semibold text-muted-foreground">保存メタデータ（電子帳簿保存法 スキャナ保存要件の確認用）</div>
       <div>取込日時: {new Date(m.uploadedAt).toLocaleString("ja-JP")}</div>
       <div>
         解像度: {m.width && m.height ? `${m.width}×${m.height}px（概算 ${m.estimatedDpi}dpi）` : "判定不能"} ／ カラー:{" "}

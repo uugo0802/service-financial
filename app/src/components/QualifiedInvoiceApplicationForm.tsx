@@ -21,8 +21,8 @@ import {
   buildInvoiceRegistrationApplicationDraft,
 } from "@/lib/tax/invoiceRegistrationApplicationForm";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 export function QualifiedInvoiceApplicationForm() {
   const [entityType, setEntityType] = useState<InvoiceRegistrationEntityType>("individual");
@@ -57,7 +57,7 @@ export function QualifiedInvoiceApplicationForm() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-5 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-5 bg-surface border border-border rounded p-4">
         <div>
           <label className={labelClass}>事業者区分</label>
           <div className="flex gap-4 text-sm">
@@ -189,7 +189,7 @@ function QualifiedInvoiceApplicationPreview({ draft }: { draft: InvoiceRegistrat
         >
           {isComplete ? "必須項目 入力済み" : "未入力の必須項目あり"}
         </span>
-        <span className="text-sm text-stone-700">{draft.entityTypeLabel}として下書きを作成しています</span>
+        <span className="text-sm text-foreground">{draft.entityTypeLabel}として下書きを作成しています</span>
       </div>
 
       {draft.warnings.length > 0 && (
@@ -203,15 +203,15 @@ function QualifiedInvoiceApplicationPreview({ draft }: { draft: InvoiceRegistrat
         </div>
       )}
 
-      <div className="border border-stone-300 bg-white divide-y divide-stone-200">
+      <div className="border border-border bg-surface divide-y divide-border">
         {draft.sections.map((section) => (
           <div key={section.title} className="p-4">
-            <h3 className="text-sm font-semibold text-stone-700 mb-2">{section.title}</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-2">{section.title}</h3>
             <dl className="text-sm space-y-1">
               {section.fields.map((field) => (
                 <div key={field.label} className="flex flex-col sm:flex-row sm:gap-2">
-                  <dt className="text-stone-500 sm:w-72 shrink-0">{field.label}</dt>
-                  <dd className="text-stone-900">{field.value}</dd>
+                  <dt className="text-muted-foreground sm:w-72 shrink-0">{field.label}</dt>
+                  <dd className="text-foreground">{field.value}</dd>
                 </div>
               ))}
             </dl>
@@ -221,8 +221,8 @@ function QualifiedInvoiceApplicationPreview({ draft }: { draft: InvoiceRegistrat
 
       {draft.notes.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold mb-2 text-stone-700">留意事項</h3>
-          <ul className="text-xs text-stone-600 leading-relaxed list-disc list-inside space-y-1">
+          <h3 className="text-sm font-semibold mb-2 text-foreground">留意事項</h3>
+          <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
             {draft.notes.map((note) => (
               <li key={note}>{note}</li>
             ))}
@@ -231,8 +231,8 @@ function QualifiedInvoiceApplicationPreview({ draft }: { draft: InvoiceRegistrat
       )}
 
       <div>
-        <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-        <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+        <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+        <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
           {draft.assumptions.map((assumption) => (
             <li key={assumption}>{assumption}</li>
           ))}

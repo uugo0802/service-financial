@@ -19,7 +19,7 @@ import {
 } from "@/lib/journal/recurringEntries";
 
 const inputClass =
-  "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
+  "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
 const errorTextClass = "mt-1 text-xs text-red-700";
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
@@ -102,16 +102,16 @@ export function RecurringEntryManager({
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+      <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
         家賃・サブスクリプション・顧問料など毎月/毎年発生する固定費をテンプレートとして登録しておくと、
         対象年月を指定してワンクリックで仕訳を自動生成できます。同じ月分は二重に生成されません。
       </p>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-stone-800">定期取引テンプレートを追加</h3>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h3 className="text-sm font-semibold text-foreground">定期取引テンプレートを追加</h3>
         <form onSubmit={handleAddTemplate} className="flex flex-col gap-4" noValidate>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className="flex flex-col gap-1 text-xs text-stone-500 sm:col-span-2">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2">
               摘要
               <input
                 type="text"
@@ -123,7 +123,7 @@ export function RecurringEntryManager({
               {errors.description && <span className={errorTextClass}>{errors.description}</span>}
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               金額（収入は正、支出は負の数値）
               <input
                 type="text"
@@ -136,7 +136,7 @@ export function RecurringEntryManager({
               {errors.amount && <span className={errorTextClass}>{errors.amount}</span>}
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               勘定科目
               <input
                 type="text"
@@ -148,7 +148,7 @@ export function RecurringEntryManager({
               {errors.account && <span className={errorTextClass}>{errors.account}</span>}
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               消費税区分
               <select
                 value={draft.taxCategory}
@@ -163,7 +163,7 @@ export function RecurringEntryManager({
               </select>
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               頻度
               <select
                 value={draft.frequency}
@@ -178,7 +178,7 @@ export function RecurringEntryManager({
               </select>
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               開始日
               <input
                 type="date"
@@ -189,7 +189,7 @@ export function RecurringEntryManager({
               {errors.startDate && <span className={errorTextClass}>{errors.startDate}</span>}
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-stone-500">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground">
               終了日（任意）
               <input
                 type="date"
@@ -200,7 +200,7 @@ export function RecurringEntryManager({
               {errors.endDate && <span className={errorTextClass}>{errors.endDate}</span>}
             </label>
 
-            <label className="flex flex-col gap-1 text-xs text-stone-500 sm:col-span-2">
+            <label className="flex flex-col gap-1 text-xs text-muted-foreground sm:col-span-2">
               メモ（任意）
               <input
                 type="text"
@@ -214,23 +214,23 @@ export function RecurringEntryManager({
 
           <button
             type="submit"
-            className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors self-start"
+            className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors self-start"
           >
             テンプレートを追加
           </button>
         </form>
       </section>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-stone-800">登録済みテンプレート</h3>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h3 className="text-sm font-semibold text-foreground">登録済みテンプレート</h3>
 
         {templates.length === 0 ? (
-          <p className="text-sm text-stone-500">まだテンプレートが登録されていません。</p>
+          <p className="text-sm text-muted-foreground">まだテンプレートが登録されていません。</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-xs text-stone-500">
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2 pr-4">摘要</th>
                   <th className="py-2 pr-4">金額</th>
                   <th className="py-2 pr-4">勘定科目</th>
@@ -243,7 +243,7 @@ export function RecurringEntryManager({
               </thead>
               <tbody>
                 {templates.map((template) => (
-                  <tr key={template.id} className="border-b border-stone-100">
+                  <tr key={template.id} className="border-b border-border/60">
                     <td className="py-2 pr-4">{template.description}</td>
                     <td className="py-2 pr-4">{yen.format(template.amount)}円</td>
                     <td className="py-2 pr-4">{template.account}</td>
@@ -254,14 +254,14 @@ export function RecurringEntryManager({
                       {template.active ? (
                         <span className="text-emerald-700">有効</span>
                       ) : (
-                        <span className="text-stone-400">無効</span>
+                        <span className="text-muted-foreground">無効</span>
                       )}
                     </td>
                     <td className="py-2 flex gap-3">
                       <button
                         type="button"
                         onClick={() => handleToggleActive(template.id)}
-                        className="text-xs text-stone-600 underline hover:text-stone-900"
+                        className="text-xs text-muted-foreground underline hover:text-foreground"
                       >
                         {template.active ? "無効化" : "有効化"}
                       </button>
@@ -281,10 +281,10 @@ export function RecurringEntryManager({
         )}
       </section>
 
-      <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-        <h3 className="text-sm font-semibold text-stone-800">対象月分を一括生成</h3>
+      <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+        <h3 className="text-sm font-semibold text-foreground">対象月分を一括生成</h3>
         <div className="flex items-end gap-3 flex-wrap">
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             対象年月
             <input
               type="month"
@@ -297,7 +297,7 @@ export function RecurringEntryManager({
             type="button"
             onClick={handleGenerate}
             disabled={templates.length === 0}
-            className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors disabled:cursor-not-allowed disabled:border-stone-300 disabled:bg-stone-300"
+            className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors disabled:cursor-not-allowed disabled:border-stone-300 disabled:bg-stone-300"
           >
             {targetYearMonth} 分を一括生成
           </button>
@@ -305,12 +305,12 @@ export function RecurringEntryManager({
 
         {lastResult && (
           <div className="flex flex-col gap-2 text-sm">
-            <p className="text-stone-700">
+            <p className="text-foreground">
               {lastResult.generated.length}件の仕訳を自動確定しました
               {lastResult.skipped.length > 0 && `（${lastResult.skipped.length}件はスキップ）`}。
             </p>
             {lastResult.generated.length > 0 && (
-              <ul className="text-xs text-stone-600 list-disc pl-5">
+              <ul className="text-xs text-muted-foreground list-disc pl-5">
                 {lastResult.generated.map((entry) => (
                   <li key={entry.id}>
                     {entry.date} {entry.description} {yen.format(entry.amount)}円（{entry.account}）

@@ -8,8 +8,8 @@ import {
   type TaxPeriod,
 } from "@/lib/tax/highValueAssetTaxableStatus";
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 type TaxPeriodRow = TaxPeriod & { id: string };
 type AssetAcquisitionRow = AssetAcquisition & { id: string };
@@ -89,18 +89,18 @@ export function HighValueAssetStatusChecker() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-stone-700">課税期間（判定に使う連続した期間）</h2>
+          <h2 className="text-sm font-semibold text-foreground">課税期間（判定に使う連続した期間）</h2>
           <button
             type="button"
             onClick={addTaxPeriod}
-            className="text-xs border border-stone-400 rounded px-2 py-1 hover:bg-stone-100"
+            className="text-xs border border-border rounded px-2 py-1 hover:bg-surface"
           >
             + 課税期間を追加
           </button>
         </div>
-        <p className="text-xs text-stone-500 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           資産の取得日を含む課税期間から、その後2課税期間分までのデータが揃っていないと、強制期間の全体を計算できません。
         </p>
         <div className="flex flex-col gap-3">
@@ -153,17 +153,17 @@ export function HighValueAssetStatusChecker() {
               </button>
             </div>
           ))}
-          {taxPeriods.length === 0 && <p className="text-xs text-stone-400">課税期間を1件以上追加してください。</p>}
+          {taxPeriods.length === 0 && <p className="text-xs text-muted-foreground">課税期間を1件以上追加してください。</p>}
         </div>
       </section>
 
-      <section className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+      <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-stone-700">資産の取得</h2>
+          <h2 className="text-sm font-semibold text-foreground">資産の取得</h2>
           <button
             type="button"
             onClick={addAcquisition}
-            className="text-xs border border-stone-400 rounded px-2 py-1 hover:bg-stone-100"
+            className="text-xs border border-border rounded px-2 py-1 hover:bg-surface"
           >
             + 資産取得を追加
           </button>
@@ -223,10 +223,10 @@ export function HighValueAssetStatusChecker() {
             </div>
           ))}
           {acquisitions.length === 0 && (
-            <p className="text-xs text-stone-400">資産取得を1件以上追加してください（無ければ「該当なし」と判定されます）。</p>
+            <p className="text-xs text-muted-foreground">資産取得を1件以上追加してください（無ければ「該当なし」と判定されます）。</p>
           )}
         </div>
-        <p className="text-xs text-stone-500">
+        <p className="text-xs text-muted-foreground">
           しきい値は税抜き取得価額
           {HIGH_VALUE_ASSET_PRICE_THRESHOLD.toLocaleString("ja-JP")}
           円「以上」です（消費税法12条の4）。
@@ -257,24 +257,24 @@ export function HighValueAssetStatusChecker() {
                 </div>
               </div>
               {result.latestMandatoryTaxableEndDate && (
-                <div className="text-sm text-stone-600 max-w-xs">
+                <div className="text-sm text-muted-foreground max-w-xs">
                   免税事業者・簡易課税の選択が制限される期間: 〜{result.latestMandatoryTaxableEndDate}
                 </div>
               )}
             </div>
 
             {result.hasHighValueAcquisition && (
-              <div className="border border-stone-300 bg-white overflow-x-auto">
+              <div className="border border-border bg-surface overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                    <tr className="border-b border-border text-left text-muted-foreground text-xs">
                       <th className="px-3 py-2 font-normal">強制課税期間</th>
                     </tr>
                   </thead>
                   <tbody>
                     {result.combinedMandatoryTaxablePeriods.map((period) => (
-                      <tr key={`${period.startDate}_${period.endDate}`} className="border-b border-stone-100 last:border-b-0">
-                        <td className="px-3 py-2 text-stone-700">
+                      <tr key={`${period.startDate}_${period.endDate}`} className="border-b border-border/60 last:border-b-0">
+                        <td className="px-3 py-2 text-foreground">
                           {period.label ? `${period.label}（` : ""}
                           {period.startDate}〜{period.endDate}
                           {period.label ? "）" : ""}
@@ -286,10 +286,10 @@ export function HighValueAssetStatusChecker() {
               </div>
             )}
 
-            <div className="border border-stone-300 bg-white overflow-x-auto">
+            <div className="border border-border bg-surface overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                  <tr className="border-b border-border text-left text-muted-foreground text-xs">
                     <th className="px-3 py-2 font-normal">資産</th>
                     <th className="px-3 py-2 font-normal">取得日</th>
                     <th className="px-3 py-2 font-normal">取得価額（税抜き）</th>
@@ -299,22 +299,22 @@ export function HighValueAssetStatusChecker() {
                 </thead>
                 <tbody>
                   {result.evaluations.map((evaluation, index) => (
-                    <tr key={index} className="border-b border-stone-100 last:border-b-0 align-top">
+                    <tr key={index} className="border-b border-border/60 last:border-b-0 align-top">
                       <td className="px-3 py-2 whitespace-nowrap font-medium">
                         {evaluation.acquisition.description || `資産${index + 1}`}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-stone-500">
+                      <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">
                         {evaluation.acquisition.acquisitionDate}
                       </td>
-                      <td className="px-3 py-2 whitespace-nowrap text-stone-500">
+                      <td className="px-3 py-2 whitespace-nowrap text-muted-foreground">
                         {evaluation.acquisition.taxExcludedPrice.toLocaleString("ja-JP")}円
                       </td>
                       <td className="px-3 py-2">
-                        <span className={evaluation.meetsThreshold ? "text-red-700 font-medium" : "text-stone-500"}>
+                        <span className={evaluation.meetsThreshold ? "text-red-700 font-medium" : "text-muted-foreground"}>
                           {evaluation.meetsThreshold ? "該当" : "非該当"}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-stone-600 leading-relaxed">
+                      <td className="px-3 py-2 text-muted-foreground leading-relaxed">
                         <ul className="list-disc list-inside space-y-1">
                           {evaluation.notes.map((note, noteIndex) => (
                             <li key={noteIndex}>{note}</li>
@@ -325,7 +325,7 @@ export function HighValueAssetStatusChecker() {
                   ))}
                   {result.evaluations.length === 0 && (
                     <tr>
-                      <td className="px-3 py-2 text-stone-400" colSpan={5}>
+                      <td className="px-3 py-2 text-muted-foreground" colSpan={5}>
                         資産取得が入力されていません。
                       </td>
                     </tr>
@@ -335,8 +335,8 @@ export function HighValueAssetStatusChecker() {
             </div>
 
             <div>
-              <h3 className="text-sm font-semibold mb-2 text-stone-700">前提・注意事項</h3>
-              <ul className="text-xs text-stone-500 leading-relaxed list-disc list-inside space-y-1">
+              <h3 className="text-sm font-semibold mb-2 text-foreground">前提・注意事項</h3>
+              <ul className="text-xs text-muted-foreground leading-relaxed list-disc list-inside space-y-1">
                 {result.assumptions.map((assumption, index) => (
                   <li key={index}>{assumption}</li>
                 ))}
@@ -346,7 +346,7 @@ export function HighValueAssetStatusChecker() {
             <p className="text-xs text-amber-700 leading-relaxed">{result.disclaimer}</p>
           </div>
         ) : (
-          <p className="text-sm text-stone-500">入力内容をご確認ください。</p>
+          <p className="text-sm text-muted-foreground">入力内容をご確認ください。</p>
         )}
       </section>
     </div>

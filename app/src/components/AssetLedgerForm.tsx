@@ -30,8 +30,8 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-const inputClass = "w-full border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600";
-const labelClass = "block text-xs text-stone-500 mb-1";
+const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40";
+const labelClass = "block text-xs text-muted-foreground mb-1";
 
 export function AssetLedgerForm() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -141,22 +141,22 @@ export function AssetLedgerForm() {
       <section>
         <h2 className="text-lg font-semibold mb-3">対象期間（事業年度）</h2>
         <div className="flex flex-wrap items-end gap-4">
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             開始日
             <input
               type="date"
               value={period.start}
               onChange={(e) => setPeriod((p) => ({ ...p, start: e.target.value }))}
-              className="w-44 border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+              className="w-44 border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-stone-500">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
             終了日
             <input
               type="date"
               value={period.end}
               onChange={(e) => setPeriod((p) => ({ ...p, end: e.target.value }))}
-              className="w-44 border border-stone-400 bg-white px-3 py-2 text-sm outline-none focus:border-stone-600"
+              className="w-44 border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
             />
           </label>
         </div>
@@ -164,7 +164,7 @@ export function AssetLedgerForm() {
 
       <section>
         <h2 className="text-lg font-semibold mb-3">資産を追加する</h2>
-        <form onSubmit={handleAddAsset} className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4">
+        <form onSubmit={handleAddAsset} className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass} htmlFor="asset-name">資産名</label>
@@ -210,7 +210,7 @@ export function AssetLedgerForm() {
                 placeholder="例：4"
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-stone-400 leading-relaxed">
+              <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                 法定耐用年数（減価償却資産の耐用年数等に関する省令）は本アプリでは自動判定しません。国税庁の耐用年数表等でご確認のうえ入力してください。
               </p>
             </div>
@@ -226,14 +226,14 @@ export function AssetLedgerForm() {
                 <option value="declining-balance">定率法（200%償却・簡略化した計算）</option>
               </select>
               {method === "declining-balance" && (
-                <p className="mt-1 text-xs text-stone-400 leading-relaxed">
+                <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
                   定率法は簡略化した実装です。国税庁の公式な償却率表（保証率・改定償却率を含む耐用年数省令別表）は使用していません。正式な金額は税理士等の専門家にご確認ください。
                 </p>
               )}
             </div>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-stone-700">
+          <label className="flex items-center gap-2 text-sm text-foreground">
             <input
               type="checkbox"
               checked={immediateExpensing}
@@ -247,7 +247,7 @@ export function AssetLedgerForm() {
           <div>
             <button
               type="submit"
-              className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+              className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
             >
               資産を追加
             </button>
@@ -258,12 +258,12 @@ export function AssetLedgerForm() {
       <section>
         <h2 className="text-lg font-semibold mb-3">固定資産台帳（{period.start} 〜 {period.end}）</h2>
         {assets.length === 0 ? (
-          <p className="text-sm text-stone-500">まだ資産が登録されていません。上のフォームから追加してください。</p>
+          <p className="text-sm text-muted-foreground">まだ資産が登録されていません。上のフォームから追加してください。</p>
         ) : (
-          <div className="overflow-x-auto border border-stone-300 bg-white">
+          <div className="overflow-x-auto border border-border bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
+                <tr className="border-b border-border text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2 font-normal">資産名</th>
                   <th className="px-3 py-2 font-normal whitespace-nowrap">取得年月日</th>
                   <th className="px-3 py-2 font-normal text-right whitespace-nowrap">取得価額</th>
@@ -280,12 +280,12 @@ export function AssetLedgerForm() {
               </thead>
               <tbody>
                 {summary.results.map((r) => (
-                  <tr key={r.asset.id} className="border-b border-stone-100 last:border-0">
+                  <tr key={r.asset.id} className="border-b border-border/60 last:border-0">
                     <td className="px-3 py-2">{r.asset.name}</td>
                     <td className="px-3 py-2 whitespace-nowrap tabular-nums">{r.asset.acquisitionDate}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(r.asset.acquisitionCost)}</td>
                     <td className="px-3 py-2 text-right tabular-nums whitespace-nowrap">{r.asset.usefulLifeYears}年</td>
-                    <td className="px-3 py-2 whitespace-nowrap text-xs text-stone-600">
+                    <td className="px-3 py-2 whitespace-nowrap text-xs text-muted-foreground">
                       {r.immediateExpensingApplied ? "少額特例" : DEPRECIATION_METHOD_LABEL[r.method]}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">{r.monthsInService}</td>
@@ -293,16 +293,16 @@ export function AssetLedgerForm() {
                     <td className="px-3 py-2 text-right tabular-nums font-medium">{yen.format(r.currentYearDepreciation)}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(r.accumulatedDepreciation)}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{yen.format(r.endingBookValue)}</td>
-                    <td className="px-3 py-2 text-xs text-stone-500 max-w-[16rem]">
+                    <td className="px-3 py-2 text-xs text-muted-foreground max-w-[16rem]">
                       {r.immediateExpensingApplied && <span className="text-sky-700">少額特例 </span>}
-                      {r.fullyDepreciated && <span className="text-stone-400">償却済（備忘価額）</span>}
+                      {r.fullyDepreciated && <span className="text-muted-foreground">償却済（備忘価額）</span>}
                       {r.notes.length > 0 && <span className="block text-amber-700">{r.notes.join(" ")}</span>}
                     </td>
                     <td className="px-3 py-2 print:hidden">
                       <button
                         type="button"
                         onClick={() => removeAsset(r.asset.id)}
-                        className="text-xs text-stone-400 hover:text-red-700"
+                        className="text-xs text-muted-foreground hover:text-red-700"
                       >
                         削除
                       </button>
@@ -311,7 +311,7 @@ export function AssetLedgerForm() {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-stone-800 font-semibold">
+                <tr className="border-t-2 border-foreground font-semibold">
                   <td className="px-3 py-2" colSpan={7}>
                     合計
                   </td>
@@ -363,7 +363,7 @@ export function AssetLedgerForm() {
           </div>
         )}
 
-        <p className="mt-3 text-xs text-stone-400 leading-relaxed">
+        <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
           少額減価償却資産の特例（取得価額30万円未満の全額即時償却）には、青色申告者について年間合計300万円までという上限があります。
           このアプリは対象資産の当期即時償却額を資産横断で自動的に合計し、上限超過の有無を上記の警告で表示しますが、
           上限を超えた場合にどの資産の特例適用を取りやめるかは自動的には決定・修正しません。最終的な判断は、必ずご自身
@@ -373,16 +373,16 @@ export function AssetLedgerForm() {
 
       <section>
         <h2 className="text-lg font-semibold mb-3">資産を除却・売却する</h2>
-        <p className="text-xs text-stone-500 mb-3 max-w-2xl leading-relaxed">
+        <p className="text-xs text-muted-foreground mb-3 max-w-2xl leading-relaxed">
           資産を廃棄・スクラップした場合や売却した場合の未償却残高と、固定資産除却損／売却損益の概算を計算します。
           受取額（売却代金）が0円の場合は「除却」、1円以上の場合は「売却」として扱います。
         </p>
         {assets.length === 0 ? (
-          <p className="text-sm text-stone-500">除却・売却するには、まず上の台帳に資産を登録してください。</p>
+          <p className="text-sm text-muted-foreground">除却・売却するには、まず上の台帳に資産を登録してください。</p>
         ) : (
           <form
             onSubmit={handleCalculateDisposal}
-            className="flex flex-col gap-4 bg-stone-50 border border-stone-200 rounded p-4"
+            className="flex flex-col gap-4 bg-surface border border-border rounded p-4"
           >
             <div className="grid sm:grid-cols-3 gap-4">
               <div>
@@ -430,7 +430,7 @@ export function AssetLedgerForm() {
             <div>
               <button
                 type="submit"
-                className="text-sm px-5 py-2.5 border border-stone-900 bg-stone-900 text-white hover:bg-stone-700 transition-colors"
+                className="text-sm px-5 py-2.5 border border-accent bg-accent text-white hover:opacity-90 transition-colors"
               >
                 除却・売却損益を計算
               </button>
@@ -439,33 +439,33 @@ export function AssetLedgerForm() {
         )}
 
         {disposalResult && (
-          <div className="mt-4 border border-stone-300 bg-white p-5">
+          <div className="mt-4 border border-border bg-surface p-5">
             <div className="text-sm font-medium mb-3">
               {disposalResult.asset.name} — {disposalResult.disposalCase === "retirement" ? "除却" : "売却"}
             </div>
             <dl className="text-sm space-y-2 max-w-md">
               <div className="flex items-baseline justify-between gap-4">
-                <dt className="text-stone-500">未償却残高の算定基準日</dt>
+                <dt className="text-muted-foreground">未償却残高の算定基準日</dt>
                 <dd className="tabular-nums">{disposalResult.cutoffDate}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-4">
-                <dt className="text-stone-500">算定基準日までの償却月数</dt>
+                <dt className="text-muted-foreground">算定基準日までの償却月数</dt>
                 <dd className="tabular-nums">{disposalResult.monthsDepreciatedBeforeDisposal}ヶ月</dd>
               </div>
               <div className="flex items-baseline justify-between gap-4">
-                <dt className="text-stone-500">減価償却累計額（算定基準日時点）</dt>
+                <dt className="text-muted-foreground">減価償却累計額（算定基準日時点）</dt>
                 <dd className="tabular-nums">{yen.format(disposalResult.accumulatedDepreciationBeforeDisposal)}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-4">
-                <dt className="text-stone-500">未償却残高</dt>
+                <dt className="text-muted-foreground">未償却残高</dt>
                 <dd className="tabular-nums font-medium">{yen.format(disposalResult.bookValueAtDisposal)}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-4">
-                <dt className="text-stone-500">受取額（売却代金）</dt>
+                <dt className="text-muted-foreground">受取額（売却代金）</dt>
                 <dd className="tabular-nums">{yen.format(disposalResult.disposalProceeds)}</dd>
               </div>
               <div className="flex items-baseline justify-between gap-4 pt-2 border-t border-stone-200">
-                <dt className={disposalResult.isGain ? "text-emerald-700" : disposalResult.isLoss ? "text-red-700" : "text-stone-500"}>
+                <dt className={disposalResult.isGain ? "text-emerald-700" : disposalResult.isLoss ? "text-red-700" : "text-muted-foreground"}>
                   {disposalResult.disposalCase === "retirement"
                     ? "固定資産除却損"
                     : disposalResult.isGain
@@ -484,7 +484,7 @@ export function AssetLedgerForm() {
               </div>
             </dl>
             {disposalResult.notes.length > 0 && (
-              <ul className="mt-4 text-xs text-stone-500 list-disc list-inside space-y-1">
+              <ul className="mt-4 text-xs text-muted-foreground list-disc list-inside space-y-1">
                 {disposalResult.notes.map((n, i) => (
                   <li key={i}>{n}</li>
                 ))}
@@ -493,7 +493,7 @@ export function AssetLedgerForm() {
           </div>
         )}
 
-        <p className="mt-3 text-xs text-stone-400 leading-relaxed">
+        <p className="mt-3 text-xs text-muted-foreground leading-relaxed">
           未償却残高は、除却・売却の属する月自体の減価償却費は計上せず、その前月末までの月割り償却額をもって概算しています（簡便法）。
           正式な決算・申告への反映は、必ずご自身（または税理士等の専門家）でご確認ください。税務代理・個別具体的な税務相談は行っておりません。
         </p>

@@ -72,16 +72,16 @@ export function InstallPromptBanner() {
       role="status"
       className="fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-4 pointer-events-none"
     >
-      <div className="pointer-events-auto w-full max-w-md rounded-lg border border-stone-300 bg-white shadow-lg p-4 flex items-center gap-4">
+      <div className="pointer-events-auto w-full max-w-md rounded-lg border border-border bg-surface shadow-lg p-4 flex items-center gap-4">
         <div className="flex-1 flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-stone-900">ホーム画面に追加できます</span>
-          <span className="text-xs text-stone-500">アプリのように起動でき、次回からすぐ開けます</span>
+          <span className="text-sm font-semibold text-foreground">ホーム画面に追加できます</span>
+          <span className="text-xs text-muted-foreground">アプリのように起動でき、次回からすぐ開けます</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={handleDismiss}
-            className="text-xs text-stone-500 hover:text-stone-700 px-2 py-1.5"
+            className="text-xs text-muted-foreground hover:text-foreground px-2 py-1.5"
           >
             後で
           </button>

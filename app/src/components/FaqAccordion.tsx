@@ -23,7 +23,7 @@ function FaqAccordionItem({ entry, isOpen, onToggle }: { entry: FaqEntry; isOpen
   const buttonId = `faq-button-${entry.id}`;
 
   return (
-    <div className="border border-stone-300 bg-white">
+    <div className="border border-border bg-surface">
       <h3>
         <button
           type="button"
@@ -34,14 +34,14 @@ function FaqAccordionItem({ entry, isOpen, onToggle }: { entry: FaqEntry; isOpen
           className="w-full flex items-center justify-between gap-4 text-left px-4 py-3 text-sm font-medium hover:bg-stone-50 transition-colors"
         >
           <span>{entry.question}</span>
-          <span aria-hidden="true" className="shrink-0 text-stone-400">
+          <span aria-hidden="true" className="shrink-0 text-muted-foreground">
             {isOpen ? "−" : "＋"}
           </span>
         </button>
       </h3>
       {isOpen && (
         <div id={panelId} role="region" aria-labelledby={buttonId} className="border-t border-stone-200 px-4 py-3">
-          <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">{entry.answer}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{entry.answer}</p>
           {ADVISOR_REFERRAL_ENTRY_IDS.has(entry.id) && (
             <p className="mt-3 text-xs">
               <Link href="/advisor-referral" className="text-red-700 underline hover:no-underline">
@@ -76,7 +76,7 @@ export function FaqAccordion({ entries = FAQ_ENTRIES }: { entries?: FaqEntry[] }
   const categoriesToRender = FAQ_CATEGORY_ORDER.filter((category) => (grouped.get(category)?.length ?? 0) > 0);
 
   if (categoriesToRender.length === 0) {
-    return <p className="text-sm text-stone-500">該当する質問が見つかりませんでした。</p>;
+    return <p className="text-sm text-muted-foreground">該当する質問が見つかりませんでした。</p>;
   }
 
   return (

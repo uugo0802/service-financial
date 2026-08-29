@@ -97,50 +97,50 @@ export default function TeamSettingsPage() {
   }
 
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">チームメンバー設定</div>
+          <div className="text-xs text-muted-foreground">チームメンバー設定</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-6">
         <section>
           <h1 className="text-2xl font-semibold mb-2">チームメンバー</h1>
-          <p className="text-sm text-stone-600 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
             オーナーに加えて、ご家族やパートタイムの記帳担当の方をメールアドレスで招待し、
             日々の記帳作業を分担できます。ロールに応じて、閲覧のみ／記帳データの編集まで、
             権限を分けて付与できます。
           </p>
-          <p className="text-xs text-stone-500 max-w-2xl leading-relaxed mt-2">
+          <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed mt-2">
             この機能は既存のお友達紹介・提携税理士紹介プログラムとは別物です。
             あくまで同じ事業者（テナント）内で記帳業務を分担するための、社内向けのメンバー管理です。
           </p>
         </section>
 
-        <section className="border border-stone-300 bg-white p-5 flex flex-col gap-4">
-          <h2 className="text-sm font-semibold text-stone-800">メンバーを招待</h2>
+        <section className="border border-border bg-surface p-5 flex flex-col gap-4">
+          <h2 className="text-sm font-semibold text-foreground">メンバーを招待</h2>
           <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-3 sm:items-end">
             <label className="flex-1 flex flex-col gap-1">
-              <span className="text-xs text-stone-500">メールアドレス</span>
+              <span className="text-xs text-muted-foreground">メールアドレス</span>
               <input
                 type="email"
                 required
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 placeholder="member@example.com"
-                className="border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-stone-500"
+                className="border border-border px-3 py-2 text-sm focus:outline-none focus:border-foreground/40"
               />
             </label>
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-stone-500">ロール</span>
+              <span className="text-xs text-muted-foreground">ロール</span>
               <select
                 value={inviteRole}
                 onChange={(e) => setInviteRole(e.target.value as TeamRole)}
-                className="border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:border-stone-500"
+                className="border border-border px-3 py-2 text-sm focus:outline-none focus:border-foreground/40"
               >
                 {ROLE_OPTIONS.map((role) => (
                   <option key={role} value={role}>
@@ -151,7 +151,7 @@ export default function TeamSettingsPage() {
             </label>
             <button
               type="submit"
-              className="bg-stone-800 text-white text-sm px-4 py-2 hover:bg-stone-700 whitespace-nowrap"
+              className="bg-accent text-white text-sm px-4 py-2 hover:opacity-90 whitespace-nowrap"
             >
               招待する
             </button>
@@ -159,8 +159,8 @@ export default function TeamSettingsPage() {
           {inviteError && <p className="text-sm text-red-700">{inviteError}</p>}
         </section>
 
-        <section className="border border-stone-300 bg-white p-5 flex flex-col gap-3">
-          <h2 className="text-sm font-semibold text-stone-800">メンバー一覧</h2>
+        <section className="border border-border bg-surface p-5 flex flex-col gap-3">
+          <h2 className="text-sm font-semibold text-foreground">メンバー一覧</h2>
 
           {actionError && <p className="text-sm text-red-700">{actionError}</p>}
 
@@ -170,15 +170,15 @@ export default function TeamSettingsPage() {
               return (
                 <li
                   key={member.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-stone-200 px-3 py-2 text-sm"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-border px-3 py-2 text-sm"
                 >
                   <div className="flex flex-col">
                     <span>{member.email}</span>
-                    <span className="text-xs text-stone-500 flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground flex items-center gap-2">
                       <span className={member.status === "active" ? "text-emerald-700" : "text-amber-700"}>
                         {TEAM_MEMBER_STATUS_LABELS[member.status]}
                       </span>
-                      {lastOwner && <span className="text-stone-400">（テナントに必須の唯一のオーナー）</span>}
+                      {lastOwner && <span className="text-muted-foreground">（テナントに必須の唯一のオーナー）</span>}
                     </span>
                   </div>
 
@@ -187,7 +187,7 @@ export default function TeamSettingsPage() {
                       value={member.role}
                       disabled={lastOwner}
                       onChange={(e) => handleRoleChange(member.id, e.target.value as TeamRole)}
-                      className="border border-stone-300 px-2 py-1 text-xs disabled:bg-stone-100 disabled:text-stone-400"
+                      className="border border-border px-2 py-1 text-xs disabled:bg-surface disabled:text-muted-foreground"
                     >
                       {ROLE_OPTIONS.map((role) => (
                         <option key={role} value={role}>
@@ -201,7 +201,7 @@ export default function TeamSettingsPage() {
                         type="button"
                         onClick={() => handleAcceptInvite(member.id)}
                         disabled={pendingActionId === member.id}
-                        className="text-xs text-stone-700 underline underline-offset-2 disabled:text-stone-400 whitespace-nowrap"
+                        className="text-xs text-foreground underline underline-offset-2 disabled:text-muted-foreground whitespace-nowrap"
                       >
                         参加を確定
                       </button>
@@ -211,7 +211,7 @@ export default function TeamSettingsPage() {
                       type="button"
                       onClick={() => handleRemove(member.id)}
                       disabled={lastOwner}
-                      className="text-xs text-red-700 underline underline-offset-2 disabled:text-stone-400"
+                      className="text-xs text-red-700 underline underline-offset-2 disabled:text-muted-foreground"
                     >
                       削除
                     </button>
@@ -222,12 +222,12 @@ export default function TeamSettingsPage() {
           </ul>
         </section>
 
-        <p className="text-xs text-stone-400">
+        <p className="text-xs text-muted-foreground">
           この画面は開発中のプロトタイプです。メンバーの追加・変更内容はこのブラウザセッション内のみで保持され、
           実際の招待メール送信やデータベースへの保存は行われません。
         </p>
 
-        <Link href="/settings" className="text-xs text-stone-500 underline underline-offset-2 self-start">
+        <Link href="/settings" className="text-xs text-muted-foreground underline underline-offset-2 self-start">
           ← 事業者設定に戻る
         </Link>
       </PageContainer>

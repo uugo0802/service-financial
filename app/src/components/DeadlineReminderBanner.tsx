@@ -18,7 +18,7 @@ const URGENCY_STYLES: Record<DeadlineUrgency, { badge: string; card: string; lab
   },
   normal: {
     badge: "bg-emerald-700 text-white",
-    card: "border-stone-300 bg-white",
+    card: "border-border bg-surface",
     label: "余裕あり",
   },
 };
@@ -53,7 +53,7 @@ export function DeadlineReminderBanner({
       {visible.map((deadline) => (
         <DeadlineCard key={deadline.id} deadline={deadline} />
       ))}
-      <p className="text-xs text-stone-400 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         表示している期日は一般的な法定期限に基づく参考情報です（個別の税務相談ではありません）。
         土日祝日により実際の期限は前後する場合があるため、必ず国税庁・お住まいの自治体の公式情報でご確認ください。
       </p>
@@ -69,11 +69,11 @@ function DeadlineCard({ deadline }: { deadline: FilingDeadline }) {
         <span className={`inline-block w-fit text-xs px-2 py-0.5 rounded-full font-medium ${style.badge}`}>
           {style.label}
         </span>
-        <span className="text-sm font-semibold text-stone-900">{deadline.label}</span>
-        <span className="text-xs text-stone-500">期日: {deadline.dueDate}</span>
+        <span className="text-sm font-semibold text-foreground">{deadline.label}</span>
+        <span className="text-xs text-muted-foreground">期日: {deadline.dueDate}</span>
       </div>
       <div className="text-right">
-        <div className="text-2xl font-semibold tabular-nums text-stone-900">
+        <div className="text-2xl font-semibold tabular-nums text-foreground">
           {daysRemainingText(deadline.daysRemaining)}
         </div>
       </div>

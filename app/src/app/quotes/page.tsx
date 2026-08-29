@@ -9,20 +9,20 @@ export const metadata: Metadata = {
 
 export default function QuotesPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 見積書（御見積書）発行</div>
+          <div className="text-xs text-muted-foreground">MVP — 見積書（御見積書）発行</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">取引先への見積書を作成する</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             明細（品目・数量・単価・税率）を入力すると、税率（8%/10%混在可）ごとに区分した合計額・消費税額と、
             御見積金額合計を自動計算します。発行日からの有効期限（日数）を指定すると、有効期限日も自動計算されます。
           </p>

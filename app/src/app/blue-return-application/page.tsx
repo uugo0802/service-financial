@@ -11,20 +11,20 @@ export const metadata: Metadata = {
 
 export default function BlueReturnApplicationPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen print:bg-white">
-      <header className="border-b border-stone-300 bg-white print:hidden">
+    <div className="bg-background text-foreground min-h-screen print:bg-white">
+      <header className="border-b border-border bg-surface print:hidden">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500">MVP — 所得税の青色申告承認申請書（下書き作成）</div>
+          <div className="text-xs text-muted-foreground">MVP — 所得税の青色申告承認申請書（下書き作成）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8 print:max-w-none print:px-0 print:py-0">
         <section className="print:hidden">
           <h1 className="text-2xl font-semibold mb-2">所得税の青色申告承認申請書（下書き作成）</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             これから青色申告の承認を受けようとする個人事業主（フリーランス）の方が、納税地・氏名等の基本情報、
             青色申告の承認を受けようとする年分、事業所又は所得の種類、過去の取消し・取りやめ歴、開業・事業承継の
             状況、簿記方式・備付帳簿名を入力すると、申請書の下書きデータのプレビューを表示し、印刷／PDF保存できます。

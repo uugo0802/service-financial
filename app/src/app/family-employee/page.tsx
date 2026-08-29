@@ -11,27 +11,27 @@ export const metadata: Metadata = {
 
 export default function FamilyEmployeeSalaryPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
-          <div className="text-xs text-stone-500">青色事業専従者給与のチェック</div>
+          <div className="text-xs text-muted-foreground">青色事業専従者給与のチェック</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">青色事業専従者給与のチェック</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             青色申告を行っている個人事業主が、生計を一にする家族従業員（配偶者等の事業専従者）に給与を
             支払う場合、あらかじめ税務署へ提出した「青色事業専従者給与に関する届出書」に記載した上限額の
             範囲内であれば、支払った給与の全額を事業の必要経費に算入できます。このページでは、届出書の
             上限額と実際に支払った給与額を比較し、必要経費に算入できる金額の目安と、専従者としての要件
             （生計を一にする・年齢15歳以上・専ら従事）のチェックリストを表示します。
           </p>
-          <p className="text-xs text-stone-500 max-w-2xl leading-relaxed">
+          <p className="text-xs text-muted-foreground max-w-2xl leading-relaxed">
             このツールは、青色申告の承認状況や「青色事業専従者給与に関する届出書」の提出状況、実際の
             給与額が労務の対価として相当かどうかは確認しません。また、給与の支払を受ける家族従業員は
             事業主の扶養控除・配偶者控除等の対象にはならない点、家族従業員自身の給与所得としての課税は

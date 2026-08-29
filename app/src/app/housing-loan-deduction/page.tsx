@@ -10,20 +10,20 @@ export const metadata: Metadata = {
 
 export default function HousingLoanDeductionPage() {
   return (
-    <div className="bg-stone-50 text-stone-900 min-h-screen">
-      <header className="border-b border-stone-300 bg-white">
+    <div className="bg-background text-foreground min-h-screen">
+      <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
           <div className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </div>
-          <div className="text-xs text-stone-500">MVP — 住宅ローン控除シミュレーター</div>
+          <div className="text-xs text-muted-foreground">MVP — 住宅ローン控除シミュレーター</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="5xl" className="flex flex-col gap-8">
         <section>
           <h1 className="text-2xl font-semibold mb-2">住宅ローン控除（住宅借入金等特別控除）シミュレーター</h1>
-          <p className="text-sm text-stone-600 mb-2 max-w-2xl leading-relaxed">
+          <p className="text-sm text-muted-foreground mb-2 max-w-2xl leading-relaxed">
             住宅ローン控除は、年末時点の住宅ローン残高に控除率（現行0.7%）を乗じた金額が、その年分の所得税額から
             直接差し引かれる「税額控除」です（所得から差し引く所得控除とは異なります）。年末残高を入力すると、
             その年分の控除額の見込みを概算で試算できます。

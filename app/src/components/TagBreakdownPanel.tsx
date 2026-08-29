@@ -38,7 +38,7 @@ export function TagBreakdownPanel({ rows }: { rows: TagProfitability[] }) {
   if (rows.length === 0) {
     return (
       <div className="viz-dashboard">
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-muted-foreground">
           まだタグが登録されていません。タグを作成し、取引に紐付けると収益性の内訳がここに表示されます。
         </p>
       </div>
@@ -66,15 +66,15 @@ export function TagBreakdownPanel({ rows }: { rows: TagProfitability[] }) {
   return (
     <div className="viz-dashboard">
       <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-        <h3 className="text-sm font-semibold text-stone-700 dark:text-stone-200">タグ別 収益性サマリー（純額）</h3>
+        <h3 className="text-sm font-semibold text-foreground">タグ別 収益性サマリー（純額）</h3>
         <div className="flex items-center gap-4">
-          <span className="text-xs text-stone-500 dark:text-stone-400">
+          <span className="text-xs text-muted-foreground">
             合計純額 <span className="tabular-nums">{yen.format(totals.net)}</span>円
           </span>
           <button
             type="button"
             onClick={() => setShowTable((v) => !v)}
-            className="text-xs text-stone-500 dark:text-stone-400 underline underline-offset-2 hover:text-stone-700 dark:hover:text-stone-200"
+            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground dark:hover:text-stone-200"
           >
             {showTable ? "グラフ表示に戻す" : "表で見る"}
           </button>
@@ -101,7 +101,7 @@ export function TagBreakdownPanel({ rows }: { rows: TagProfitability[] }) {
                     y={y + BAR_HEIGHT / 2}
                     textAnchor="end"
                     dominantBaseline="middle"
-                    className="fill-stone-600 dark:fill-stone-300"
+                    className="fill-muted-foreground"
                     fontSize={11}
                   >
                     {truncateLabel(r.label)}
@@ -112,7 +112,7 @@ export function TagBreakdownPanel({ rows }: { rows: TagProfitability[] }) {
                     y={y + BAR_HEIGHT / 2}
                     textAnchor={isPositive ? "start" : "end"}
                     dominantBaseline="middle"
-                    className="fill-stone-500 dark:fill-stone-400"
+                    className="fill-muted-foreground"
                     fontSize={11}
                   >
                     {yen.format(r.net)}円
@@ -124,7 +124,7 @@ export function TagBreakdownPanel({ rows }: { rows: TagProfitability[] }) {
         </div>
       )}
 
-      <p className="text-xs text-stone-400 dark:text-stone-500 mt-2 leading-relaxed">
+      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
         表示はタグが付いた取引の収入・支出を単純に集計した金額です。税額の算定や申告書への反映を保証するものではなく、
         あくまで案件・クライアント別の収支を把握するための参考表示です。
       </p>
@@ -149,7 +149,7 @@ function BreakdownTable({
     <div className="overflow-x-auto border border-stone-200 dark:border-stone-700 rounded-md">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-stone-200 dark:border-stone-700 text-left text-stone-500 dark:text-stone-400 text-xs">
+          <tr className="border-b border-stone-200 dark:border-stone-700 text-left text-muted-foreground text-xs">
             <th className="px-3 py-2 font-normal">タグ</th>
             <th className="px-3 py-2 font-normal text-right">収入</th>
             <th className="px-3 py-2 font-normal text-right">支出</th>
@@ -159,7 +159,7 @@ function BreakdownTable({
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.tagId} className="border-b border-stone-100 dark:border-stone-800 last:border-0">
+            <tr key={r.tagId} className="border-b border-border/60 last:border-0">
               <td className="px-3 py-1.5 whitespace-nowrap">
                 {r.color && <span className="inline-block w-2 h-2 rounded-full mr-2" style={{ background: r.color }} />}
                 {r.label}
@@ -175,7 +175,7 @@ function BreakdownTable({
               <td className="px-3 py-1.5 text-right tabular-nums">{r.transactionCount}</td>
             </tr>
           ))}
-          <tr className="font-medium text-stone-700 dark:text-stone-200">
+          <tr className="font-medium text-foreground">
             <td className="px-3 py-1.5">合計</td>
             <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(totals.income)}</td>
             <td className="px-3 py-1.5 text-right tabular-nums">{yen.format(totals.expense)}</td>

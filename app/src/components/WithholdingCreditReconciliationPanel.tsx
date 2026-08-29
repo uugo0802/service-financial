@@ -19,16 +19,16 @@ export function WithholdingCreditReconciliationPanel({ result }: { result: Withh
   return (
     <div className="flex flex-col gap-4">
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="border border-stone-300 bg-white rounded-lg p-4">
-          <p className="text-xs text-stone-500">支払の件数</p>
+        <div className="border border-border bg-surface rounded-lg p-4">
+          <p className="text-xs text-muted-foreground">支払の件数</p>
           <p className="text-xl font-semibold tabular-nums mt-1">{records.length}件</p>
         </div>
         <div
           className={`border rounded-lg p-4 ${
-            discrepancyCount > 0 ? "border-amber-300 bg-amber-50" : "border-stone-300 bg-white"
+            discrepancyCount > 0 ? "border-amber-300 bg-amber-50" : "border-border bg-surface"
           }`}
         >
-          <p className={`text-xs ${discrepancyCount > 0 ? "text-amber-700" : "text-stone-500"}`}>差異ありの件数</p>
+          <p className={`text-xs ${discrepancyCount > 0 ? "text-amber-700" : "text-muted-foreground"}`}>差異ありの件数</p>
           <p
             className={`text-xl font-semibold tabular-nums mt-1 ${
               discrepancyCount > 0 ? "text-amber-800" : ""
@@ -36,18 +36,18 @@ export function WithholdingCreditReconciliationPanel({ result }: { result: Withh
           >
             {discrepancyCount}件
           </p>
-          <p className={`text-xs mt-1 ${discrepancyCount > 0 ? "text-amber-700" : "text-stone-400"}`}>
+          <p className={`text-xs mt-1 ${discrepancyCount > 0 ? "text-amber-700" : "text-muted-foreground"}`}>
             標準税率（10.21%／20.42%）から算出した期待値との差異
           </p>
         </div>
-        <div className="border border-stone-300 bg-white rounded-lg p-4">
-          <p className="text-xs text-stone-500">期待値の合計（参考値）</p>
+        <div className="border border-border bg-surface rounded-lg p-4">
+          <p className="text-xs text-muted-foreground">期待値の合計（参考値）</p>
           <p className="text-xl font-semibold tabular-nums mt-1">
             <Yen v={totalExpectedWithholdingTax} />
           </p>
         </div>
-        <div className="border border-stone-300 bg-white rounded-lg p-4">
-          <p className="text-xs text-stone-500">源泉徴収税額の控除合計（申告に使用）</p>
+        <div className="border border-border bg-surface rounded-lg p-4">
+          <p className="text-xs text-muted-foreground">源泉徴収税額の控除合計（申告に使用）</p>
           <p className="text-xl font-semibold tabular-nums mt-1">
             <Yen v={totalRecordedWithholdingTax} />
           </p>
@@ -57,14 +57,14 @@ export function WithholdingCreditReconciliationPanel({ result }: { result: Withh
       <div>
         <h3 className="text-sm font-semibold mb-2">クライアント・支払ごとの照合結果</h3>
         {records.length === 0 ? (
-          <div className="border border-dashed border-stone-300 bg-white rounded-lg p-6 text-center text-sm text-stone-500">
+          <div className="border border-dashed border-border bg-surface rounded-lg p-6 text-center text-sm text-muted-foreground">
             対象になる支払データがありません。
           </div>
         ) : (
-          <div className="overflow-x-auto border border-stone-300 bg-white rounded-lg">
+          <div className="overflow-x-auto border border-border bg-surface rounded-lg">
             <table className="w-full text-sm border-collapse min-w-[760px]">
               <thead>
-                <tr className="border-b border-stone-300 bg-stone-50 text-left text-xs text-stone-500">
+                <tr className="border-b border-border bg-surface text-left text-xs text-muted-foreground">
                   <th className="py-2 px-3 font-semibold">クライアント</th>
                   <th className="py-2 px-3 font-semibold whitespace-nowrap">支払日</th>
                   <th className="py-2 px-3 font-semibold text-right whitespace-nowrap">支払金額</th>
@@ -89,7 +89,7 @@ export function WithholdingCreditReconciliationPanel({ result }: { result: Withh
                     <td className="py-2.5 px-3 text-right tabular-nums whitespace-nowrap">
                       <Yen v={r.grossAmount} />
                     </td>
-                    <td className="py-2.5 px-3 text-right tabular-nums whitespace-nowrap text-stone-500">
+                    <td className="py-2.5 px-3 text-right tabular-nums whitespace-nowrap text-muted-foreground">
                       <Yen v={r.expectedWithholdingTax} />
                     </td>
                     <td className="py-2.5 px-3 text-right tabular-nums whitespace-nowrap">
@@ -104,7 +104,7 @@ export function WithholdingCreditReconciliationPanel({ result }: { result: Withh
                           要確認
                         </span>
                       ) : (
-                        <span className="text-xs text-stone-400">一致</span>
+                        <span className="text-xs text-muted-foreground">一致</span>
                       )}
                     </td>
                   </tr>
@@ -115,7 +115,7 @@ export function WithholdingCreditReconciliationPanel({ result }: { result: Withh
         )}
       </div>
 
-      <p className="text-xs text-stone-500 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         「期待値」は報酬・料金等に共通する標準税率（支払1回につき100万円以下の部分10.21%・超える部分20.42%）から
         機械的に算出した参考値であり、確定申告の税額控除にはクライアントが実際に源泉徴収した金額（記録された源泉徴収税額）を使用します。
         差異が大きい場合は、支払調書の記載内容をクライアントにご確認ください。

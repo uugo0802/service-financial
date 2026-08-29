@@ -56,7 +56,7 @@ export function AdvisorReferralForm() {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5">
       <div>
-        <label className="block text-xs text-stone-500 mb-1" htmlFor="advisor-name">
+        <label className="block text-xs text-muted-foreground mb-1" htmlFor="advisor-name">
           お名前・法人名
         </label>
         <input
@@ -64,7 +64,7 @@ export function AdvisorReferralForm() {
           type="text"
           value={values.name}
           onChange={(e) => update("name", e.target.value)}
-          className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+          className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           aria-invalid={!!errors.name}
         />
         <FieldError message={errors.name} />
@@ -72,7 +72,7 @@ export function AdvisorReferralForm() {
 
       <div className="grid sm:grid-cols-2 gap-5">
         <div>
-          <label className="block text-xs text-stone-500 mb-1" htmlFor="advisor-email">
+          <label className="block text-xs text-muted-foreground mb-1" htmlFor="advisor-email">
             メールアドレス
           </label>
           <input
@@ -80,13 +80,13 @@ export function AdvisorReferralForm() {
             type="email"
             value={values.email}
             onChange={(e) => update("email", e.target.value)}
-            className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+            className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
             aria-invalid={!!errors.email}
           />
           <FieldError message={errors.email} />
         </div>
         <div>
-          <label className="block text-xs text-stone-500 mb-1" htmlFor="advisor-phone">
+          <label className="block text-xs text-muted-foreground mb-1" htmlFor="advisor-phone">
             電話番号（任意）
           </label>
           <input
@@ -95,7 +95,7 @@ export function AdvisorReferralForm() {
             value={values.phone}
             onChange={(e) => update("phone", e.target.value)}
             placeholder="090-1234-5678"
-            className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+            className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
             aria-invalid={!!errors.phone}
           />
           <FieldError message={errors.phone} />
@@ -103,7 +103,7 @@ export function AdvisorReferralForm() {
       </div>
 
       <div>
-        <div className="text-xs text-stone-500 mb-2">事業形態</div>
+        <div className="text-xs text-muted-foreground mb-2">事業形態</div>
         <div className="flex gap-3">
           <button
             type="button"
@@ -111,8 +111,8 @@ export function AdvisorReferralForm() {
             onClick={() => update("entityType", "individual")}
             className={`text-sm px-4 py-2 border transition-colors ${
               values.entityType === "individual"
-                ? "bg-stone-900 border-stone-900 text-white"
-                : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                ? "bg-accent border-accent text-white"
+                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
             }`}
           >
             フリーランス・個人事業主
@@ -123,8 +123,8 @@ export function AdvisorReferralForm() {
             onClick={() => update("entityType", "corp")}
             className={`text-sm px-4 py-2 border transition-colors ${
               values.entityType === "corp"
-                ? "bg-stone-900 border-stone-900 text-white"
-                : "bg-white border-stone-400 text-stone-600 hover:border-stone-600"
+                ? "bg-accent border-accent text-white"
+                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
             }`}
           >
             マイクロ法人
@@ -133,14 +133,14 @@ export function AdvisorReferralForm() {
       </div>
 
       <div>
-        <label className="block text-xs text-stone-500 mb-1" htmlFor="advisor-topic">
+        <label className="block text-xs text-muted-foreground mb-1" htmlFor="advisor-topic">
           相談したい内容
         </label>
         <select
           id="advisor-topic"
           value={values.topic}
           onChange={(e) => update("topic", e.target.value as AdvisorReferralFormValues["topic"])}
-          className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+          className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           aria-invalid={!!errors.topic}
         >
           <option value="">選択してください</option>
@@ -154,7 +154,7 @@ export function AdvisorReferralForm() {
       </div>
 
       <div>
-        <label className="block text-xs text-stone-500 mb-1" htmlFor="advisor-message">
+        <label className="block text-xs text-muted-foreground mb-1" htmlFor="advisor-message">
           相談内容の詳細
         </label>
         <textarea
@@ -163,14 +163,14 @@ export function AdvisorReferralForm() {
           value={values.message}
           onChange={(e) => update("message", e.target.value)}
           placeholder="現在の状況、不安な点、確認してほしいことなどをできるだけ具体的にご記入ください。"
-          className="w-full border border-stone-400 bg-white px-4 py-3 text-sm outline-none focus:border-stone-600"
+          className="w-full border border-border bg-surface px-4 py-3 text-sm outline-none focus:border-foreground/40"
           aria-invalid={!!errors.message}
         />
         <FieldError message={errors.message} />
       </div>
 
       <div>
-        <label className="flex items-start gap-2 text-sm text-stone-700">
+        <label className="flex items-start gap-2 text-sm text-foreground">
           <input
             type="checkbox"
             checked={values.consent}
@@ -190,8 +190,8 @@ export function AdvisorReferralForm() {
         disabled={submitting}
         className={`self-start text-sm px-6 py-3 border transition-colors ${
           submitting
-            ? "border-stone-300 bg-stone-100 text-stone-400 cursor-not-allowed"
-            : "border-stone-900 bg-stone-900 text-white hover:bg-stone-700"
+            ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+            : "border-accent bg-accent text-white hover:opacity-90"
         }`}
       >
         {submitting ? "送信中…" : "提携税理士への紹介を申し込む"}
