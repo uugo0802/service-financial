@@ -28,7 +28,7 @@ export default function OpeningBalancesPage() {
             前期末時点の貸借対照表（現金残高・繰越利益剰余金・固定資産・借入金）を最初に一度だけ投入する必要があります。
             ここで投入した内容は、貸借対照表・株主資本等変動計算書などの実残高計算の起点になります。
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-500 max-w-2xl leading-relaxed mt-2">
+          <p className="text-xs text-warning-foreground max-w-2xl leading-relaxed mt-2">
             ここでの入力は記帳・決算書作成・税額シミュレーションの前提条件として利用されるものです。
             当社が税務代理・税務相談を行うものではありません。内容は必ずご自身（または税理士等の専門家）でご確認ください。
           </p>

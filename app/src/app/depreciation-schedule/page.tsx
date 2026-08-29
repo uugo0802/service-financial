@@ -34,7 +34,7 @@ export default function DepreciationSchedulePage() {
             ）に登録した資産のうち、定額法で計算している資産について、法人税申告書に添付する
             別表十六（一）の欄構成に沿った<b className="font-medium">概算の下書き</b>を表示します。
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-400 max-w-2xl leading-relaxed">
+          <p className="text-xs text-warning-foreground max-w-2xl leading-relaxed">
             これはあくまで下書き作成を補助する概算シミュレーションであり、正式に検証された別表十六（一）そのものではありません。
             定率法を選択した資産は別表十六（二）、少額減価償却資産の特例を適用した資産は別表十六（七）にそれぞれ記載すべきものですが、
             本アプリはこれらの生成には対応していません（対象外の資産は下記に一覧表示します）。
