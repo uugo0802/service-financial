@@ -103,7 +103,6 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     links: [
       { href: "/financial-statements", label: "決算書類" },
       { href: "/trial-balance", label: "試算表" },
-      { href: "/blue-return-application", label: "青色申告承認申請書" },
       { href: "/statutory-report-summary", label: "法定調書合計表" },
       { href: "/withholding-slip", label: "源泉徴収票" },
       { href: "/apportionment", label: "経費按分計算" },

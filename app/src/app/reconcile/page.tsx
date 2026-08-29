@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ReconcileClient } from "./ReconcileClient";
 
 export const metadata: Metadata = {
-  title: "銀行残高突合チェック｜決算書作成から税務申告までワンクリック（スグル）",
+  title: "口座残高照合｜決算書作成から税務申告までワンクリック（スグル）",
   description:
     "取り込んだ銀行明細が期間全体を過不足なく反映しているかを、期首残高・実際の期末残高との突合で確認するツール（開発中プロトタイプ）。",
 };
@@ -17,13 +17,13 @@ export default function ReconcilePage() {
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
           </Link>
-          <div className="text-xs text-muted-foreground">銀行残高突合チェック</div>
+          <div className="text-xs text-muted-foreground">口座残高照合</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="4xl" className="flex flex-col gap-10">
         <section className="flex flex-col gap-4">
-          <h1 className="text-2xl font-semibold">銀行残高突合チェック</h1>
+          <h1 className="text-2xl font-semibold">口座残高照合</h1>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
             CSVで取り込んだ取引明細は、ファイルの中身自体は正しく読み込めていても、その
             <b className="font-medium">ファイルが期間全体の取引を漏れなく含んでいるか</b>までは保証されません

@@ -104,9 +104,12 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
 
 function AppShellLogo() {
   return (
-    <span className="font-sans text-base font-semibold tracking-wide text-foreground">
+    <Link
+      href="/dashboard"
+      className="font-sans text-base font-semibold tracking-wide text-foreground"
+    >
       スグル
-    </span>
+    </Link>
   );
 }
 
