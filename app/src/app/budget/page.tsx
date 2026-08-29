@@ -71,7 +71,7 @@ const STATUS_BADGE_CLASS: Record<BudgetTrackingStatus, string> = {
   at_budget: "text-stone-500 dark:text-stone-400",
   over_budget: "text-red-700 dark:text-red-400",
   over_budget_no_cap: "text-red-700 dark:text-red-400",
-  no_budget_set: "text-amber-700 dark:text-amber-400",
+  no_budget_set: "text-warning-foreground",
 };
 
 const BAR_FILL_CLASS: Record<BudgetTrackingStatus, string> = {

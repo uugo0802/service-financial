@@ -56,11 +56,11 @@ export default function PricingPage() {
           </ul>
         </section>
 
-        <section className="rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950 p-6">
-          <h2 className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-2">
+        <section className="rounded-lg border border-warning-border bg-warning p-6">
+          <h2 className="text-sm font-semibold text-warning-foreground mb-2">
             料金についての重要なご注意（価格は仮）
           </h2>
-          <p className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">
+          <p className="text-sm text-warning-foreground leading-relaxed">
             上記の料金は現時点での試算値であり、最終的な提供価格を確定・保証するものではありません。
             競合サービスの料金調査や機能範囲の確定を経て、正式な価格は今後変更となる可能性があります。
             また、本サービスは記帳の自動化と申告書の下書き・シミュレーションの作成を行うものであり、

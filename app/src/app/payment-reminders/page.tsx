@@ -83,7 +83,7 @@ export default function PaymentRemindersPage() {
             （件名＋本文）をその場で作成します。初回は「やわらかい」トーン、再送・長期化した場合は「強め」トーンを
             選べます。実際の送信は行いません。生成された文面をコピーして、ご自身のメールソフトから送信してください。
           </p>
-          <p className="text-xs text-amber-700 dark:text-amber-400 max-w-2xl leading-relaxed mt-2">
+          <p className="text-xs text-warning-foreground max-w-2xl leading-relaxed mt-2">
             現時点では請求書データの永続保存・入金記録の機能は未対応のため、下の「未収一覧から選ぶ」は
             集計ロジック（src/lib/invoice/receivables.ts）の動作を確認するための表示例（サンプルデータ）です。
             実在の取引先ではありません。実際の請求書については「手入力する」から入力してください。
