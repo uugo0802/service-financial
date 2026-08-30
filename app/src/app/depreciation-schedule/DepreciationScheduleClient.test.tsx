@@ -67,6 +67,10 @@ describe("DepreciationScheduleClient", () => {
     // SAMPLE_ASSETSの定額法資産のうちの1つが表として描画されていること。
     expect(screen.getByText("ノートパソコン（業務用）")).toBeTruthy();
     expect(screen.queryByText("実データ資産：業務用モニター")).toBeNull();
+    // 様式ヘッダー（OfficialFormFrame経由）に法人名が反映されていること。
+    expect(screen.getByText((_, node) => node?.textContent === "法人名: 今ごえん合同会社")).toBeTruthy();
+    // CSVダウンロードボタンが表示されていること。
+    expect(screen.getByRole("button", { name: "CSVをダウンロード（別表十六（一））" })).toBeTruthy();
   });
 
   it("isSampleDataがfalseの場合は実データ表示である旨を示し、フック経由の実テナント名・実資産一覧が反映される", async () => {

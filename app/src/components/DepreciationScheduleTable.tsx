@@ -1,10 +1,14 @@
 import { DepreciationScheduleForm } from "@/lib/tax/depreciationScheduleForm";
+import { OfficialFormFrame } from "@/components/OfficialForm";
 
 // ------------------------------------------------------------------
 // 別表十六（一）減価償却資産の償却額の計算に関する明細書（定額法）の表示コンポーネント。
-// データを取り込まない純粋な表示コンポーネント（サーバーコンポーネントとして利用可能）。
-// 実際の国税庁様式の列構成（種類・取得年月・耐用年数・取得価額…）を模した
-// 罫線付きの表としてレンダリングする。
+// データを取り込まない純粋な表示コンポーネント（サーバーコンポーネントとして利用可能。
+// OfficialFormFrame自体は"use client"だが、サーバーコンポーネントからクライアント
+// コンポーネントを子として描画すること自体は問題ない）。
+// 外枠は他の別表（DocumentPreview.tsx内の別表一・別表四・別表五(一)/(二)等）と同じ
+// OfficialFormFrame（実際の国税庁様式に寄せた、右端に様式番号を縦書きする額縁）を再利用し、
+// 実際の様式の列構成（種類・取得年月・耐用年数・取得価額…）を模した罫線付きの表を中に描画する。
 // ------------------------------------------------------------------
 
 const yen = new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 0 });
@@ -13,17 +17,20 @@ function formatRate(rate: number): string {
   return rate.toFixed(3);
 }
 
-export function DepreciationScheduleTable({ form }: { form: DepreciationScheduleForm }) {
+export function DepreciationScheduleTable({
+  form,
+  entityName,
+}: {
+  form: DepreciationScheduleForm;
+  /** 様式ヘッダーに表示する法人名（屋号）。省略時は表示しない。 */
+  entityName?: string;
+}) {
   return (
     <section className="flex flex-col gap-4">
-      <div className="border-2 border-foreground">
-        <div className="flex items-baseline justify-between gap-3 border-b-2 border-foreground px-3 py-2">
-          <div className="text-sm font-semibold tracking-widest">{form.formTitle}</div>
-          <div className="text-xs text-stone-500 shrink-0">{form.formLabel}</div>
-        </div>
-
-        <div className="px-3 py-2 text-xs text-stone-500">
-          事業年度: {form.fiscalPeriod.start} 〜 {form.fiscalPeriod.end}
+      <OfficialFormFrame scheduleLabel={form.formLabel} formTitle={form.formTitle}>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-stone-300 pb-2 text-xs text-stone-600">
+          <span>事業年度: {form.fiscalPeriod.start} 〜 {form.fiscalPeriod.end}</span>
+          {entityName && <span>法人名: {entityName}</span>}
         </div>
 
         {form.rows.length === 0 ? (
@@ -31,7 +38,7 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
             対象期間・登録資産のもとでは、定額法による明細に記載できる資産がありません。
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto print:overflow-visible">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="border-b border-stone-300 text-left text-stone-500 text-xs">
@@ -53,7 +60,10 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
               </thead>
               <tbody>
                 {form.rows.map((row) => (
-                  <tr key={row.assetId} className="border-b border-stone-100 last:border-0 align-top">
+                  <tr
+                    key={row.assetId}
+                    className="border-b border-stone-100 last:border-0 align-top print:break-inside-avoid"
+                  >
                     <td className="px-2 py-2 whitespace-nowrap">{row.assetName}</td>
                     <td className="px-2 py-2 whitespace-nowrap tabular-nums">{row.acquisitionDate}</td>
                     <td className="px-2 py-2 whitespace-nowrap tabular-nums">{row.serviceStartDate}</td>
@@ -76,7 +86,7 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-foreground font-semibold">
+                <tr className="border-t-2 border-stone-800 font-semibold print:break-inside-avoid">
                   <td className="px-2 py-2" colSpan={4}>
                     合計
                   </td>
@@ -97,7 +107,7 @@ export function DepreciationScheduleTable({ form }: { form: DepreciationSchedule
             </table>
           </div>
         )}
-      </div>
+      </OfficialFormFrame>
 
       {(form.excludedDecliningBalanceAssets.length > 0 || form.excludedImmediateExpensingAssets.length > 0) && (
         <div className="border border-amber-400 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 text-sm text-amber-900 dark:text-amber-200">
