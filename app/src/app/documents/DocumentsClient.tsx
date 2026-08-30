@@ -94,7 +94,7 @@ export function DocumentsClient() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface print:hidden dark:border-stone-700 dark:bg-stone-900">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
+        <div className="px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
         </div>
       </header>

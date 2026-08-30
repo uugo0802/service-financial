@@ -196,4 +196,28 @@ describe("AppShell", () => {
     expect(headerA.getAttribute("aria-expanded")).toBe("false");
   });
 
+  it("手動でグループを開いた後にダッシュボードへ移動すると、全グループが閉じる", () => {
+    const groupA = NAV_GROUPS.find((g) => g.links.length > 1)!;
+    mockPathname = `/${groupA.links[0].href.replace(/^\//, "")}`;
+    const { rerender } = render(
+      <AppShell>
+        <p>本文</p>
+      </AppShell>
+    );
+
+    const headerA = screen.getAllByText(groupA.label).map((el) => el.closest("button")).find((b) => b !== null)!;
+    // 自動展開中のグループを一度閉じ、手動操作フラグを立てる。
+    fireEvent.click(headerA);
+    expect(headerA.getAttribute("aria-expanded")).toBe("false");
+
+    mockPathname = "/dashboard";
+    rerender(
+      <AppShell>
+        <p>本文</p>
+      </AppShell>
+    );
+
+    const headerAAfter = screen.getAllByText(groupA.label).map((el) => el.closest("button")).find((b) => b !== null)!;
+    expect(headerAAfter.getAttribute("aria-expanded")).toBe("false");
+  });
 });

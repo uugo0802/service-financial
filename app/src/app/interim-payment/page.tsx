@@ -35,7 +35,7 @@ export default function InterimPaymentPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-end">
+        <div className="px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
         </div>
       </header>

@@ -24,14 +24,31 @@ function groupContainsActiveLink(group: NavGroup, pathname: string): boolean {
   return group.links.some((link) => isNavLinkActive(pathname, link.href));
 }
 
-function NavLinkItem({ href, label, pathname, onNavigate }: { href: string; label: string; pathname: string; onNavigate?: () => void }) {
+function NavLinkItem({
+  href,
+  label,
+  pathname,
+  onNavigate,
+  variant = "default",
+}: {
+  href: string;
+  label: string;
+  pathname: string;
+  onNavigate?: () => void;
+  variant?: "default" | "standalone";
+}) {
   const active = isNavLinkActive(pathname, href);
+  // "standalone"（例: ダッシュボード）は、他のグループがカテゴリ見出しとして
+  // 常時目にするフォントサイズ・太さ（text-base font-semibold uppercase
+  // tracking-wide）に揃える。グループ見出しを持たない単独リンクだからといって
+  // 通常のページリンクより見劣りしないようにするため。
+  const sizeClass = variant === "standalone" ? "text-base font-semibold uppercase tracking-wide" : "text-sm";
   return (
     <Link
       href={href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
-      className={`block rounded-md px-2 py-1.5 text-sm transition-colors ${
+      className={`block rounded-md px-2 py-1.5 ${sizeClass} transition-colors ${
         active ? "bg-accent/10 font-medium text-accent" : "text-foreground hover:bg-surface"
       }`}
     >
@@ -57,8 +74,16 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
   const [manuallyToggled, setManuallyToggled] = useState(false);
 
   useEffect(() => {
+    const matchedGroup = collapsibleGroups.find((g) => groupContainsActiveLink(g, pathname))?.label ?? null;
+    if (matchedGroup === null) {
+      // 該当するグループがないページ（ダッシュボード等の単独リンク）に来た場合は、
+      // 手動で開閉した記憶もリセットして必ず全グループを閉じる。
+      setManuallyToggled(false);
+      setExpandedGroup(null);
+      return;
+    }
     if (manuallyToggled) return; // ユーザーが手動で開閉した後は、自動追従を止める
-    setExpandedGroup(collapsibleGroups.find((g) => groupContainsActiveLink(g, pathname))?.label ?? null);
+    setExpandedGroup(matchedGroup);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
@@ -72,7 +97,16 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
       {groups.map((group) => {
         if (isStandaloneGroup(group)) {
           const link = group.links[0];
-          return <NavLinkItem key={group.label} href={link.href} label={link.label} pathname={pathname} onNavigate={onNavigate} />;
+          return (
+            <NavLinkItem
+              key={group.label}
+              href={link.href}
+              label={link.label}
+              pathname={pathname}
+              onNavigate={onNavigate}
+              variant="standalone"
+            />
+          );
         }
 
         const isExpanded = expandedGroup === group.label;
@@ -112,7 +146,7 @@ function AppShellLogo() {
   return (
     <Link
       href="/dashboard"
-      className="font-sans text-base font-semibold tracking-wide text-foreground"
+      className="font-sans text-lg font-semibold tracking-wide text-foreground"
     >
       スグル
     </Link>

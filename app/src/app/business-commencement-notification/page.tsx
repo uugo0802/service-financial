@@ -13,7 +13,7 @@ export default function BusinessCommencementNotificationPage() {
   return (
     <div className="bg-background text-foreground min-h-screen print:bg-white">
       <header className="border-b border-border bg-surface print:hidden">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
+        <div className="px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
         </div>
       </header>
