@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getSupabaseClient } from "../db/supabaseClient";
-import { getCurrentSession, signInWithMagicLink, signOut } from "./authClient";
+import { getCurrentSession, signInWithGoogle, signInWithMagicLink, signOut } from "./authClient";
 
 vi.mock("../db/supabaseClient", () => ({
   getSupabaseClient: vi.fn(),
@@ -9,6 +9,7 @@ vi.mock("../db/supabaseClient", () => ({
 function mockClient(overrides: Partial<Record<string, unknown>> = {}) {
   const auth = {
     signInWithOtp: vi.fn().mockResolvedValue({ data: {}, error: null }),
+    signInWithOAuth: vi.fn().mockResolvedValue({ data: { provider: "google", url: "https://accounts.google.com/o" }, error: null }),
     signOut: vi.fn().mockResolvedValue({ error: null }),
     getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
     ...overrides,
@@ -54,6 +55,45 @@ describe("signInWithMagicLink", () => {
     const result = await signInWithMagicLink("user@example.com");
 
     expect(result).toEqual({ error: "rate limit exceeded" });
+  });
+});
+
+describe("signInWithGoogle", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("starts the Google OAuth flow and returns no error on success", async () => {
+    const client = mockClient();
+
+    const result = await signInWithGoogle();
+
+    expect(result).toEqual({ error: null });
+    expect(client.auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: "google",
+      options: undefined,
+    });
+  });
+
+  it("passes redirectTo through to Supabase when provided", async () => {
+    const client = mockClient();
+
+    await signInWithGoogle("https://example.com/auth/confirm");
+
+    expect(client.auth.signInWithOAuth).toHaveBeenCalledWith({
+      provider: "google",
+      options: { redirectTo: "https://example.com/auth/confirm" },
+    });
+  });
+
+  it("surfaces the Supabase error message on failure", async () => {
+    mockClient({
+      signInWithOAuth: vi.fn().mockResolvedValue({ data: { provider: "google", url: null }, error: { message: "provider not enabled" } }),
+    });
+
+    const result = await signInWithGoogle();
+
+    expect(result).toEqual({ error: "provider not enabled" });
   });
 });
 

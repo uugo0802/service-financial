@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/db/supabaseClient";
-import { signInWithMagicLink, signOut } from "@/lib/auth/authClient";
+import { signInWithGoogle, signInWithMagicLink, signOut } from "@/lib/auth/authClient";
 
 type SendStatus = "idle" | "sending" | "sent" | "error";
 
@@ -26,6 +26,8 @@ function LoginPageInner() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<SendStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [googleStatus, setGoogleStatus] = useState<SendStatus>("idle");
+  const [googleErrorMessage, setGoogleErrorMessage] = useState<string | null>(null);
 
   // マジックリンクのメール送信・ログアウトそのものは lib/auth/authClient 経由で行うが、
   // ログイン状態の表示にはリアルタイム購読(onAuthStateChange)が必要なため、
@@ -95,6 +97,27 @@ function LoginPageInner() {
     setStatus("sent");
   }
 
+  async function handleGoogleLogin() {
+    if (googleStatus === "sending") return;
+    setGoogleStatus("sending");
+    setGoogleErrorMessage(null);
+
+    // マジックリンクと同じ /auth/confirm ルートハンドラでコード交換を行う。
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/confirm?next=${encodeURIComponent(redirectTarget)}`
+        : undefined;
+    const { error } = await signInWithGoogle(redirectTo);
+
+    if (error) {
+      setGoogleStatus("error");
+      setGoogleErrorMessage(error);
+      return;
+    }
+    // 成功時はSupabase側がブラウザをGoogleの認可画面へ遷移させるため、
+    // ここでのステート更新は不要（このコンポーネント自体が離脱する）。
+  }
+
   async function handleLogout() {
     await signOut();
     setSession(null);
@@ -141,6 +164,44 @@ function LoginPageInner() {
               メールアドレス宛にログイン用リンクをお送りします。未登録のメールアドレスの場合は、
               自動的にアカウントが作成されます。パスワードの入力は不要です。
             </p>
+
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={googleStatus === "sending"}
+              className={`flex items-center justify-center gap-2 text-sm px-5 py-3 border transition-colors ${
+                googleStatus === "sending"
+                  ? "border-border bg-surface text-muted-foreground cursor-not-allowed"
+                  : "border-border bg-surface hover:border-foreground/40"
+              }`}
+            >
+              <svg width="16" height="16" viewBox="0 0 48 48" aria-hidden="true">
+                <path
+                  fill="#FFC107"
+                  d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"
+                />
+                <path
+                  fill="#FF3D00"
+                  d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.6 6.1 29.6 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+                />
+                <path
+                  fill="#4CAF50"
+                  d="M24 44c5.5 0 10.4-2.1 14.1-5.6l-6.5-5.5C29.6 34.7 26.9 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.6 16.3 44 24 44z"
+                />
+                <path
+                  fill="#1976D2"
+                  d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.5C41.5 36.2 44 30.6 44 24c0-1.3-.1-2.7-.4-3.5z"
+                />
+              </svg>
+              {googleStatus === "sending" ? "Googleに接続中…" : "Googleでログイン / 新規登録"}
+            </button>
+            {googleErrorMessage && <p className="text-sm text-red-700">{googleErrorMessage}</p>}
+
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span className="flex-1 border-t border-border" />
+              または
+              <span className="flex-1 border-t border-border" />
+            </div>
 
             {status === "sent" ? (
               <p className="text-sm text-emerald-700 border border-emerald-300 bg-emerald-50 p-4">
