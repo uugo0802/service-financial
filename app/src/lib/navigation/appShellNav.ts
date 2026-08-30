@@ -95,7 +95,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       { href: "/assets", label: "固定資産台帳" },
       { href: "/depreciation-schedule", label: "減価償却明細（別表十六）" },
       { href: "/budget", label: "予算実績管理" },
-      { href: "/expense-allocation", label: "家事按分" },
+      { href: "/expense-allocation", label: "按分計算" },
     ],
   },
   {

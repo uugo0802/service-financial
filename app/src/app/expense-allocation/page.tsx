@@ -5,7 +5,7 @@ import { ExpenseAllocationCalculator } from "@/components/ExpenseAllocationCalcu
 import { MileageAllocationCalculator } from "@/components/MileageAllocationCalculator";
 
 export const metadata: Metadata = {
-  title: "家事按分計算（個人事業主向け）｜決算書作成から税務申告までワンクリック スグル",
+  title: "按分計算（家事按分）｜決算書作成から税務申告までワンクリック スグル",
   description:
     "自宅家賃・水道光熱費・通信費など事業用と私用が混在する経費について、入力した按分率をもとに事業経費として計上できる金額を計算します。按分率自体の妥当性についての個別税務相談は行いません。",
 };
@@ -18,13 +18,13 @@ export default function ExpenseAllocationPage() {
           <Link href="/" className="font-serif text-lg tracking-wide">
             決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
           </Link>
-          <div className="text-xs text-muted-foreground">個人事業主向け・家事按分計算（試験機能）</div>
+          <div className="text-xs text-muted-foreground">按分計算（家事按分）（試験機能）</div>
         </div>
       </header>
 
       <PageContainer as="main" maxWidth="3xl" className="flex flex-col gap-10">
         <section className="flex flex-col gap-4">
-          <h1 className="text-2xl font-semibold">家事按分の計算</h1>
+          <h1 className="text-2xl font-semibold">按分計算（家事按分）</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
             自宅の家賃・水道光熱費・通信費など、事業用と私用が混在する経費（家事関連費）については、
             床面積や使用時間などをもとにした一定の割合（按分率）でのみ必要経費に算入できます。
@@ -35,6 +35,11 @@ export default function ExpenseAllocationPage() {
             なお、按分率そのものが税務上妥当かどうかの判断（「何%が正しいか」）は、
             税理士法上、個別具体の税務相談にあたるため本サービスでは行いません。
             一般的な考え方（床面積比・使用時間比など）の解説にとどめ、必要に応じて税理士へご相談ください。
+          </p>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            床面積・使用時間の実測値から按分率そのものを計算したい場合は、
+            <Link href="/apportionment" className="underline hover:text-red-700">床面積・時間按分の計算ページ</Link>
+            もあわせてご利用ください（算出した按分率を下のフォームに入力してご利用いただけます）。
           </p>
         </section>
 
