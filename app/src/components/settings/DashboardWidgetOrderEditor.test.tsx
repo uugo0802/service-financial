@@ -43,12 +43,16 @@ function makeDragEvent() {
 
 describe("DashboardWidgetOrderEditor", () => {
   it("既定の全ウィジェットを表示順に一覧表示する", () => {
-    render(<DashboardWidgetOrderEditor />);
+    const { container } = render(<DashboardWidgetOrderEditor />);
 
+    // プレビュー内の実チャートが独自の<ul>/<li>を持つ場合があるため、
+    // 一覧表示の件数はドラッグ対象（各ウィジェットカードのルート要素）の数で数える。
     const defaultLabels = getDefaultWidgetLayout().length;
-    expect(screen.getAllByRole("listitem")).toHaveLength(defaultLabels);
-    expect(screen.getByText("取引にタグを付ける")).toBeTruthy();
-    expect(screen.getByText("予算実績（概要）")).toBeTruthy();
+    expect(container.querySelectorAll('li[draggable="true"]')).toHaveLength(defaultLabels);
+    // プレビュー内の実チャート自身も同じラベル文言を見出しとして持つことがあるため、
+    // 「少なくとも1回は表示されている」ことのみ確認する。
+    expect(screen.getAllByText("取引にタグを付ける").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("予算実績（概要）").length).toBeGreaterThan(0);
   });
 
   it("表示/非表示ボタンでウィジェットの表示状態を切り替え、localStorageに反映する", () => {
@@ -73,9 +77,11 @@ describe("DashboardWidgetOrderEditor", () => {
   });
 
   it("ドラッグ&ドロップでウィジェットの並び順を変更し、localStorageに反映する", () => {
-    render(<DashboardWidgetOrderEditor />);
+    const { container } = render(<DashboardWidgetOrderEditor />);
 
-    const items = screen.getAllByRole("listitem");
+    // ドラッグ対象は各ウィジェットカードのルート<li draggable>のみ（プレビュー内の
+    // 実チャートが持つ可能性のあるネストした<li>は対象外にする）。
+    const items = Array.from(container.querySelectorAll('li[draggable="true"]'));
     const source = items.find((li) => li.textContent?.includes("取引にタグを付ける"))!;
     const target = items.find((li) => li.textContent?.includes("サマリー指標"))!;
 
