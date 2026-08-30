@@ -45,7 +45,7 @@ export default function StatutoryReportSummaryPage() {
             退職所得の源泉徴収票合計表・不動産の使用料等の支払調書合計表は、対応する下書き作成機能が本アプリに
             まだないため、常に0件のまま表示されます。
           </p>
-          <p className="text-xs text-warning-foreground max-w-2xl leading-relaxed mt-2">
+          <p className="text-xs text-amber-700 max-w-2xl leading-relaxed mt-2">
             <b className="font-medium">
               これは下書きです。提出はご自身の責任で行ってください。
             </b>

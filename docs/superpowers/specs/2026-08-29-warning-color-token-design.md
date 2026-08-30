@@ -29,6 +29,7 @@
 **含まない**:
 - amber以外の色（`red-700`等でエラー表示に使っているもの）の一斉トークン化。今回は「テーマ切替に追従しない」という実害が確認できているamber系のみを対象とする
 - 上記9ファイル以外で今後new追加されるamber使用箇所の対応（本specの対象は現時点で確認済みの9ファイルのみ）
+- **`src/app/depreciation-schedule/page.tsx`・`src/app/statutory-report-summary/page.tsx`の、`DocumentPreviewFrame`（別表十六・法定調書合計表の書類プレビュー）の子として描画される`<section>`内にあるamber文言**（2026-08-31追記）。`src/components/ui/DocumentPreviewFrame.tsx`のコメントに明記の通り、書類プレビューの子孫は常にライト固定色（`amber-700`等）を使う必要があり、`text-warning-foreground`等のトークンクラスを使うとダークモード時に固定白背景の紙面でコントラストが崩れる。実際に一度誤ってトークン化され、2026-08-31に`amber-700`へ差し戻した実害があるため、今後もこの2箇所は対象外として扱うこと。同じファイル内でも`DocumentPreviewFrame`の外側（ヘッダー・フッター等）は通常通りトークン化してよい。
 
 ## テスト方針
 
