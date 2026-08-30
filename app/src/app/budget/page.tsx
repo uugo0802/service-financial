@@ -8,6 +8,7 @@ import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import {
   CategoryBudget,
   BudgetTrackingStatus,
+  DEFAULT_CATEGORY_BUDGETS,
   compareBudgetToActual,
   formatPeriod,
   knownExpenseCategories,
@@ -49,15 +50,6 @@ const SAMPLE_TRANSACTIONS: CategorizedTransaction[] = SAMPLE_SPEND.map((row, i) 
   source: "rule" as const,
 }));
 
-const DEFAULT_BUDGETS: CategoryBudget[] = [
-  { account: "地代家賃", monthlyBudgetYen: 180000 },
-  { account: "通信費", monthlyBudgetYen: 20000 },
-  { account: "旅費交通費", monthlyBudgetYen: 25000 },
-  { account: "消耗品費", monthlyBudgetYen: 15000 },
-  { account: "接待交際費", monthlyBudgetYen: 15000 },
-  { account: "広告宣伝費", monthlyBudgetYen: 30000 },
-];
-
 const STATUS_LABEL: Record<BudgetTrackingStatus, string> = {
   under_budget: "予算内",
   at_budget: "予算どおり",
@@ -84,7 +76,7 @@ const BAR_FILL_CLASS: Record<BudgetTrackingStatus, string> = {
 
 export default function BudgetPage() {
   const [period, setPeriod] = useState(() => formatPeriod(new Date()));
-  const [budgets, setBudgets] = useState<CategoryBudget[]>(DEFAULT_BUDGETS);
+  const [budgets, setBudgets] = useState<CategoryBudget[]>(DEFAULT_CATEGORY_BUDGETS);
   const categories = useMemo(() => knownExpenseCategories(), []);
   const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_TRANSACTIONS);
 

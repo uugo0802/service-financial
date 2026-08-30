@@ -228,3 +228,19 @@ export function formatPeriod(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   return `${year}-${month}`;
 }
+
+/**
+ * 予算設定自体は現状DB/localStorageに永続化されていない（budget/page.tsxもリロードで
+ * この既定値に戻る）ため、`/budget`ページとダッシュボードの「予算実績（概要）」
+ * ウィジェット（components/dashboard/BudgetSummaryWidget.tsx）の双方がこの同じ
+ * 既定値を参照する形にし、2箇所に別々の初期値を持たせない（元は budget/page.tsx
+ * に直接定義されていたものをここへ移設した）。
+ */
+export const DEFAULT_CATEGORY_BUDGETS: CategoryBudget[] = [
+  { account: "地代家賃", monthlyBudgetYen: 180000 },
+  { account: "通信費", monthlyBudgetYen: 20000 },
+  { account: "旅費交通費", monthlyBudgetYen: 25000 },
+  { account: "消耗品費", monthlyBudgetYen: 15000 },
+  { account: "接待交際費", monthlyBudgetYen: 15000 },
+  { account: "広告宣伝費", monthlyBudgetYen: 30000 },
+];
