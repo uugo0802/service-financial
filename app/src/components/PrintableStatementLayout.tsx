@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react";
 import {
-  DRAFT_WATERMARK_LABEL,
   PRINT_FOOTER_NOTICE,
   buildPrintSectionPlan,
   selectPrintVisibleFields,
@@ -18,10 +17,12 @@ import {
 // 構築したものをそのまま props として渡してもらう想定であり、Next.jsの
 // 「Server ComponentsをClient Componentsのpropsとして渡す」パターンに従う。
 //
-// 【法的に重要】ここで表示するヘッダー・透かし・フッター注記は、この決算書類が
+// 【法的に重要】ここで表示するヘッダー・フッター注記は、この決算書類が
 // あくまで下書き・シミュレーションであり正式な決算書ではないことを示すための
 // ものであり、削除・非表示にする手段をUI上に用意しないこと（印刷しても必ず
 // 一緒に出力される）。文言は src/lib/export/printLayout.ts を唯一の出典とする。
+// なお、紙面中央に重ねる大きな斜めの透かし文字は、視認性・見た目を理由に
+// オーナーの明示的な判断で2026-08-30に撤去した（同じ注記はフッターに残す）。
 // ------------------------------------------------------------------
 
 export interface PrintableStatementSection {
@@ -92,19 +93,6 @@ export function PrintableStatementLayout({
             {field.label}: {field.value}
           </span>
         ))}
-      </div>
-
-      {/*
-        印刷時のみ表示する透かし。中央に薄く重ねることで、印刷した紙面から
-        この注記だけを切り離すことができないようにする。
-      */}
-      <div
-        aria-hidden="true"
-        className="hidden print:fixed print:inset-0 print:z-0 print:flex print:items-center print:justify-center print:overflow-hidden"
-      >
-        <span className="print:rotate-[-30deg] print:whitespace-nowrap print:text-[54pt] print:font-bold print:text-stone-300/40">
-          {DRAFT_WATERMARK_LABEL}
-        </span>
       </div>
 
       {/* 本文（各決算書類セクション）。A4印刷時の左右余白と、印刷用ヘッダー/フッターの分の上下パディングを確保する。 */}
