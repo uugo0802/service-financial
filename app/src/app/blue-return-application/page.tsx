@@ -14,9 +14,8 @@ export default function BlueReturnApplicationPage() {
   return (
     <div className="bg-background text-foreground min-h-screen print:bg-white">
       <header className="border-b border-border bg-surface print:hidden">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">MVP — 所得税の青色申告承認申請書（下書き作成）</div>
         </div>
       </header>
 

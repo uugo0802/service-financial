@@ -94,9 +94,8 @@ export function DocumentsClient() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface print:hidden dark:border-stone-700 dark:bg-stone-900">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">証憑（レシート・請求書）一覧・検索</div>
         </div>
       </header>
 

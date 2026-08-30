@@ -13,9 +13,8 @@ export default function BusinessCommencementNotificationPage() {
   return (
     <div className="bg-background text-foreground min-h-screen print:bg-white">
       <header className="border-b border-border bg-surface print:hidden">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">MVP — 個人事業の開業届（下書き作成）</div>
         </div>
       </header>
 

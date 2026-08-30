@@ -61,9 +61,8 @@ export default function SecuritySettingsPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">セキュリティ設定</div>
         </div>
       </header>
 

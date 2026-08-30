@@ -38,9 +38,8 @@ export default function AdvisorAccessPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">顧問税理士への閲覧共有（追加課金）</div>
         </div>
       </header>
 

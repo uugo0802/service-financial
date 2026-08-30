@@ -14,9 +14,8 @@ export default function FamilyEmployeeSalaryPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">青色事業専従者給与のチェック</div>
         </div>
       </header>
 

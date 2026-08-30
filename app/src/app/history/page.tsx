@@ -60,7 +60,7 @@ export default function HistoryPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-4xl px-6 py-4">
+        <div className="mx-auto max-w-4xl px-6 py-4 flex justify-end">
           <PageTitle />
         </div>
       </header>

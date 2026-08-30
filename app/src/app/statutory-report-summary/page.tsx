@@ -14,9 +14,8 @@ export default function StatutoryReportSummaryPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface print:hidden">
-        <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">法定調書合計表（下書き）</div>
         </div>
       </header>
 

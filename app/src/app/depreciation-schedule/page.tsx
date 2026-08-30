@@ -13,17 +13,14 @@ export const metadata: Metadata = {
 export default function DepreciationSchedulePage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
-      <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
+      <header className="border-b border-border bg-surface print:hidden">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">
-            別表十六（一）減価償却の計算に関する明細書
-          </div>
         </div>
       </header>
 
       <DocumentPreviewFrame as="main" maxWidth="5xl" className="flex flex-col gap-8">
-        <section className="flex flex-col gap-4">
+        <section className="flex flex-col gap-4 print:hidden">
           <h1 className="text-2xl font-semibold">別表十六（一）減価償却の計算に関する明細書</h1>
           <p className="text-sm text-stone-600 leading-relaxed max-w-2xl">
             固定資産台帳（
@@ -45,7 +42,7 @@ export default function DepreciationSchedulePage() {
         <DepreciationScheduleClient />
       </DocumentPreviewFrame>
 
-      <footer className="border-t border-border bg-surface mt-4">
+      <footer className="border-t border-border bg-surface mt-4 print:hidden">
         <div className="mx-auto max-w-5xl px-6 py-8 text-xs text-muted-foreground leading-relaxed">
           本ページは開発中のプロトタイプであり、税理士法に定める税務代理・税務書類の作成・税務相談を提供するものではありません。
           表示される別表十六（一）の下書きは固定資産台帳の登録内容に基づく簡易試算であり、正式な申告書添付書類ではありません。

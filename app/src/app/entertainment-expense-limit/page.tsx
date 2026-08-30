@@ -13,9 +13,8 @@ export default function EntertainmentExpenseLimitPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">MVP — 交際費等の損金不算入額計算機</div>
         </div>
       </header>
 

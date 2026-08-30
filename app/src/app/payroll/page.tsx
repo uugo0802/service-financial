@@ -16,9 +16,8 @@ export default function PayrollPage() {
   return (
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
-        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-end">
           <PageTitle />
-          <div className="text-xs text-muted-foreground">MVP — 源泉徴収・年末調整（給与・賞与）の概算計算</div>
         </div>
       </header>
 
