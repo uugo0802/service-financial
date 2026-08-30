@@ -174,6 +174,7 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       { href: "/settings/billing", label: "プラン・お支払い" },
       { href: "/settings/security", label: "セキュリティ" },
       { href: "/settings/team", label: "チーム" },
+      { href: "/logout", label: "ログアウト" },
     ],
   },
 ];
