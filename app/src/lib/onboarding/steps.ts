@@ -17,7 +17,7 @@ import {
   validateTenantProfileDraft,
 } from "../db/tenants";
 
-export type OnboardingStepId = "entityType" | "fiscalYear" | "blueReturn" | "review";
+export type OnboardingStepId = "displayName" | "fiscalYear" | "blueReturn" | "review";
 
 export interface OnboardingStepDefinition {
   id: OnboardingStepId;
@@ -29,22 +29,26 @@ export interface OnboardingStepDefinition {
 
 /**
  * オンボーディングウィザードのステップ順序（1-indexedで扱う。配列添字は0-indexed）。
- * ステップ1: 事業形態・屋号／会社名
- * ステップ2: 決算月（マイクロ法人のみ必須）
+ * ステップ1: 屋号・会社名
+ * ステップ2: 決算月
  * ステップ3: 青色申告の承認有無
  * ステップ4: 内容確認・確定
+ *
+ * 事業形態（entityType）の選択ステップは撤去した。本サービスは現状マイクロ法人向けに
+ * 一本化しており、entityTypeは常に"corp"固定（docs/superpowers/specs/
+ * 2026-08-30-nav-slimdown-and-entity-simplify-design.md ⑤参照）。
  */
 export const ONBOARDING_STEPS: readonly OnboardingStepDefinition[] = [
   {
-    id: "entityType",
-    titleJa: "事業形態",
-    descriptionJa: "個人事業主かマイクロ法人かを選び、屋号・会社名を入力してください。",
-    fields: ["entityType", "displayName"],
+    id: "displayName",
+    titleJa: "屋号・会社名",
+    descriptionJa: "屋号・会社名を入力してください。",
+    fields: ["displayName"],
   },
   {
     id: "fiscalYear",
     titleJa: "決算月",
-    descriptionJa: "マイクロ法人の場合は決算月を入力してください（個人事業主は暦年で確定するため不要です）。",
+    descriptionJa: "決算月を入力してください。",
     fields: ["fiscalYearEndMonth"],
   },
   {

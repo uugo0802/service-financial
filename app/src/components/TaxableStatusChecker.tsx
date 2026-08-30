@@ -27,7 +27,9 @@ const RULE_STEP_TITLES: Record<TaxableStatusRuleId, string> = {
  * 管理と結果表示のみを担う。
  */
 export function TaxableStatusChecker() {
-  const [entityType, setEntityType] = useState<EntityType>("individual");
+  // 本サービスはマイクロ法人向けに一本化しているため、事業形態は法人固定とする
+  // （docs/superpowers/specs/2026-08-30-nav-slimdown-and-entity-simplify-design.md ⑤参照）。
+  const entityType: EntityType = "corporation";
   const [hasBasePeriod, setHasBasePeriod] = useState(true);
   const [baseYearTaxableSales, setBaseYearTaxableSales] = useState("0");
 
@@ -51,8 +53,7 @@ export function TaxableStatusChecker() {
         hasSpecifiedPeriod,
         specifiedPeriodTaxableSales: hasSpecifiedPeriod ? Number(specifiedPeriodTaxableSales) : undefined,
         specifiedPeriodSalaryPaid: hasSpecifiedPeriod ? Number(specifiedPeriodSalaryPaid) : undefined,
-        capitalStockAtPeriodStart:
-          !hasBasePeriod && entityType === "corporation" ? Number(capitalStockAtPeriodStart) : undefined,
+        capitalStockAtPeriodStart: !hasBasePeriod ? Number(capitalStockAtPeriodStart) : undefined,
         hasMergerOrDemerger,
         isSpecifiedNewlyEstablishedCorporation,
       });
@@ -73,35 +74,11 @@ export function TaxableStatusChecker() {
     isSpecifiedNewlyEstablishedCorporation,
   ]);
 
-  const showNewCompanyCapital = !hasBasePeriod && entityType === "corporation";
+  const showNewCompanyCapital = !hasBasePeriod;
 
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-4 bg-surface border border-border rounded p-4">
-        <div>
-          <label className={labelClass}>事業形態</label>
-          <div className="flex gap-4 text-sm">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="entity-type"
-                checked={entityType === "individual"}
-                onChange={() => setEntityType("individual")}
-              />
-              個人事業主
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="entity-type"
-                checked={entityType === "corporation"}
-                onChange={() => setEntityType("corporation")}
-              />
-              法人
-            </label>
-          </div>
-        </div>
-
         <div>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -126,23 +103,21 @@ export function TaxableStatusChecker() {
               className={inputClass}
             />
           </div>
-        ) : showNewCompanyCapital ? (
-          <div>
-            <label className={labelClass} htmlFor="taxable-status-capital-stock-at-period-start">事業年度開始の日における資本金の額（円）</label>
-            <input
-              id="taxable-status-capital-stock-at-period-start"
-              type="number"
-              min="0"
-              value={capitalStockAtPeriodStart}
-              onChange={(e) => setCapitalStockAtPeriodStart(e.target.value)}
-              placeholder="例：5000000"
-              className={inputClass}
-            />
-          </div>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            個人事業主の場合、新設法人の資本金特例は適用されません。基準期間の課税売上高は0円として扱われます。
-          </p>
+          showNewCompanyCapital && (
+            <div>
+              <label className={labelClass} htmlFor="taxable-status-capital-stock-at-period-start">事業年度開始の日における資本金の額（円）</label>
+              <input
+                id="taxable-status-capital-stock-at-period-start"
+                type="number"
+                min="0"
+                value={capitalStockAtPeriodStart}
+                onChange={(e) => setCapitalStockAtPeriodStart(e.target.value)}
+                placeholder="例：5000000"
+                className={inputClass}
+              />
+            </div>
+          )
         )}
 
         <div>

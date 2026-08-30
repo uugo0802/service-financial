@@ -34,7 +34,7 @@ const validCorpDraft: TenantProfileDraft = {
 describe("ONBOARDING_STEPS", () => {
   it("defines 4 steps in the expected order", () => {
     expect(ONBOARDING_TOTAL_STEPS).toBe(4);
-    expect(ONBOARDING_STEPS.map((s) => s.id)).toEqual(["entityType", "fiscalYear", "blueReturn", "review"]);
+    expect(ONBOARDING_STEPS.map((s) => s.id)).toEqual(["displayName", "fiscalYear", "blueReturn", "review"]);
   });
 });
 

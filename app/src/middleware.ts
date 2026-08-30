@@ -23,9 +23,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 静的アセット・PWA関連ファイル・APIルートはmiddlewareの対象外とする。
-  // /api/categorize・/api/ocr は /quick-estimate（未ログインお試し機能）が呼び出すため、
-  // 認証必須にすると /quick-estimate 自体が壊れる。
+  // 静的アセット・PWA関連ファイル・APIルートはmiddlewareの対象外とする
+  // （APIルート自体の認可は各ルートハンドラ側の責務とする）。
   matcher: [
     "/((?!_next/static|_next/image|api/|favicon\\.ico|apple-icon\\.png|manifest|sw\\.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json|txt|xml|webmanifest)$).*)",
   ],

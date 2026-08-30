@@ -77,16 +77,8 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   {
     label: "記帳・仕訳",
     links: [
-      { href: "/quick-estimate", label: "概算シミュレーション（お試し）" },
       { href: "/transactions", label: "取引明細" },
       { href: "/journal", label: "仕訳入力" },
-      { href: "/general-ledger", label: "総勘定元帳" },
-      { href: "/categorize-rules", label: "仕訳ルール" },
-      { href: "/tags", label: "タグ別収益性" },
-      { href: "/reconcile", label: "口座残高照合" },
-      { href: "/invoice-reconciliation", label: "入金消込" },
-      { href: "/rule-backfill", label: "ルール一括再適用" },
-      { href: "/migrate", label: "他社データ移行" },
     ],
   },
   {
@@ -99,28 +91,34 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     ],
   },
   {
-    label: "申告書・帳票",
+    label: "決算書類",
     links: [
       { href: "/financial-statements", label: "決算書類" },
       { href: "/trial-balance", label: "試算表" },
-      { href: "/statutory-report-summary", label: "法定調書合計表" },
-      { href: "/withholding-slip", label: "源泉徴収票" },
-      { href: "/apportionment", label: "経費按分計算" },
-      { href: "/entertainment-expense-limit", label: "交際費の損金限度額" },
+      { href: "/general-ledger", label: "総勘定元帳" },
+    ],
+  },
+  {
+    label: "税務判定ツール",
+    links: [
       { href: "/high-value-asset-status", label: "高額特定資産チェック" },
-      { href: "/housing-loan-deduction", label: "住宅ローン控除" },
-      { href: "/corporate-interim-tax", label: "法人中間申告" },
       { href: "/simplified-taxation", label: "簡易課税判定" },
       { href: "/taxable-status", label: "課税事業者判定" },
+      { href: "/housing-loan-deduction", label: "住宅ローン控除" },
+      { href: "/entertainment-expense-limit", label: "交際費の損金限度額" },
+      { href: "/apportionment", label: "経費按分計算" },
+      { href: "/stamp-duty-checker", label: "印紙税チェック" },
+    ],
+  },
+  {
+    label: "概算・納税スケジュール",
+    links: [
       { href: "/resident-tax-estimate", label: "住民税概算" },
       { href: "/side-income-estimate", label: "副業所得概算" },
       { href: "/estimated-tax", label: "予定納税" },
       { href: "/interim-payment", label: "中間納付リマインダー" },
-      { href: "/withholding-credit-reconciliation", label: "源泉徴収税額突合" },
-      { href: "/payment-report", label: "支払調書" },
-      { href: "/business-commencement-notification", label: "開業届" },
-      { href: "/corporate-establishment-notification", label: "法人設立届出書一式" },
-      { href: "/invoice-registration-application", label: "インボイス登録申請書" },
+      { href: "/corporate-interim-tax", label: "法人中間申告" },
+      { href: "/deadlines", label: "申告期限" },
     ],
   },
   {
@@ -131,19 +129,28 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       { href: "/payment-reminders", label: "支払督促メール" },
       { href: "/payroll", label: "給与・賞与計算" },
       { href: "/family-employee", label: "専従者給与チェック" },
+      { href: "/withholding-slip", label: "源泉徴収票" },
+      { href: "/statutory-report-summary", label: "法定調書合計表" },
+      { href: "/payment-report", label: "支払調書" },
+      { href: "/withholding-credit-reconciliation", label: "源泉徴収税額突合" },
     ],
   },
   {
-    label: "分析・通知",
+    label: "その他",
     links: [
+      { href: "/documents", label: "証憑検索" },
+      { href: "/export", label: "CSVエクスポート" },
+      { href: "/audit-log", label: "監査ログ" },
+      { href: "/history", label: "アーカイブ履歴" },
+      { href: "/search", label: "横断検索" },
+      { href: "/migrate", label: "他社データ移行" },
       { href: "/recommendations", label: "おすすめサービス" },
-      { href: "/deadlines", label: "申告期限" },
       { href: "/notifications", label: "通知" },
       { href: "/reminders", label: "タスクリマインダー" },
       { href: "/monthly-close-checklist", label: "月次締めチェックリスト" },
       { href: "/pension-savings-simulator", label: "iDeCo・小規模企業共済" },
-      { href: "/furusato-nozei", label: "ふるさと納税" },
-      { href: "/stamp-duty-checker", label: "印紙税チェック" },
+      { href: "/reconcile", label: "口座残高照合" },
+      { href: "/invoice-reconciliation", label: "入金消込" },
     ],
   },
   {
@@ -156,16 +163,6 @@ export const NAV_GROUPS: readonly NavGroup[] = [
     ],
   },
   {
-    label: "その他",
-    links: [
-      { href: "/documents", label: "証憑検索" },
-      { href: "/export", label: "CSVエクスポート" },
-      { href: "/audit-log", label: "監査ログ" },
-      { href: "/history", label: "アーカイブ履歴" },
-      { href: "/search", label: "横断検索" },
-    ],
-  },
-  {
     label: "設定",
     links: [
       { href: "/settings", label: "事業者設定" },
@@ -174,6 +171,9 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       { href: "/settings/billing", label: "プラン・お支払い" },
       { href: "/settings/security", label: "セキュリティ" },
       { href: "/settings/team", label: "チーム" },
+      { href: "/categorize-rules", label: "仕訳ルール" },
+      { href: "/tags", label: "タグ別収益性" },
+      { href: "/rule-backfill", label: "ルール一括再適用" },
       { href: "/logout", label: "ログアウト" },
     ],
   },
@@ -191,4 +191,17 @@ export function isNavLinkActive(pathname: string, href: string): boolean {
   if (pathname === href) return true;
   if (href === "/") return false;
   return pathname.startsWith(`${href}/`);
+}
+
+/**
+ * 現在のパスに対応するナビゲーションリンクのラベルを返す（一致するリンクがなければnull）。
+ * `isNavLinkActive()`で一致する全リンクのうち、hrefが最長（＝最も具体的）のものを採用する
+ * （例: "/settings/security" は "/settings"（事業者設定）にも前方一致するが、
+ * より具体的な "/settings/security"（セキュリティ）を優先する）。
+ */
+export function getActiveNavLabel(pathname: string): string | null {
+  const allLinks = NAV_GROUPS.flatMap((group) => group.links);
+  const matches = allLinks.filter((link) => isNavLinkActive(pathname, link.href));
+  if (matches.length === 0) return null;
+  return matches.reduce((best, link) => (link.href.length > best.href.length ? link : best)).label;
 }

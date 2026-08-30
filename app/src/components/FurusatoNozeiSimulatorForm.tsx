@@ -18,7 +18,9 @@ const yen = new Intl.NumberFormat("ja-JP");
  * 表現は用いない（税理士法上の個別税務相談に該当しないため、あくまで目安の提示に留める）。
  */
 export function FurusatoNozeiSimulatorForm() {
-  const [entityType, setEntityType] = useState<FurusatoNozeiEntityType>("individual");
+  // 本サービスはマイクロ法人向けに一本化しているため、事業形態は法人固定とする
+  // （docs/superpowers/specs/2026-08-30-nav-slimdown-and-entity-simplify-design.md ⑤参照）。
+  const entityType: FurusatoNozeiEntityType = "corporation";
   const [taxableIncome, setTaxableIncome] = useState("4000000");
   const [hasSpouseDeduction, setHasSpouseDeduction] = useState(false);
   const [generalDependentCount, setGeneralDependentCount] = useState("0");
@@ -47,20 +49,8 @@ export function FurusatoNozeiSimulatorForm() {
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-5 bg-surface border border-border rounded p-4">
         <div>
-          <label className={labelClass} htmlFor="furusato-entity-type">
-            事業形態
-          </label>
-          <select
-            id="furusato-entity-type"
-            value={entityType}
-            onChange={(e) => setEntityType(e.target.value as FurusatoNozeiEntityType)}
-            className={inputClass}
-          >
-            <option value="individual">個人（フリーランス・給与所得者等）</option>
-            <option value="corporation">マイクロ法人（法人）</option>
-          </select>
-          <p className="text-xs text-muted-foreground mt-1">
-            ふるさと納税の自己負担2,000円の特例控除制度は個人向けの制度です。法人を選択した場合は試算を行いません。
+          <p className="text-xs text-muted-foreground">
+            ふるさと納税の自己負担2,000円の特例控除制度は個人向けの制度です。マイクロ法人（法人）は対象外のため試算を行いません。
           </p>
         </div>
 

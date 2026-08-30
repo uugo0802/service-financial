@@ -34,11 +34,6 @@ const errorTextClass = "mt-1 text-xs text-red-700 dark:text-red-400";
 
 const FISCAL_MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
 
-const ENTITY_TYPE_LABEL: Record<TenantProfileDraft["entityType"], string> = {
-  individual: "個人事業主",
-  corp: "マイクロ法人",
-};
-
 /**
  * 初回設定（オンボーディング）ウィザード。
  * 事業形態・屋号／会社名・決算月・青色申告の承認有無を、1画面の巨大フォームではなく
@@ -196,60 +191,38 @@ function StepPanel({
       <p className="text-sm text-muted-foreground leading-relaxed mb-4">{definition.descriptionJa}</p>
 
       <div className="mb-4">
-        {definition.id === "entityType" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <label className={labelClass}>
-              事業形態
-              <select
-                value={draft.entityType}
-                onChange={(e) => onChange("entityType", e.target.value as TenantProfileDraft["entityType"])}
-                className={inputClass}
-              >
-                {Object.entries(ENTITY_TYPE_LABEL).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className={labelClass}>
-              屋号・会社名
-              <input
-                type="text"
-                placeholder="例: 今ごえん合同会社"
-                value={draft.displayName}
-                onChange={(e) => onChange("displayName", e.target.value)}
-                className={inputClass}
-              />
-              {errors.displayName && <span className={errorTextClass}>{errors.displayName}</span>}
-            </label>
-          </div>
+        {definition.id === "displayName" && (
+          <label className={labelClass}>
+            屋号・会社名
+            <input
+              type="text"
+              placeholder="例: 今ごえん合同会社"
+              value={draft.displayName}
+              onChange={(e) => onChange("displayName", e.target.value)}
+              className={inputClass}
+            />
+            {errors.displayName && <span className={errorTextClass}>{errors.displayName}</span>}
+          </label>
         )}
 
-        {definition.id === "fiscalYear" &&
-          (draft.entityType === "corp" ? (
-            <label className={labelClass}>
-              決算月
-              <select
-                value={draft.fiscalYearEndMonth}
-                onChange={(e) => onChange("fiscalYearEndMonth", e.target.value)}
-                className={`${inputClass} max-w-xs`}
-              >
-                <option value="">選択してください</option>
-                {FISCAL_MONTH_OPTIONS.map((month) => (
-                  <option key={month} value={month}>
-                    {month}月
-                  </option>
-                ))}
-              </select>
-              {errors.fiscalYearEndMonth && <span className={errorTextClass}>{errors.fiscalYearEndMonth}</span>}
-            </label>
-          ) : (
-            <p className="text-xs text-muted-foreground bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 px-3 py-2">
-              個人事業主は暦年（1月〜12月）で確定するため、決算月の設定は不要です。
-            </p>
-          ))}
+        {definition.id === "fiscalYear" && (
+          <label className={labelClass}>
+            決算月
+            <select
+              value={draft.fiscalYearEndMonth}
+              onChange={(e) => onChange("fiscalYearEndMonth", e.target.value)}
+              className={`${inputClass} max-w-xs`}
+            >
+              <option value="">選択してください</option>
+              {FISCAL_MONTH_OPTIONS.map((month) => (
+                <option key={month} value={month}>
+                  {month}月
+                </option>
+              ))}
+            </select>
+            {errors.fiscalYearEndMonth && <span className={errorTextClass}>{errors.fiscalYearEndMonth}</span>}
+          </label>
+        )}
 
         {definition.id === "blueReturn" && (
           <label className="flex items-start gap-2 text-sm text-foreground">
@@ -271,12 +244,8 @@ function StepPanel({
 
         {definition.id === "review" && (
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <ReviewItem label="事業形態" value={ENTITY_TYPE_LABEL[draft.entityType]} />
             <ReviewItem label="屋号・会社名" value={draft.displayName || "（未入力）"} />
-            <ReviewItem
-              label="決算月"
-              value={draft.entityType === "corp" ? (draft.fiscalYearEndMonth ? `${draft.fiscalYearEndMonth}月` : "（未入力）") : "暦年（設定不要）"}
-            />
+            <ReviewItem label="決算月" value={draft.fiscalYearEndMonth ? `${draft.fiscalYearEndMonth}月` : "（未入力）"} />
             <ReviewItem label="青色申告" value={draft.blueReturn ? "承認あり" : "承認なし（白色申告）"} />
           </dl>
         )}

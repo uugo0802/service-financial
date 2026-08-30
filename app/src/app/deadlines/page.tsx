@@ -16,10 +16,12 @@ const URGENCY_TEXT_CLASS: Record<DeadlineUrgency, string> = {
 };
 
 export default function DeadlinesPage() {
-  const [entityType, setEntityType] = useState<EntityType>("individual");
+  // 本サービスはマイクロ法人向けに一本化しているため、事業形態は法人固定とする
+  // （docs/superpowers/specs/2026-08-30-nav-slimdown-and-entity-simplify-design.md ⑤参照）。
+  const entityType: EntityType = "corporate";
   const [fiscalYearEndMonth, setFiscalYearEndMonth] = useState(3);
 
-  // ライブのテナント設定（事業形態・決算月）が未連携のため、このページ単体で選べるデモ設定として保持する。
+  // ライブのテナント設定（決算月）が未連携のため、このページ単体で選べるデモ設定として保持する。
   const deadlines = useMemo(
     () => getUpcomingFilingDeadlines({ entityType, referenceDate: new Date(), fiscalYearEndMonth }),
     [entityType, fiscalYearEndMonth],
@@ -53,58 +55,26 @@ export default function DeadlinesPage() {
         <section>
           <h1 className="text-2xl font-semibold mb-2">申告期限リマインダー</h1>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl">
-            事業形態（フリーランス・個人事業主／マイクロ法人）ごとの一般的な申告期限を一覧表示します。
+            マイクロ法人の一般的な申告期限を一覧表示します。
             表示されるのはあくまで法定の原則的な期限（暦情報）であり、あなたの状況に応じた個別の税務相談ではありません。
           </p>
         </section>
 
         <section>
-          <div className="text-xs text-muted-foreground mb-2">事業形態（設定が未連携のため、こちらで仮選択できます）</div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              type="button"
-              aria-pressed={entityType === "individual"}
-              onClick={() => setEntityType("individual")}
-              className={`min-w-[13rem] text-sm px-5 py-3 border transition-colors ${
-                entityType === "individual"
-                  ? "bg-accent border-accent text-white"
-                  : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
-              }`}
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground w-44">
+            決算月
+            <select
+              value={fiscalYearEndMonth}
+              onChange={(e) => setFiscalYearEndMonth(Number(e.target.value))}
+              className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
             >
-              フリーランス・個人事業主
-            </button>
-            <button
-              type="button"
-              aria-pressed={entityType === "corporate"}
-              onClick={() => setEntityType("corporate")}
-              className={`min-w-[13rem] text-sm px-5 py-3 border transition-colors ${
-                entityType === "corporate"
-                  ? "bg-accent border-accent text-white"
-                  : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
-              }`}
-            >
-              マイクロ法人
-            </button>
-          </div>
-
-          {entityType === "corporate" && (
-            <div className="mt-4">
-              <label className="flex flex-col gap-1 text-xs text-muted-foreground w-44">
-                決算月
-                <select
-                  value={fiscalYearEndMonth}
-                  onChange={(e) => setFiscalYearEndMonth(Number(e.target.value))}
-                  className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
-                >
-                  {MONTH_LABELS.map((label, i) => (
-                    <option key={label} value={i + 1}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          )}
+              {MONTH_LABELS.map((label, i) => (
+                <option key={label} value={i + 1}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
         </section>
 
         <section>
@@ -156,9 +126,9 @@ export default function DeadlinesPage() {
 
         <section className="border-t border-border pt-6">
           <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
-            本ページの期日は、フリーランス・個人事業主については所得税確定申告（3月15日）・消費税確定申告（3月31日、課税事業者のみ）、
-            マイクロ法人については決算月から2ヶ月以内（法人税・地方法人税・消費税、および法人住民税・事業税）という一般的な原則に基づく参考値です。
-            土日祝日により実際の期限は前後する場合があります。個別の状況に応じた判断は必ず国税庁・お住まいの自治体・税理士等の専門家にご確認ください。
+            本ページの期日は、決算月から2ヶ月以内（法人税・地方法人税・消費税、および法人住民税・事業税）という
+            一般的な原則に基づく参考値です。土日祝日により実際の期限は前後する場合があります。
+            個別の状況に応じた判断は必ず国税庁・お住まいの自治体・税理士等の専門家にご確認ください。
           </p>
         </section>
       </PageContainer>

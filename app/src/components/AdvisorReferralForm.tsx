@@ -103,36 +103,6 @@ export function AdvisorReferralForm() {
       </div>
 
       <div>
-        <div className="text-xs text-muted-foreground mb-2">事業形態</div>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            aria-pressed={values.entityType === "individual"}
-            onClick={() => update("entityType", "individual")}
-            className={`text-sm px-4 py-2 border transition-colors ${
-              values.entityType === "individual"
-                ? "bg-accent border-accent text-white"
-                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
-            }`}
-          >
-            フリーランス・個人事業主
-          </button>
-          <button
-            type="button"
-            aria-pressed={values.entityType === "corp"}
-            onClick={() => update("entityType", "corp")}
-            className={`text-sm px-4 py-2 border transition-colors ${
-              values.entityType === "corp"
-                ? "bg-accent border-accent text-white"
-                : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
-            }`}
-          >
-            マイクロ法人
-          </button>
-        </div>
-      </div>
-
-      <div>
         <label className="block text-xs text-muted-foreground mb-1" htmlFor="advisor-topic">
           相談したい内容
         </label>

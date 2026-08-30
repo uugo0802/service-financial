@@ -23,7 +23,7 @@ export const EMPTY_ADVISOR_REFERRAL_FORM: AdvisorReferralFormValues = {
   name: "",
   email: "",
   phone: "",
-  entityType: "individual",
+  entityType: "corp",
   topic: "",
   message: "",
   consent: false,

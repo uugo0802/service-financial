@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
-import { isAppShellExcludedPath, isNavLinkActive, NAV_GROUPS, NavGroup } from "@/lib/navigation/appShellNav";
+import { getActiveNavLabel, isAppShellExcludedPath, isNavLinkActive, NAV_GROUPS, NavGroup } from "@/lib/navigation/appShellNav";
 
 // ------------------------------------------------------------------
 // アプリ全体で共有するナビゲーションシェル。
@@ -24,38 +24,58 @@ function groupContainsActiveLink(group: NavGroup, pathname: string): boolean {
   return group.links.some((link) => isNavLinkActive(pathname, link.href));
 }
 
+function NavLinkItem({ href, label, pathname, onNavigate }: { href: string; label: string; pathname: string; onNavigate?: () => void }) {
+  const active = isNavLinkActive(pathname, href);
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
+      className={`block rounded-md px-2 py-1.5 text-sm transition-colors ${
+        active ? "bg-accent/10 font-medium text-accent" : "text-foreground hover:bg-surface"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
+/** リンクが1件だけで、そのリンクのラベルがグループ名と同じグループ（例: 「ダッシュボード」）は、
+ * グループ見出し・折りたたみを持たない単独リンクとして描画する。 */
+function isStandaloneGroup(group: NavGroup): boolean {
+  return group.links.length === 1 && group.links[0].label === group.label;
+}
+
 function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGroup[]; pathname: string; onNavigate?: () => void }) {
-  // 初期状態は「現在アクティブなページを含むグループ」のみ展開する。
-  // pathnameが変わるたび（ページ遷移のたび）に、その時点でアクティブなグループへ
-  // 自動的に開き直す（折りたたみ状態を明示的に操作していない限り）。
-  const [expanded, setExpanded] = useState<Set<string>>(
-    () => new Set(groups.filter((g) => groupContainsActiveLink(g, pathname)).map((g) => g.label))
+  const collapsibleGroups = groups.filter((g) => !isStandaloneGroup(g));
+
+  // どれか1つのグループを開いたら、他は必ず全て閉じる（複数同時展開はできない）。
+  // 初期状態は「現在アクティブなページを含むグループ」を展開する。
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(
+    () => collapsibleGroups.find((g) => groupContainsActiveLink(g, pathname))?.label ?? null
   );
   const [manuallyToggled, setManuallyToggled] = useState(false);
 
   useEffect(() => {
     if (manuallyToggled) return; // ユーザーが手動で開閉した後は、自動追従を止める
-    setExpanded(new Set(groups.filter((g) => groupContainsActiveLink(g, pathname)).map((g) => g.label)));
+    setExpandedGroup(collapsibleGroups.find((g) => groupContainsActiveLink(g, pathname))?.label ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   function toggleGroup(label: string) {
     setManuallyToggled(true);
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(label)) {
-        next.delete(label);
-      } else {
-        next.add(label);
-      }
-      return next;
-    });
+    setExpandedGroup((prev) => (prev === label ? null : label));
   }
 
   return (
     <nav aria-label="メインナビゲーション" className="flex flex-col gap-1">
       {groups.map((group) => {
-        const isExpanded = expanded.has(group.label);
+        if (isStandaloneGroup(group)) {
+          const link = group.links[0];
+          return <NavLinkItem key={group.label} href={link.href} label={link.label} pathname={pathname} onNavigate={onNavigate} />;
+        }
+
+        const isExpanded = expandedGroup === group.label;
         const panelId = `nav-group-${group.label}`;
         return (
           <div key={group.label}>
@@ -64,7 +84,7 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
               onClick={() => toggleGroup(group.label)}
               aria-expanded={isExpanded}
               aria-controls={panelId}
-              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:bg-surface"
+              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground hover:bg-surface"
             >
               {group.label}
               <ChevronDown
@@ -74,25 +94,11 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
             </button>
             {isExpanded && (
               <ul id={panelId} className="mt-1 flex flex-col gap-0.5">
-                {group.links.map((link) => {
-                  const active = isNavLinkActive(pathname, link.href);
-                  return (
-                    <li key={link.href}>
-                      <Link
-                        href={link.href}
-                        onClick={onNavigate}
-                        aria-current={active ? "page" : undefined}
-                        className={`block rounded-md px-2 py-1.5 text-sm transition-colors ${
-                          active
-                            ? "bg-accent/10 font-medium text-accent"
-                            : "text-foreground hover:bg-surface"
-                        }`}
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  );
-                })}
+                {group.links.map((link) => (
+                  <li key={link.href}>
+                    <NavLinkItem href={link.href} label={link.label} pathname={pathname} onNavigate={onNavigate} />
+                  </li>
+                ))}
               </ul>
             )}
           </div>
@@ -121,10 +127,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
+  const activeNavLabel = getActiveNavLabel(pathname);
+
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* md以上: 常時表示の左サイドバー */}
-      <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:gap-6 md:overflow-y-auto md:border-r md:border-border md:bg-surface md:px-4 md:py-6">
+      <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:flex-col md:gap-6 md:overflow-y-auto md:border-r md:border-border md:bg-surface md:px-4 md:py-6">
         <AppShellLogo />
         <NavGroupList groups={NAV_GROUPS} pathname={pathname} />
       </aside>
@@ -172,6 +180,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
               <NavGroupList groups={NAV_GROUPS} pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
             </div>
+          </div>
+        )}
+
+        {activeNavLabel && (
+          <div className="border-b border-border bg-surface px-4 py-2 md:px-6">
+            <p className="text-xs font-medium text-muted-foreground">{activeNavLabel}</p>
           </div>
         )}
 

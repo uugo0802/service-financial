@@ -25,7 +25,9 @@ const inputClass = "w-full border border-border bg-surface px-3 py-2 text-sm out
 const labelClass = "block text-xs text-muted-foreground mb-1";
 
 export function QualifiedInvoiceApplicationForm() {
-  const [entityType, setEntityType] = useState<InvoiceRegistrationEntityType>("individual");
+  // 本サービスはマイクロ法人向けに一本化しているため、事業者区分は法人固定とする
+  // （docs/superpowers/specs/2026-08-30-nav-slimdown-and-entity-simplify-design.md ⑤参照）。
+  const entityType: InvoiceRegistrationEntityType = "corporation";
   const [name, setName] = useState("");
   const [representativeName, setRepresentativeName] = useState("");
   const [address, setAddress] = useState("");
@@ -58,30 +60,6 @@ export function QualifiedInvoiceApplicationForm() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-5 bg-surface border border-border rounded p-4">
-        <div>
-          <label className={labelClass}>事業者区分</label>
-          <div className="flex gap-4 text-sm">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="invoice-app-entity-type"
-                checked={entityType === "individual"}
-                onChange={() => setEntityType("individual")}
-              />
-              個人事業者
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="invoice-app-entity-type"
-                checked={entityType === "corporation"}
-                onChange={() => setEntityType("corporation")}
-              />
-              法人
-            </label>
-          </div>
-        </div>
-
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className={labelClass} htmlFor="invoice-app-name">

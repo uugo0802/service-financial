@@ -46,18 +46,6 @@ export function TenantSettingsForm({ initialDraft, onSubmit }: TenantSettingsFor
     <form onSubmit={handleSubmit} className="border border-border bg-surface p-5 flex flex-col gap-5" noValidate>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <label className={labelClass}>
-          事業形態
-          <select
-            value={draft.entityType}
-            onChange={(e) => set("entityType", e.target.value as TenantProfileDraft["entityType"])}
-            className={inputClass}
-          >
-            <option value="individual">個人事業主</option>
-            <option value="corp">マイクロ法人</option>
-          </select>
-        </label>
-
-        <label className={labelClass}>
           屋号・会社名
           <input
             type="text"
@@ -69,24 +57,22 @@ export function TenantSettingsForm({ initialDraft, onSubmit }: TenantSettingsFor
           {errors.displayName && <span className={errorTextClass}>{errors.displayName}</span>}
         </label>
 
-        {draft.entityType === "corp" && (
-          <label className={labelClass}>
-            決算月
-            <select
-              value={draft.fiscalYearEndMonth}
-              onChange={(e) => set("fiscalYearEndMonth", e.target.value)}
-              className={inputClass}
-            >
-              <option value="">選択してください</option>
-              {FISCAL_MONTH_OPTIONS.map((month) => (
-                <option key={month} value={month}>
-                  {month}月
-                </option>
-              ))}
-            </select>
-            {errors.fiscalYearEndMonth && <span className={errorTextClass}>{errors.fiscalYearEndMonth}</span>}
-          </label>
-        )}
+        <label className={labelClass}>
+          決算月
+          <select
+            value={draft.fiscalYearEndMonth}
+            onChange={(e) => set("fiscalYearEndMonth", e.target.value)}
+            className={inputClass}
+          >
+            <option value="">選択してください</option>
+            {FISCAL_MONTH_OPTIONS.map((month) => (
+              <option key={month} value={month}>
+                {month}月
+              </option>
+            ))}
+          </select>
+          {errors.fiscalYearEndMonth && <span className={errorTextClass}>{errors.fiscalYearEndMonth}</span>}
+        </label>
       </div>
 
       <label className="flex items-start gap-2 text-sm text-foreground">

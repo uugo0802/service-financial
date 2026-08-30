@@ -132,9 +132,9 @@ describe("AppShell", () => {
     );
     fireEvent.click(screen.getByLabelText("メニューを開く"));
     const dialog = screen.getByRole("dialog", { name: "メインナビゲーション" });
-    // "総勘定元帳"は「記帳・仕訳」グループに属し、mockPathname="/dashboard"では
+    // "総勘定元帳"は「決算書類」グループに属し、mockPathname="/dashboard"では
     // 初期状態で折りたたまれているため、先にグループ見出しを展開する。
-    fireEvent.click(within(dialog).getByText("記帳・仕訳"));
+    fireEvent.click(within(dialog).getByText("決算書類"));
     fireEvent.click(within(dialog).getByText("総勘定元帳"));
     expect(screen.queryByRole("dialog")).toBeNull();
   });
@@ -146,7 +146,63 @@ describe("AppShell", () => {
         <p>本文</p>
       </AppShell>
     );
-    const activeLinks = screen.getAllByText("仕訳入力").map((el) => el.closest("a"));
-    expect(activeLinks.every((a) => a?.getAttribute("aria-current") === "page")).toBe(true);
+    const activeLinks = screen.getAllByText("仕訳入力").map((el) => el.closest("a")).filter((a) => a !== null);
+    expect(activeLinks.length).toBeGreaterThan(0);
+    expect(activeLinks.every((a) => a.getAttribute("aria-current") === "page")).toBe(true);
+  });
+
+  it("デスクトップサイドバーはstickyクラスを持つ", () => {
+    mockPathname = "/dashboard";
+    const { container } = render(
+      <AppShell>
+        <p>本文</p>
+      </AppShell>
+    );
+    const aside = container.querySelector("aside");
+    expect(aside?.className).toContain("md:sticky");
+    expect(aside?.className).toContain("md:top-0");
+  });
+
+  it("「ダッシュボード」はグループ見出し（開閉ボタン）を持たない単独リンクとして描画される", () => {
+    mockPathname = "/dashboard";
+    render(
+      <AppShell>
+        <p>本文</p>
+      </AppShell>
+    );
+    const dashboardLinks = screen.getAllByText("ダッシュボード").map((el) => el.closest("a")).filter((a) => a !== null);
+    expect(dashboardLinks.length).toBeGreaterThan(0);
+    // グループ見出しボタン（aria-expanded持ち）としては存在しない
+    expect(screen.queryByRole("button", { name: /^ダッシュボード/ })).toBeNull();
+  });
+
+  it("あるグループを開くと、それまで開いていた別のグループは自動的に閉じる（単一展開）", () => {
+    mockPathname = "/dashboard";
+    render(
+      <AppShell>
+        <p>本文</p>
+      </AppShell>
+    );
+    const groupA = NAV_GROUPS.find((g) => g.links.length > 1)!;
+    const groupB = NAV_GROUPS.filter((g) => g.links.length > 1)[1]!;
+
+    const headerA = screen.getAllByText(groupA.label).map((el) => el.closest("button")).find((b) => b !== null)!;
+    fireEvent.click(headerA);
+    expect(headerA.getAttribute("aria-expanded")).toBe("true");
+
+    const headerB = screen.getAllByText(groupB.label).map((el) => el.closest("button")).find((b) => b !== null)!;
+    fireEvent.click(headerB);
+    expect(headerB.getAttribute("aria-expanded")).toBe("true");
+    expect(headerA.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("現在のページ名がヘッダー領域に表示される", () => {
+    mockPathname = "/journal";
+    render(
+      <AppShell>
+        <p>本文</p>
+      </AppShell>
+    );
+    expect(screen.getAllByText("仕訳入力").length).toBeGreaterThan(0);
   });
 });

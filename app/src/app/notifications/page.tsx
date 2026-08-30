@@ -116,7 +116,9 @@ export default function NotificationsPage() {
   const asOf = useMemo(() => todayIsoDate(), []);
   const { transactions, isSampleData } = useLedgerTransactions(SAMPLE_CATEGORIZED_TRANSACTIONS);
 
-  const [entityType, setEntityType] = useState<EntityType>("individual");
+  // 本サービスはマイクロ法人向けに一本化しているため、事業形態は法人固定とする
+  // （docs/superpowers/specs/2026-08-30-nav-slimdown-and-entity-simplify-design.md ⑤参照）。
+  const entityType: EntityType = "corporate";
   const [fiscalYearEndMonth, setFiscalYearEndMonth] = useState(3);
   const [includeReviewQueue, setIncludeReviewQueue] = useState(true);
   const [includeReconciliation, setIncludeReconciliation] = useState(true);
@@ -153,47 +155,20 @@ export default function NotificationsPage() {
         </section>
 
         <section className="border border-border bg-surface rounded-md p-5 flex flex-col gap-4">
-          <div>
-            <div className="text-xs text-muted-foreground mb-2">事業形態（申告期限の計算に使用）</div>
-            <div className="flex gap-2">
-              {(
-                [
-                  { key: "individual", label: "個人事業主" },
-                  { key: "corporate", label: "マイクロ法人" },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.key}
-                  type="button"
-                  onClick={() => setEntityType(opt.key)}
-                  className={`text-sm px-4 py-2 border transition-colors ${
-                    entityType === opt.key
-                      ? "bg-accent border-accent text-white"
-                      : "bg-surface border-border text-muted-foreground hover:border-foreground/40"
-                  }`}
-                >
-                  {opt.label}
-                </button>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground w-44">
+            決算月
+            <select
+              value={fiscalYearEndMonth}
+              onChange={(e) => setFiscalYearEndMonth(Number(e.target.value))}
+              className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={m}>
+                  {m}月
+                </option>
               ))}
-            </div>
-          </div>
-
-          {entityType === "corporate" && (
-            <label className="flex flex-col gap-1 text-xs text-muted-foreground w-44">
-              決算月
-              <select
-                value={fiscalYearEndMonth}
-                onChange={(e) => setFiscalYearEndMonth(Number(e.target.value))}
-                className="border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-foreground/40"
-              >
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>
-                    {m}月
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+            </select>
+          </label>
 
           <div className="flex flex-col gap-2 text-sm text-muted-foreground border-t border-border/60 pt-4">
             <label className="flex items-center gap-2">

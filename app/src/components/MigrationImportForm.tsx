@@ -36,6 +36,9 @@ export function MigrationImportForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ImportedState | null>(null);
+  // 自動判定は通常のケースでは常に成功するため、フォーマット選択ボタンは
+  // 自動判定が一度失敗した場合にのみ表示する（毎回選ばせる必要はない）。
+  const [showFormatOverride, setShowFormatOverride] = useState(false);
 
   async function handleFile(file: File) {
     if (loading) return; // 解析中の二重送信を防止
@@ -52,8 +55,9 @@ export function MigrationImportForm() {
       const parsed = parseMigrationCsvBuffer(buffer, formatOverride === "auto" ? undefined : formatOverride);
 
       if (!parsed.formatId) {
+        setShowFormatOverride(true);
         setError(
-          "freee / マネーフォワードの仕訳帳エクスポートとして認識できませんでした。列名が「日付(または取引日)・借方勘定科目・貸方勘定科目(または貸方科目)・金額・摘要」を含む仕訳帳（journal）形式のCSVかご確認ください。"
+          "freee / マネーフォワードの仕訳帳エクスポートとして認識できませんでした。下記からフォーマットを指定して再度アップロードするか、列名が「日付(または取引日)・借方勘定科目・貸方勘定科目(または貸方科目)・金額・摘要」を含む仕訳帳（journal）形式のCSVかご確認ください。"
         );
         return;
       }
@@ -85,17 +89,19 @@ export function MigrationImportForm() {
         個別具体的な税務相談は行っておらず、あくまで移行作業を補助する下書き変換です。
       </p>
 
-      <div>
-        <div className="text-xs text-muted-foreground mb-2" id="format-override-label">
-          移行元ソフト
+      {showFormatOverride && (
+        <div>
+          <div className="text-xs text-muted-foreground mb-2" id="format-override-label">
+            移行元ソフトを指定（自動判定できなかった場合）
+          </div>
+          <div className="flex items-center gap-3 flex-wrap" role="group" aria-labelledby="format-override-label">
+            <FormatButton current={formatOverride} value="auto" label="自動判定" onSelect={setFormatOverride} />
+            {(Object.values(MIGRATION_FORMATS)).map((def) => (
+              <FormatButton key={def.id} current={formatOverride} value={def.id} label={def.label} onSelect={setFormatOverride} />
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-3 flex-wrap" role="group" aria-labelledby="format-override-label">
-          <FormatButton current={formatOverride} value="auto" label="自動判定" onSelect={setFormatOverride} />
-          {(Object.values(MIGRATION_FORMATS)).map((def) => (
-            <FormatButton key={def.id} current={formatOverride} value={def.id} label={def.label} onSelect={setFormatOverride} />
-          ))}
-        </div>
-      </div>
+      )}
 
       <div>
         <div className="text-xs text-muted-foreground mb-2">仕訳帳CSV</div>

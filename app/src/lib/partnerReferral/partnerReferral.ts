@@ -151,7 +151,7 @@ export const EMPTY_PARTNER_REFERRAL_FORM: PartnerReferralFormValues = {
   name: "",
   email: "",
   phone: "",
-  entityType: "individual",
+  entityType: "corp",
   category: "",
   message: "",
   consent: false,

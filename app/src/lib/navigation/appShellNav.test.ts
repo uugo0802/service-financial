@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   APP_SHELL_EXCLUDED_PATHS,
+  getActiveNavLabel,
   isAppShellExcludedPath,
   isNavLinkActive,
   NAV_GROUPS,
@@ -77,5 +78,19 @@ describe("isNavLinkActive", () => {
   it("前方一致だが別ページ（区切り文字なし）の場合はfalseにする", () => {
     // "/settings-old" は "/settings" のサブページではない
     expect(isNavLinkActive("/settings-old", "/settings")).toBe(false);
+  });
+});
+
+describe("getActiveNavLabel", () => {
+  it("一致するリンクがあればそのラベルを返す", () => {
+    expect(getActiveNavLabel("/dashboard")).toBe("ダッシュボード");
+  });
+
+  it("サブページでも一致するリンクのラベルを返す", () => {
+    expect(getActiveNavLabel("/settings/security")).toBe("セキュリティ");
+  });
+
+  it("一致するリンクがなければnullを返す", () => {
+    expect(getActiveNavLabel("/no-such-page")).toBeNull();
   });
 });

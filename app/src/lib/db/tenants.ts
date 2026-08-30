@@ -82,7 +82,7 @@ export interface TenantProfileDraft {
 export type TenantProfileFieldErrors = Partial<Record<"displayName" | "fiscalYearEndMonth", string>>;
 
 export const EMPTY_TENANT_PROFILE_DRAFT: TenantProfileDraft = {
-  entityType: "individual",
+  entityType: "corp",
   displayName: "",
   fiscalYearEndMonth: "",
   blueReturn: false,
