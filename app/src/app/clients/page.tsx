@@ -2,6 +2,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { ClientMasterTable } from "@/components/ClientMasterTable";
 import { Counterparty } from "@/lib/clients/clientMaster";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "取引先・仕入先マスタ｜決算書作成から税務申告までワンクリック（スグル）",
@@ -48,9 +49,7 @@ export default function ClientsPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">取引先・仕入先マスタ</div>
         </div>
       </header>

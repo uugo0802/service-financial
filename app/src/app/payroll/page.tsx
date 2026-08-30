@@ -4,6 +4,7 @@ import Link from "next/link";
 import { WithholdingCalculator } from "@/components/WithholdingCalculator";
 import { BonusWithholdingCalculator } from "@/components/BonusWithholdingCalculator";
 import { YearEndAdjustmentCalculator } from "@/components/YearEndAdjustmentCalculator";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "源泉徴収・年末調整（給与・賞与）の概算計算｜決算書作成から税務申告までワンクリック（スグル）",
@@ -16,9 +17,7 @@ export default function PayrollPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">MVP — 源泉徴収・年末調整（給与・賞与）の概算計算</div>
         </div>
       </header>

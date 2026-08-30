@@ -9,6 +9,7 @@ import {
   reconcileWithholdingTaxCredits,
 } from "@/lib/tax/withholdingTaxCreditReconciliation";
 import { WithholdingCreditReconciliationPanel } from "@/components/WithholdingCreditReconciliationPanel";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。動作確認用で、他ページのサンプルデータとはあえて
 // 切り離している。標準税率どおりに一致するケース、差異があるケース、100万円ちょうどの
@@ -58,9 +59,7 @@ export default function WithholdingCreditReconciliationPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">源泉徴収税額の控除照合（下書き）</div>
         </div>
       </header>

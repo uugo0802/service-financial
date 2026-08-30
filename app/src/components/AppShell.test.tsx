@@ -196,13 +196,4 @@ describe("AppShell", () => {
     expect(headerA.getAttribute("aria-expanded")).toBe("false");
   });
 
-  it("現在のページ名がヘッダー領域に表示される", () => {
-    mockPathname = "/journal";
-    render(
-      <AppShell>
-        <p>本文</p>
-      </AppShell>
-    );
-    expect(screen.getAllByText("仕訳入力").length).toBeGreaterThan(0);
-  });
 });

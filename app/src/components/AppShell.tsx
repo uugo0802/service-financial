@@ -4,7 +4,7 @@ import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
-import { getActiveNavLabel, isAppShellExcludedPath, isNavLinkActive, NAV_GROUPS, NavGroup } from "@/lib/navigation/appShellNav";
+import { isAppShellExcludedPath, isNavLinkActive, NAV_GROUPS, NavGroup } from "@/lib/navigation/appShellNav";
 
 // ------------------------------------------------------------------
 // アプリ全体で共有するナビゲーションシェル。
@@ -84,7 +84,7 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
               onClick={() => toggleGroup(group.label)}
               aria-expanded={isExpanded}
               aria-controls={panelId}
-              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-sm font-semibold uppercase tracking-wide text-muted-foreground hover:bg-surface"
+              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-base font-semibold uppercase tracking-wide text-muted-foreground hover:bg-surface"
             >
               {group.label}
               <ChevronDown
@@ -93,7 +93,7 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
               />
             </button>
             {isExpanded && (
-              <ul id={panelId} className="mt-1 flex flex-col gap-0.5">
+              <ul id={panelId} className="mt-1 flex flex-col gap-0.5 pl-3">
                 {group.links.map((link) => (
                   <li key={link.href}>
                     <NavLinkItem href={link.href} label={link.label} pathname={pathname} onNavigate={onNavigate} />
@@ -126,8 +126,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (isAppShellExcludedPath(pathname)) {
     return <>{children}</>;
   }
-
-  const activeNavLabel = getActiveNavLabel(pathname);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -180,12 +178,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
               <NavGroupList groups={NAV_GROUPS} pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
             </div>
-          </div>
-        )}
-
-        {activeNavLabel && (
-          <div className="border-b border-border bg-surface px-4 py-2 md:px-6">
-            <p className="text-xs font-medium text-muted-foreground">{activeNavLabel}</p>
           </div>
         )}
 

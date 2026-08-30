@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PartnerReferralForm } from "@/components/PartnerReferralForm";
 import { PARTNER_CATEGORIES } from "@/lib/partnerReferral/partnerReferral";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "提携パートナーのご紹介（投資・保険・ローン・不動産）｜決算書作成から税務申告までワンクリック スグル",
@@ -15,9 +16,7 @@ export default function PartnerReferralPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">提携パートナー連携（情報提供・送客のみ）</div>
         </div>
       </header>

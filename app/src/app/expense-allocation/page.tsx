@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ExpenseAllocationCalculator } from "@/components/ExpenseAllocationCalculator";
 import { MileageAllocationCalculator } from "@/components/MileageAllocationCalculator";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "按分計算（家事按分）｜決算書作成から税務申告までワンクリック スグル",
@@ -15,9 +16,7 @@ export default function ExpenseAllocationPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">按分計算（家事按分）（試験機能）</div>
         </div>
       </header>

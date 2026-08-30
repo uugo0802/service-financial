@@ -5,6 +5,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { useMemo, useState } from "react";
 import { EstimatedTaxReminder } from "@/components/EstimatedTaxReminder";
 import { getIndividualEstimatedTaxObligations } from "@/lib/tax/individualEstimatedTax";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export default function EstimatedTaxPage() {
   const currentYear = new Date().getFullYear();
@@ -30,9 +31,7 @@ export default function EstimatedTaxPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">予定納税リマインダー（個人事業主向け）</div>
         </div>
       </header>

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AuditLogRow } from "@/lib/db/supabaseClient";
 import { listAuditLogs, filterAuditLogs, getDistinctEntityTypes, describeEntityType } from "@/lib/db/auditLogs";
 import { AuditLogTable } from "@/components/AuditLogTable";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "監査ログ｜決算書作成から税務申告までワンクリック（スグル）",
@@ -104,9 +105,7 @@ export default async function AuditLogPage({
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
         </div>
       </header>
 

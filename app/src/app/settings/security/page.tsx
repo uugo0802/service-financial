@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { TwoFactorSetupForm } from "@/components/TwoFactorSetupForm";
 import { TwoFactorFactor, listTotpFactors, unenrollTotpFactor } from "@/lib/auth/twoFactor";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export default function SecuritySettingsPage() {
   const [factors, setFactors] = useState<TwoFactorFactor[]>([]);
@@ -61,9 +62,7 @@ export default function SecuritySettingsPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">セキュリティ設定</div>
         </div>
       </header>

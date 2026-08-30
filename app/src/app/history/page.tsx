@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { buildYearArchive, YearlyFilingRecord } from "@/lib/tax/yearArchive";
 import { YearArchiveTable } from "@/components/YearArchiveTable";
 import { YearCloseControl } from "@/components/YearCloseControl";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "過去の記帳・申告アーカイブ｜決算書作成から税務申告までワンクリック（スグル）",
@@ -60,9 +61,7 @@ export default function HistoryPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
         </div>
       </header>
 

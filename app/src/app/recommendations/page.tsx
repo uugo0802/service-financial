@@ -2,6 +2,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { CrossSellRecommendations } from "@/components/CrossSellRecommendations";
 import { CrossSellInputs, getCrossSellRecommendations } from "@/lib/recommendations/crossSell";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "関連サービスの参考情報｜決算書作成から税務申告までワンクリック（スグル）",
@@ -23,9 +24,7 @@ export default function RecommendationsPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
         </div>
       </header>
 

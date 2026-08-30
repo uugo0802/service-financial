@@ -20,6 +20,7 @@ import {
   globalSearch,
   groupSearchResultsByKind,
 } from "@/lib/search/globalSearch";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // ------------------------------------------------------------------
 // テナントに1年分程度の記帳データが蓄積すると、目当ての取引・証憑・取引先・請求書が
@@ -377,9 +378,7 @@ export default function SearchPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">横断検索</div>
         </div>
       </header>

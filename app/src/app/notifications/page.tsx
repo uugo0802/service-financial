@@ -10,6 +10,7 @@ import { buildWeeklyDigest, IsoDate } from "@/lib/notifications/weeklyDigest";
 import { WeeklyDigestPreview } from "@/components/WeeklyDigestPreview";
 import { NotificationPreferencesForm } from "@/components/NotificationPreferencesForm";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。記帳された実データ（journal_entries）が
 // useLedgerTransactions経由で取得できるまで、または取得できなかった場合の
@@ -138,9 +139,7 @@ export default function NotificationsPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">週次アクティビティダイジェスト（プレビュー）</div>
         </div>
       </header>

@@ -9,6 +9,7 @@ import { InvoicePaymentMatchPanel } from "@/components/InvoicePaymentMatchPanel"
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import { getMyTenantUser } from "@/lib/db/tenants";
 import { listInvoices } from "@/lib/db/invoices";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。invoices テーブル（lib/db/invoices.ts）への接続後は、
 // テナント未解決（未ログイン・Supabase未設定）時のフォールバック表示として引き続き使う。
@@ -154,9 +155,7 @@ export function InvoiceReconciliationClient() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">入金消込（請求書マッチング）</div>
         </div>
       </header>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 import { FinancialStatementsClient } from "./FinancialStatementsClient";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title:
@@ -15,9 +16,7 @@ export default function FinancialStatementsPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/dashboard" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">
             決算書類・勘定科目内訳明細書・法人事業概況説明書
           </div>

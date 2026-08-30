@@ -5,6 +5,7 @@ import Link from "next/link";
 import { DocumentWithTransaction } from "@/lib/documents/documentSearch";
 import { DocumentSearchForm } from "@/components/DocumentSearchForm";
 import { useDocuments } from "@/hooks/useDocuments";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。電子帳簿保存法（docs/cto-tech-architecture.md 4.1節）が
 // 求める証憑の「取引年月日・取引金額・取引先」検索と「可視性確保（書面への出力）」の
@@ -94,9 +95,7 @@ export function DocumentsClient() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface print:hidden dark:border-stone-700 dark:bg-stone-900">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">証憑（レシート・請求書）一覧・検索</div>
         </div>
       </header>

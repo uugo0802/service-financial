@@ -2,6 +2,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ApportionmentCalculator } from "@/components/ApportionmentCalculator";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "床面積・時間按分の計算｜決算書作成から税務申告までワンクリック（スグル）",
@@ -13,9 +14,7 @@ export default function ApportionmentPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">MVP — 床面積・時間按分の計算</div>
         </div>
       </header>

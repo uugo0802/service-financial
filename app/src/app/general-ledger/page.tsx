@@ -6,6 +6,7 @@ import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { buildGeneralLedger, listLedgerAccounts } from "@/lib/journal/generalLedger";
 import { GeneralLedgerTable } from "@/components/GeneralLedgerTable";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。総勘定元帳の動作確認用で、他ページ（transactions/journal等）の
 // サンプルデータとはあえて切り離している（本番では記帳済みの仕訳一覧に差し替える）。
@@ -127,9 +128,7 @@ export default function GeneralLedgerPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">総勘定元帳</div>
         </div>
       </header>

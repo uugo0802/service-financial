@@ -5,6 +5,7 @@ import { Tag, TagAssignment } from "@/lib/tags/tagging";
 import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import { TagManagerClient } from "./TagManagerClient";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。docs/business-plan.md 12節（オーナー修吾の実体験ペイン
 // 「どのクライアント/案件が儲かっているか分からない」）の動作確認用で、取引一覧が実データ
@@ -130,9 +131,7 @@ export function TagsClient() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
         </div>
       </header>
 

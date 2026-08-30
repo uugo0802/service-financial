@@ -6,6 +6,7 @@ import { TransactionSearchForm } from "@/components/TransactionSearchForm";
 import { CsvColumnMapper } from "@/components/CsvColumnMapper";
 import { BulkCsvJournalImportForm } from "@/components/BulkCsvJournalImportForm";
 import { useTransactionRows } from "@/hooks/useTransactionRows";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。実データ（transactionsテーブル）が取得できない間、
 // または未ログイン・Supabase未設定の場合のフォールバック表示に使う
@@ -104,9 +105,7 @@ export function TransactionsClient() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
         </div>
       </header>
 

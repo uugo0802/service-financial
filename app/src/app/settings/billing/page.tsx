@@ -18,6 +18,7 @@ import {
   detectMostRecentPlanChange,
   summarizeBillingHistory,
 } from "@/lib/billing/subscriptionBilling";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // ------------------------------------------------------------------
 // 現在のプラン・次回請求日・領収書履歴を表示する画面。
@@ -165,9 +166,7 @@ export default function BillingSettingsPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">プラン・お支払い</div>
         </div>
       </header>

@@ -1,6 +1,7 @@
 import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import { QualifiedInvoiceApplicationForm } from "@/components/QualifiedInvoiceApplicationForm";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "適格請求書発行事業者の登録申請書（下書き作成）｜決算書作成から税務申告までワンクリック（スグル）",
@@ -13,9 +14,7 @@ export default function InvoiceRegistrationApplicationPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">MVP — 適格請求書発行事業者の登録申請書（下書き作成）</div>
         </div>
       </header>

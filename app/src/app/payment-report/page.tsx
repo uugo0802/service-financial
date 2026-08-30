@@ -9,6 +9,7 @@ import {
 } from "@/lib/tax/paymentReportForm";
 import { PaymentReportTable } from "@/components/PaymentReportTable";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // このページ専用のサンプルデータ。支払調書の動作確認用で、他ページ（general-ledger等）の
 // サンプルデータとはあえて切り離している。同一支払先への複数回の支払（合算すると
@@ -107,9 +108,7 @@ export default function PaymentReportPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">支払調書（下書き）</div>
         </div>
       </header>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { DocumentPreviewFrame } from "@/components/ui/DocumentPreviewFrame";
 import { DepreciationScheduleClient } from "./DepreciationScheduleClient";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "別表十六（一）減価償却の計算に関する明細書｜決算書作成から税務申告までワンクリック（スグル）",
@@ -14,9 +15,7 @@ export default function DepreciationSchedulePage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/dashboard" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">
             別表十六（一）減価償却の計算に関する明細書
           </div>

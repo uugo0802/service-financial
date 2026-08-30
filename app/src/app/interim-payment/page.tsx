@@ -5,6 +5,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { useMemo, useState } from "react";
 import { InterimPaymentReminder } from "@/components/InterimPaymentReminder";
 import { getInterimPaymentObligations } from "@/lib/tax/interimPayment";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 const MONTH_LABELS = Array.from({ length: 12 }, (_, i) => `${i + 1}月`);
 
@@ -35,9 +36,7 @@ export default function InterimPaymentPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">中間申告・中間納付リマインダー</div>
         </div>
       </header>

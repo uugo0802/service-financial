@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AdvisorAccessPanel } from "@/components/AdvisorAccessPanel";
 import { AdvisorAccessGrant } from "@/lib/team/advisorAccess";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "顧問税理士への閲覧共有｜決算書作成から税務申告までワンクリック スグル",
@@ -38,9 +39,7 @@ export default function AdvisorAccessPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">顧問税理士への閲覧共有（追加課金）</div>
         </div>
       </header>

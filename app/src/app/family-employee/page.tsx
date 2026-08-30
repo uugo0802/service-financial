@@ -2,6 +2,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FamilyEmployeeSalaryForm } from "@/components/FamilyEmployeeSalaryForm";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "青色事業専従者給与のチェック｜決算書作成から税務申告までワンクリック（スグル）",
@@ -14,9 +15,7 @@ export default function FamilyEmployeeSalaryPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-4xl px-6 py-4 flex items-baseline justify-between">
-          <Link href="/" className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </Link>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">青色事業専従者給与のチェック</div>
         </div>
       </header>

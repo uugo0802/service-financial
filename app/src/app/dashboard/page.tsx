@@ -22,6 +22,7 @@ import { Card } from "@/components/ui/Card";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import { buildSampleTransactions } from "./sampleData";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // buildSampleTransactions() は売上・損益推移グラフ用に「経費合計」1科目へ
 // まとめた経費しか持たないため、経費内訳（カテゴリ別）チャートのサンプル表示用に
@@ -74,9 +75,7 @@ export default function DashboardPage() {
       <div className="bg-background text-foreground min-h-screen">
         <header className="border-b border-border bg-surface">
           <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-            <div className="font-sans text-lg tracking-wide">
-              決算書作成から税務申告までワンクリック <span className="text-danger">／</span> スグル
-            </div>
+            <PageTitle />
             <div className="text-xs text-muted-foreground">売上・損益ダッシュボード</div>
           </div>
         </header>
@@ -173,9 +172,7 @@ export default function DashboardPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-sans text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-danger">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">売上・損益ダッシュボード</div>
         </div>
       </header>

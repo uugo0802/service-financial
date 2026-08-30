@@ -2,6 +2,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HighValueAssetStatusChecker } from "@/components/HighValueAssetStatusChecker";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 export const metadata: Metadata = {
   title: "高額特定資産の取得チェッカー｜決算書作成から税務申告までワンクリック（スグル）",
@@ -14,9 +15,7 @@ export default function HighValueAssetStatusPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">MVP — 高額特定資産の取得チェッカー</div>
         </div>
       </header>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { TenantSettingsForm } from "@/components/TenantSettingsForm";
 import { TenantProfile, TenantProfileDraft, draftToTenantProfilePatch, tenantProfileToDraft } from "@/lib/db/tenants";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 // DB未接続の現状に合わせ、実テナントデータの代わりにサンプルデータを表示する
 // （business-plan.mdが想定する「今ごえん合同会社」的なマイクロ法人のサンプル）。
@@ -31,9 +32,7 @@ export default function SettingsPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-3xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">事業者設定</div>
         </div>
       </header>

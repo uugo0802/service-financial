@@ -16,6 +16,7 @@ import {
   removeCategoryBudget,
   upsertCategoryBudget,
 } from "@/lib/budget/budgetTracking";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 const percent = (n: number) => `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
@@ -104,9 +105,7 @@ export default function BudgetPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700 dark:text-red-400">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">支出予算 vs 実績</div>
         </div>
       </header>

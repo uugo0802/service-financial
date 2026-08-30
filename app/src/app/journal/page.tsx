@@ -22,6 +22,7 @@ import { JournalEntryForm } from "@/components/JournalEntryForm";
 import { FixedAssetForm } from "@/components/FixedAssetForm";
 import { CategorizationRationale } from "@/components/CategorizationRationale";
 import { AccountSelect } from "@/components/AccountSelect";
+import { PageTitle } from "@/components/ui/PageTitle";
 
 const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
 
@@ -145,9 +146,7 @@ export default function JournalPage() {
     <div className="bg-background text-foreground min-h-screen">
       <header className="border-b border-border bg-surface">
         <div className="mx-auto max-w-5xl px-6 py-4 flex items-baseline justify-between">
-          <div className="font-serif text-lg tracking-wide">
-            決算書作成から税務申告までワンクリック <span className="text-red-700">／</span> スグル
-          </div>
+          <PageTitle />
           <div className="text-xs text-muted-foreground">仕訳の手入力</div>
         </div>
       </header>
