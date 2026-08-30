@@ -6,7 +6,9 @@ import { CategorizedTransaction } from "@/lib/categorize/engine";
 import { buildProfitLossStatement } from "@/lib/tax/plStatement";
 import { DepreciationScheduleTable } from "@/components/DepreciationScheduleTable";
 import { PrintableStatementLayout } from "@/components/PrintableStatementLayout";
+import { ExportDataButton } from "@/components/ExportDataButton";
 import { formatFiscalYearRange } from "@/lib/export/printLayout";
+import { buildDepreciationScheduleExportCsv } from "@/lib/export/depreciationScheduleCsv";
 import { useLedgerTransactions } from "@/hooks/useLedgerTransactions";
 import { useDepreciationScheduleData } from "@/hooks/useDepreciationScheduleData";
 
@@ -129,20 +131,31 @@ export function DepreciationScheduleClient() {
 
   const form = buildDepreciationScheduleForm(assets, fiscalPeriod);
   const fiscalYearLabel = formatFiscalYearRange(fiscalPeriod.start, fiscalPeriod.end);
+  const csv = buildDepreciationScheduleExportCsv({ form, entityName });
 
   return (
     <>
-      <p className="text-xs text-stone-500 leading-relaxed max-w-2xl -mt-2">
-        {isSampleData
-          ? `${SAMPLE_ENTITY_NAME}を想定したサンプルの固定資産データで別表十六（一）の下書きを表示しています。`
-          : "固定資産台帳に登録された実データに基づいて別表十六（一）の下書きを表示しています。"}
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3 -mt-2">
+        <p className="text-xs text-stone-500 leading-relaxed max-w-2xl">
+          {isSampleData
+            ? `${SAMPLE_ENTITY_NAME}を想定したサンプルの固定資産データで別表十六（一）の下書きを表示しています。`
+            : "固定資産台帳に登録された実データに基づいて別表十六（一）の下書きを表示しています。"}
+        </p>
+        <ExportDataButton
+          csvContent={csv}
+          fileNamePrefix="depreciation-schedule"
+          label="CSVをダウンロード（別表十六（一））"
+          className="print:hidden shrink-0 rounded border border-stone-400 bg-white px-4 py-2 text-sm font-medium text-stone-800 shadow-sm hover:bg-stone-100 dark:border-stone-600 dark:bg-stone-900 dark:text-stone-100 dark:hover:bg-stone-800"
+        />
+      </div>
 
       <PrintableStatementLayout
         tenantName={entityName}
         fiscalYearLabel={fiscalYearLabel}
         printButtonLabel="印刷 / PDFで保存（別表十六（一））"
-        sections={[{ id: "depreciation-schedule", content: <DepreciationScheduleTable form={form} /> }]}
+        sections={[
+          { id: "depreciation-schedule", content: <DepreciationScheduleTable form={form} entityName={entityName} /> },
+        ]}
       />
     </>
   );

@@ -140,12 +140,19 @@ body {
 }
 
 @media print {
-  body * {
+  /*
+   * #print-area方式（/quick-estimateのDocumentPreview.tsxのみが使用）専用の強制非表示。
+   *
+   * 2026-08-30発見: PrintableStatementLayout / InvoicePrintLayout / QuotePrintLayout等、
+   * design-refresh-foundation以降の書類プレビューはprint:ユーティリティクラスだけで
+   * 印刷内容を制御しており、#print-areaを持たない。以前は「body * visibility:hidden」を
+   * 無条件に適用していたため、#print-areaが存在しないページでは打ち消す規則が無く、
+   * 印刷結果が丸ごと空白になっていた（/depreciation-schedule等）。:has()で
+   * 「ページ内に#print-areaが実在する場合のみ」この仕組みを有効にし、新方式の
+   * ページを巻き込まないようにする。
+   */
+  body:has(#print-area) *:not(#print-area, #print-area *) {
     visibility: hidden;
-  }
-  #print-area,
-  #print-area * {
-    visibility: visible;
   }
   #print-area {
     position: absolute;

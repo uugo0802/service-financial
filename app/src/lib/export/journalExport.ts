@@ -7,7 +7,9 @@ import { CategorizedTransaction, CategorySource } from "../categorize/engine";
 import { IndividualEstimate } from "../tax/estimate";
 import { CorporateEstimate } from "../tax/corporateEstimate";
 
-const CRLF = "\r\n";
+// 他のCSVエクスポート機能（別表十六（一）等）からも再利用できるよう、
+// 改行定数・CSVブロック組み立て関数はexportする。
+export const CRLF = "\r\n";
 
 export const EXPORT_DISCLAIMER =
   "本データはご自身の記録および税理士等の専門家によるご確認のための下書き・概算情報です。当社が申告や税務代理を行うものではありません。";
@@ -29,7 +31,7 @@ function toCsvRow(fields: (string | number)[]): string {
   return fields.map(escapeCsvField).join(",");
 }
 
-function buildCsvBlock(rows: (string | number)[][]): string {
+export function buildCsvBlock(rows: (string | number)[][]): string {
   return rows.map(toCsvRow).join(CRLF);
 }
 
