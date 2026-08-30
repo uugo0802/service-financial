@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, ReactNode, useMemo } from "react";
+import Link from "next/link";
 import { buildMonthlyTrend, buildYearlyTrend, TrendPoint } from "@/lib/tax/salesTrend";
 import { buildExpenseBreakdown } from "@/lib/tax/expenseBreakdown";
 import { buildKpiTrend } from "@/lib/tax/kpiTrend";
@@ -10,7 +11,9 @@ import { ExpenseBreakdownChart } from "@/components/dashboard/ExpenseBreakdownCh
 import { KpiTrendPanel } from "@/components/dashboard/KpiTrendPanel";
 import { BenchmarkPanel } from "@/components/dashboard/BenchmarkPanel";
 import { StatTile } from "@/components/dashboard/StatTile";
-import { WidgetLayoutControls, useDashboardWidgetLayout } from "@/components/dashboard/WidgetLayoutControls";
+import { TaggingWidget } from "@/components/dashboard/TaggingWidget";
+import { BudgetSummaryWidget } from "@/components/dashboard/BudgetSummaryWidget";
+import { useDashboardWidgetLayout } from "@/hooks/useDashboardWidgetLayout";
 import { DashboardWidgetId } from "@/lib/dashboard/widgetLayout";
 import { PartnerReferralBanner } from "@/components/PartnerReferralBanner";
 import { recommendPartnerCategories } from "@/lib/partnerReferral/partnerReferral";
@@ -154,6 +157,16 @@ export default function DashboardPage() {
         <BenchmarkPanel rows={transactionsWithExpenseCategories} title="経費構成の参考比較（対売上比）" />
       </Card>
     ),
+    tagging: (
+      <Card className="p-5">
+        <TaggingWidget transactions={transactions} />
+      </Card>
+    ),
+    budgetSummary: (
+      <Card className="p-5">
+        <BudgetSummaryWidget transactions={transactions} />
+      </Card>
+    ),
   };
 
   return (
@@ -180,10 +193,14 @@ export default function DashboardPage() {
             ) : (
               " 記帳された実データ（当期・過去の取引）に基づいて表示しています。"
             )}
+            {" "}
+            ウィジェットの表示・並び替えは
+            <Link href="/settings/appearance" className="text-accent underline underline-offset-2 hover:opacity-80">
+              表示設定
+            </Link>
+            で変更できます。
           </p>
         </section>
-
-        <WidgetLayoutControls />
 
         {widgetLayout
           .filter((entry) => entry.visible)

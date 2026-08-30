@@ -13,10 +13,24 @@ vi.mock("@/hooks/useLedgerTransactions", () => ({
   useLedgerTransactions: vi.fn(),
 }));
 
+// TaggingWidget（タグ付けウィジェット）がgetMyTenantUser()・listTags()・
+// listTagAssignments()を呼び出すため、TagsClient.test.tsxと同じ方針でモックし、
+// テナント未解決（サンプル運用のまま）で決定的に検証できるようにする。
+const mockGetMyTenantUser = vi.fn();
+vi.mock("@/lib/db/tenants", () => ({
+  getMyTenantUser: () => mockGetMyTenantUser(),
+}));
+vi.mock("@/lib/db/tags", () => ({
+  listTags: vi.fn(),
+  listTagAssignments: vi.fn(),
+  assignTag: vi.fn(),
+  unassignTag: vi.fn(),
+}));
+
 // Vitest 4のjsdom環境はpopulateGlobal時にjsdom自体が実装するlocalStorageを
 // 引き継がない既知のギャップがあり、window.localStorageがundefinedのままになる
 // （lib/settings/themePreference.test.ts等が元々window全体を手動スタブしているのも
-// 同じ理由）。WidgetLayoutControls.tsxがgetItem/setItem/clearを使うため最小限スタブする。
+// 同じ理由）。hooks/useDashboardWidgetLayout.tsがgetItem/setItem/clearを使うため最小限スタブする。
 function createLocalStorageStub() {
   const store = new Map<string, string>();
   return {
@@ -39,6 +53,7 @@ beforeEach(() => {
     configurable: true,
     writable: true,
   });
+  mockGetMyTenantUser.mockResolvedValue(null); // 未ログイン・未所属の場合はサンプル（タグ0件）のまま
 });
 
 // このプロジェクトはvitest.config.tsでtest.globalsを有効化していないため、
@@ -125,6 +140,20 @@ describe("DashboardPage", () => {
     // 収入500,000円・経費50,000円なので損益は450,000円。
     expect(screen.getByText((_, node) => node?.textContent === "今期の売上（2026年 1〜1月）")).toBeTruthy();
     expect(screen.getAllByText((_, node) => node?.textContent === "￥450,000").length).toBeGreaterThan(0);
+  });
+
+  it("タグ付けウィジェット・予算実績ウィジェット・表示設定への案内リンクを表示する", async () => {
+    vi.mocked(useLedgerTransactions).mockReturnValue({
+      transactions: REAL_TRANSACTIONS,
+      isSampleData: false,
+    });
+
+    render(<DashboardPage />);
+
+    expect(screen.getByRole("heading", { name: "取引にタグを付ける" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /予算実績/ })).toBeTruthy();
+    const appearanceLink = screen.getByRole("link", { name: "表示設定" });
+    expect(appearanceLink.getAttribute("href")).toBe("/settings/appearance");
   });
 
   it("実データが空でyearlyTrendが空になる場合は空状態のメッセージを表示する", () => {

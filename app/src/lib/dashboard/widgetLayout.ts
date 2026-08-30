@@ -1,7 +1,7 @@
 // ダッシュボードのウィジェット（各パネル）の並び順・表示/非表示設定を扱う純粋ロジック。
 //
 // このモジュール自体はlocalStorageに一切アクセスしない（SSRでも安全に呼び出せる）。
-// 実際の読み書きはUI側（components/dashboard/WidgetLayoutControls.tsx）が
+// 実際の読み書きはUI側（hooks/useDashboardWidgetLayout.ts）が
 // `typeof window !== "undefined"` を確認したうえで、ここで定義したparse/serialize関数を
 // 通して行う（ReceiptUpload.tsxのカメラ対応判定と同様、ロジックとブラウザAPIアクセスを分離する方針）。
 //
@@ -17,7 +17,9 @@ export type DashboardWidgetId =
   | "trendBar"
   | "kpiTrend"
   | "expenseBreakdown"
-  | "benchmark";
+  | "benchmark"
+  | "tagging"
+  | "budgetSummary";
 
 export interface DashboardWidgetMeta {
   id: DashboardWidgetId;
@@ -28,7 +30,9 @@ export interface DashboardWidgetMeta {
 /**
  * 既知のウィジェット一覧と、その既定の並び順（配列の並び順がそのまま既定順）。
  * page.tsx が元々レンダリングしていた固定順（StatTile群 → 月次推移 → 年度別推移 →
- * 経営指標 → 経費内訳 → ベンチマーク比較）をそのまま既定値として踏襲する。
+ * 経営指標 → 経費内訳 → ベンチマーク比較）をそのまま既定値として踏襲し、後から追加した
+ * タグ付け・予算実績ウィジェットは末尾に追記する（末尾追加は既存の保存済みレイアウトとも
+ * 安全に共存できる設計になっている。parseWidgetLayoutのコメント参照）。
  */
 export const DASHBOARD_WIDGETS: readonly DashboardWidgetMeta[] = [
   { id: "statTiles", label: "サマリー指標（今期・前期の売上/損益）" },
@@ -37,6 +41,8 @@ export const DASHBOARD_WIDGETS: readonly DashboardWidgetMeta[] = [
   { id: "kpiTrend", label: "年度別 経営指標（経費率・成長率）" },
   { id: "expenseBreakdown", label: "経費内訳（勘定科目別）" },
   { id: "benchmark", label: "経費構成の参考比較（対売上比）" },
+  { id: "tagging", label: "取引にタグを付ける" },
+  { id: "budgetSummary", label: "予算実績（概要）" },
 ];
 
 const KNOWN_WIDGET_IDS: ReadonlySet<string> = new Set(DASHBOARD_WIDGETS.map((w) => w.id));
@@ -142,5 +148,29 @@ export function moveWidget(
 
   const next = [...layout];
   [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+  return next;
+}
+
+/**
+ * ドラッグ&ドロップ用の並び替え: sourceId のエントリを取り除き、targetId の
+ * （取り除いた後の）位置に挿入する。up/down方向を問わず、ドラッグ先の要素の
+ * 直前に割り込む形になる。source/targetが同じ、またはどちらかが層内に
+ * 存在しない場合は何もせず渡されたlayoutをそのまま返す。
+ */
+export function reorderWidget(
+  layout: DashboardWidgetLayout,
+  sourceId: DashboardWidgetId,
+  targetId: DashboardWidgetId
+): DashboardWidgetLayout {
+  if (sourceId === targetId) return layout;
+
+  const sourceIndex = layout.findIndex((entry) => entry.id === sourceId);
+  const targetIndex = layout.findIndex((entry) => entry.id === targetId);
+  if (sourceIndex === -1 || targetIndex === -1) return layout;
+
+  const next = [...layout];
+  const [moved] = next.splice(sourceIndex, 1);
+  const insertIndex = next.findIndex((entry) => entry.id === targetId);
+  next.splice(insertIndex, 0, moved);
   return next;
 }

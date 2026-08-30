@@ -6,6 +6,7 @@ import {
   getWidgetLabel,
   moveWidget,
   parseWidgetLayout,
+  reorderWidget,
   serializeWidgetLayout,
   toggleWidgetVisibility,
 } from "./widgetLayout";
@@ -120,6 +121,8 @@ describe("parseWidgetLayout - malformed data falls back safely", () => {
       { id: "trendBar", visible: true },
       { id: "kpiTrend", visible: false },
       { id: "expenseBreakdown", visible: true },
+      { id: "tagging", visible: true },
+      { id: "budgetSummary", visible: false },
     ]);
     expect(parseWidgetLayout(raw)).toEqual(JSON.parse(raw));
   });
@@ -178,6 +181,8 @@ describe("moveWidget", () => {
       "kpiTrend",
       "expenseBreakdown",
       "benchmark",
+      "tagging",
+      "budgetSummary",
     ]);
   });
 
@@ -191,6 +196,8 @@ describe("moveWidget", () => {
       "kpiTrend",
       "expenseBreakdown",
       "benchmark",
+      "tagging",
+      "budgetSummary",
     ]);
   });
 
@@ -201,7 +208,7 @@ describe("moveWidget", () => {
 
   it("does nothing (returns the same layout) when moving the last widget down", () => {
     const layout = getDefaultWidgetLayout();
-    expect(moveWidget(layout, "benchmark", "down")).toEqual(layout);
+    expect(moveWidget(layout, "budgetSummary", "down")).toEqual(layout);
   });
 
   it("preserves each entry's visibility while reordering", () => {
@@ -220,5 +227,67 @@ describe("moveWidget", () => {
   it("returns the same layout unchanged for an id not present in the layout", () => {
     const layout: DashboardWidgetLayout = [{ id: "trendLine", visible: true }];
     expect(moveWidget(layout, "benchmark", "up")).toEqual(layout);
+  });
+});
+
+describe("reorderWidget", () => {
+  it("moves the source widget to sit immediately before the target widget (dragging forward)", () => {
+    const layout = getDefaultWidgetLayout();
+    const next = reorderWidget(layout, "benchmark", "trendLine");
+    expect(next.map((e) => e.id)).toEqual([
+      "statTiles",
+      "benchmark",
+      "trendLine",
+      "trendBar",
+      "kpiTrend",
+      "expenseBreakdown",
+      "tagging",
+      "budgetSummary",
+    ]);
+  });
+
+  it("moves the source widget to sit immediately before the target widget (dragging backward)", () => {
+    const layout = getDefaultWidgetLayout();
+    const next = reorderWidget(layout, "trendLine", "benchmark");
+    expect(next.map((e) => e.id)).toEqual([
+      "statTiles",
+      "trendBar",
+      "kpiTrend",
+      "expenseBreakdown",
+      "trendLine",
+      "benchmark",
+      "tagging",
+      "budgetSummary",
+    ]);
+  });
+
+  it("is a no-op when source and target are the same widget", () => {
+    const layout = getDefaultWidgetLayout();
+    expect(reorderWidget(layout, "trendLine", "trendLine")).toEqual(layout);
+  });
+
+  it("returns the same layout unchanged when the source id is not present", () => {
+    const layout = getDefaultWidgetLayout();
+    // @ts-expect-error intentionally passing an id outside the known union
+    expect(reorderWidget(layout, "notARealWidget", "trendLine")).toEqual(layout);
+  });
+
+  it("returns the same layout unchanged when the target id is not present", () => {
+    const layout = getDefaultWidgetLayout();
+    // @ts-expect-error intentionally passing an id outside the known union
+    expect(reorderWidget(layout, "trendLine", "notARealWidget")).toEqual(layout);
+  });
+
+  it("preserves each entry's visibility while reordering", () => {
+    const layout = toggleWidgetVisibility(getDefaultWidgetLayout(), "kpiTrend");
+    const next = reorderWidget(layout, "kpiTrend", "statTiles");
+    expect(next.find((e) => e.id === "kpiTrend")).toEqual({ id: "kpiTrend", visible: false });
+  });
+
+  it("does not mutate the input layout", () => {
+    const layout = getDefaultWidgetLayout();
+    const snapshot: DashboardWidgetLayout = JSON.parse(JSON.stringify(layout));
+    reorderWidget(layout, "benchmark", "trendLine");
+    expect(layout).toEqual(snapshot);
   });
 });
