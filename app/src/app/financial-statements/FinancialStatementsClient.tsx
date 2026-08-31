@@ -9,10 +9,12 @@ import { buildCorporateTaxForm, buildFinancialStatements } from "@/lib/tax/corpo
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
 import { buildBalanceSheetForm } from "@/lib/tax/balanceSheetForm";
 import { buildEquityChangeForm } from "@/lib/tax/equityChangeForm";
+import { buildCashFlowStatement } from "@/lib/tax/cashFlowStatement";
 import { buildNotesForm } from "@/lib/tax/notesForm";
 import { buildAccountBreakdownForms } from "@/lib/tax/accountBreakdownForm";
 import { buildMonthlySalesTrend } from "@/lib/tax/businessOverviewForm";
 import { EquityChangeStatement } from "@/components/EquityChangeStatement";
+import { CashFlowStatement } from "@/components/CashFlowStatement";
 import { NotesToFinancialStatements } from "@/components/NotesToFinancialStatements";
 import { AccountBreakdownStatement } from "@/components/AccountBreakdownStatement";
 import { BusinessOverviewStatement } from "@/components/BusinessOverviewStatement";
@@ -149,6 +151,20 @@ export function FinancialStatementsClient() {
         netIncome: bsNetIncome,
       });
 
+  // キャッシュ・フロー計算書（簡易・間接法）。fixedAssets・loans・fiscalPeriodはbsDataが
+  // 無い（サンプルデータ表示の）間は空配列・pl由来の期間にフォールバックする
+  // （balanceSheet・equityChangeと同じ方針）。
+  const cashFlow = buildCashFlowStatement({
+    fiscalPeriod: bsData?.fiscalPeriod ?? { start: pl.periodStart, end: pl.periodEnd },
+    netIncome: bsNetIncome,
+    unpaidCorporateTaxes: balanceSheet.unpaidCorporateTaxes,
+    unpaidConsumptionTax: balanceSheet.unpaidConsumptionTax,
+    fixedAssets: bsData?.fixedAssets ?? [],
+    loans: bsData?.loans ?? [],
+    openingCash: balanceSheet.openingCash,
+    balanceSheetEndingCash: balanceSheet.endingCash,
+  });
+
   const notes = buildNotesForm({
     unpaidCorporateTaxes: balanceSheet.unpaidCorporateTaxes,
     unpaidConsumptionTax: balanceSheet.unpaidConsumptionTax,
@@ -277,6 +293,7 @@ export function FinancialStatementsClient() {
         sections={[
           { id: "balance-sheet", content: balanceSheetSection },
           { id: "equity-change", content: <EquityChangeStatement form={equityChange} /> },
+          { id: "cash-flow", content: <CashFlowStatement form={cashFlow} /> },
           { id: "notes", content: <NotesToFinancialStatements form={notes} />, forceNewPage: true },
           {
             id: "account-breakdown",
