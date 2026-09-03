@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
@@ -73,19 +73,22 @@ function NavGroupList({ groups, pathname, onNavigate }: { groups: readonly NavGr
   );
   const [manuallyToggled, setManuallyToggled] = useState(false);
 
-  useEffect(() => {
+  // pathnameが変わった際の追従はエフェクトではなくレンダー中の状態調整として行う
+  // （React公式が推奨する「前回レンダーの値と比較して状態を調整する」パターン）。
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
     const matchedGroup = collapsibleGroups.find((g) => groupContainsActiveLink(g, pathname))?.label ?? null;
     if (matchedGroup === null) {
       // 該当するグループがないページ（ダッシュボード等の単独リンク）に来た場合は、
       // 手動で開閉した記憶もリセットして必ず全グループを閉じる。
       setManuallyToggled(false);
       setExpandedGroup(null);
-      return;
+    } else if (!manuallyToggled) {
+      // ユーザーが手動で開閉した後は、自動追従を止める
+      setExpandedGroup(matchedGroup);
     }
-    if (manuallyToggled) return; // ユーザーが手動で開閉した後は、自動追従を止める
-    setExpandedGroup(matchedGroup);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }
 
   function toggleGroup(label: string) {
     setManuallyToggled(true);
