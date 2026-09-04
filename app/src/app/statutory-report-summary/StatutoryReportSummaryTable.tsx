@@ -54,7 +54,7 @@ export function StatutoryReportSummaryTable({ form }: { form: StatutoryReportSum
           <div className="flex items-baseline justify-between gap-3 border-b border-stone-300 dark:border-stone-700 bg-stone-100 dark:bg-stone-900 px-3 py-2">
             <div className="text-sm font-semibold">{section.title}</div>
             {!section.supported && (
-              <span className="text-xs text-amber-700 dark:text-amber-400 shrink-0">この区分は本アプリ非対応（常に0件）</span>
+              <span className="text-xs text-warning-foreground shrink-0">この区分は本アプリ非対応（常に0件）</span>
             )}
           </div>
 

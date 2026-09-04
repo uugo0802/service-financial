@@ -361,7 +361,7 @@ export function MonthlyCloseChecklistPanel() {
         </ul>
       </section>
 
-      <p className="text-xs text-amber-700 dark:text-amber-500 leading-relaxed">
+      <p className="text-xs text-warning-foreground leading-relaxed">
         本チェックリストは、既存の記帳・請求書データから機械的に導出した状態を一覧化する
         セルフチェック用のツールであり、税理士法に定める税務代理・税務書類の作成・個別の税務相談を
         行うものではありません。各項目の対応要否・記帳内容の最終確認はご自身、または税理士等の
