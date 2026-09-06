@@ -13,6 +13,7 @@ import { buildConsumptionTaxForm } from "@/lib/tax/consumptionTaxForm";
 import { buildCorporateTaxForm, buildFinancialStatements } from "@/lib/tax/corporateForms";
 import { buildLocalCorporateTaxForm } from "@/lib/tax/localCorporateTaxForm";
 import { buildBalanceSheetForm, BalanceSheetForm } from "@/lib/tax/balanceSheetForm";
+import { buildCashFlowStatement, CashFlowStatement } from "@/lib/tax/cashFlowStatement";
 
 // useLedgerTransactions・useBalanceSheetData自体はそれぞれのlib層のテストで検証済みのため、
 // ここではFinancialStatementsClientが新設した勘定科目内訳明細書・法人事業概況説明書の
@@ -295,5 +296,145 @@ describe("FinancialStatementsClient（貸借対照表セクション・空欄表
       expect(formatted).toMatch(/^￥-?[0-9,]+$/);
       expect(screen.getAllByText(formatted).length).toBeGreaterThanOrEqual(1);
     }
+  });
+});
+
+// docs/superpowers/specs/2026-08-31-simplified-cash-flow-statement-design.md
+// 「キャッシュ・フロー計算書（簡易）」セクションの統合テスト。cashFlowStatement.test.ts側で
+// buildCashFlowStatement()自体のロジック（各区分の計算式・整合性チェック）は検証済みのため、
+// ここではFinancialStatementsClient.tsxが実際に辿る計算パイプライン（balanceSheetと同じ
+// bsNetIncomeを算出し、balanceSheet.unpaidCorporateTaxes等・bsData.fixedAssets/loansを
+// そのままbuildCashFlowStatement()へ渡す）を上のcomputeExpectedBalanceSheetと同じ方針で
+// 再現し、セクション見出し・各区分の金額が実際にDOM上へレンダリングされることだけを検証する
+// （軽量なスモークテスト）。
+describe("FinancialStatementsClient（キャッシュ・フロー計算書（簡易）セクション）", () => {
+  const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
+
+  function computeExpectedCashFlow(
+    transactions: CategorizedTransaction[],
+    bsData: LedgerBalanceSheetData | null
+  ): CashFlowStatement {
+    const pl = buildProfitLossStatement(transactions);
+    const estimate = estimateForMicroCorp(transactions);
+    const consumptionForm = buildConsumptionTaxForm(transactions);
+    const taxForm = buildCorporateTaxForm(estimate);
+    const localTaxForm = buildLocalCorporateTaxForm(estimate, taxForm);
+    const fs = buildFinancialStatements(pl, taxForm, "テスト法人", localTaxForm.grandTotal);
+    const bsNetIncome = fs.incomeBeforeTax - fs.taxes - consumptionForm.totalDue;
+
+    const balanceSheet = bsData
+      ? buildBalanceSheetForm(
+          {
+            capitalStock: bsData.capitalStock,
+            openingCash: bsData.openingCash,
+            openingRetainedEarnings: bsData.openingRetainedEarnings,
+            shareCount: 100,
+            fixedAssets: bsData.fixedAssets,
+            loans: bsData.loans,
+            fiscalPeriod: bsData.fiscalPeriod,
+          },
+          bsData.cashInflow,
+          bsData.cashOutflow,
+          fs.taxes,
+          consumptionForm.totalDue,
+          bsNetIncome
+        )
+      : buildBalanceSheetForm(
+          { capitalStock: 1_000_000, openingCash: 3_000_000, shareCount: 100 },
+          pl.incomeTotal,
+          pl.expenseTotal,
+          fs.taxes,
+          consumptionForm.totalDue,
+          bsNetIncome
+        );
+
+    return buildCashFlowStatement({
+      fiscalPeriod: bsData?.fiscalPeriod ?? { start: pl.periodStart, end: pl.periodEnd },
+      netIncome: bsNetIncome,
+      unpaidCorporateTaxes: balanceSheet.unpaidCorporateTaxes,
+      unpaidConsumptionTax: balanceSheet.unpaidConsumptionTax,
+      fixedAssets: bsData?.fixedAssets ?? [],
+      loans: bsData?.loans ?? [],
+      openingCash: balanceSheet.openingCash,
+      balanceSheetEndingCash: balanceSheet.endingCash,
+    });
+  }
+
+  function assertCashFlowRendered(expected: CashFlowStatement) {
+    expect(screen.getByText("キャッシュ・フロー計算書（簡易）")).toBeTruthy();
+    expect(screen.getByText("営業活動によるキャッシュ・フロー")).toBeTruthy();
+    expect(screen.getByText("投資活動によるキャッシュ・フロー")).toBeTruthy();
+    expect(screen.getByText("財務活動によるキャッシュ・フロー")).toBeTruthy();
+
+    for (const line of [...expected.operating.lines, ...expected.investing.lines, ...expected.financing.lines]) {
+      expect(screen.getByText(line.label)).toBeTruthy();
+      const formatted = yen.format(line.amount);
+      expect(formatted).toMatch(/^-?￥-?[0-9,]+$/);
+      expect(screen.getAllByText(formatted).length).toBeGreaterThanOrEqual(1);
+    }
+
+    for (const value of [expected.netChangeInCash, expected.openingCash, expected.calculatedEndingCash]) {
+      const formatted = yen.format(value);
+      expect(screen.getAllByText(formatted).length).toBeGreaterThanOrEqual(1);
+    }
+
+    if (expected.balanced) {
+      expect(screen.getByText("検算: 期首残高＋当期増減額＝貸借対照表の現金及び預金（一致）")).toBeTruthy();
+    } else {
+      expect(screen.getByText(expected.notes[0])).toBeTruthy();
+    }
+  }
+
+  it("サンプルデータ表示時、キャッシュ・フロー計算書（簡易）の各区分・期末現金残高が実際にレンダリングされる", async () => {
+    vi.mocked(useLedgerTransactions).mockReturnValue({ transactions: SAMPLE_LIKE_TRANSACTIONS, isSampleData: true });
+    vi.mocked(useBalanceSheetData).mockReturnValue({ data: null, isSampleData: true });
+
+    const expected = computeExpectedCashFlow(SAMPLE_LIKE_TRANSACTIONS, null);
+
+    const { FinancialStatementsClient } = await import("./FinancialStatementsClient");
+    render(<FinancialStatementsClient />);
+
+    assertCashFlowRendered(expected);
+  });
+
+  it("実データ（bsData、固定資産・借入金を含む）表示時、投資活動・財務活動の区分にもその内容が反映される", async () => {
+    const fixedAsset: Asset = {
+      id: "asset-1",
+      name: "ノートパソコン",
+      acquisitionDate: "2026-03-01",
+      acquisitionCost: 1_200_000,
+      usefulLifeYears: 4,
+    };
+    const loan: Loan = {
+      id: "loan-1",
+      name: "日本政策金融公庫 運転資金",
+      principalAmount: 2_000_000,
+      interestRate: 0.02,
+      startDate: "2026-01-01",
+      termMonths: 60,
+    };
+    const bsData: LedgerBalanceSheetData = {
+      capitalStock: 3_000_000,
+      openingCash: 5_000_000,
+      openingRetainedEarnings: 1_500_000,
+      fixedAssets: [fixedAsset],
+      loans: [loan],
+      cashInflow: 400_000,
+      cashOutflow: 50_000,
+      fiscalPeriod: { start: "2026-03-01", end: "2026-08-31" },
+    };
+
+    vi.mocked(useLedgerTransactions).mockReturnValue({ transactions: REAL_TRANSACTIONS, isSampleData: false });
+    vi.mocked(useBalanceSheetData).mockReturnValue({ data: bsData, isSampleData: false });
+
+    const expected = computeExpectedCashFlow(REAL_TRANSACTIONS, bsData);
+    // フィクスチャが投資活動・財務活動の区分を実際に非ゼロにする（0円のままにならない）ことを保証する。
+    expect(expected.investing.subtotal).not.toBe(0);
+    expect(expected.financing.subtotal).not.toBe(0);
+
+    const { FinancialStatementsClient } = await import("./FinancialStatementsClient");
+    render(<FinancialStatementsClient />);
+
+    assertCashFlowRendered(expected);
   });
 });
